@@ -39,9 +39,16 @@ class EditSite extends EditRecord
         $respuestas = $this->form->getState()['respuestas'] ?? [];
 
         foreach ($respuestas as $preguntaId => $item) {
+            $valor = $item['valor'] ?? null;
+            
+            // Si es array, convertir a JSON
+            if (is_array($valor)) {
+                $valor = json_encode($valor);
+            }
+
             Respuesta::updateOrCreate(
                 ['site_id' => $siteId, 'pregunta_id' => $preguntaId],
-                ['valor' => $item['valor'] ?? null],
+                ['valor' => $valor],
             );
         }
     }

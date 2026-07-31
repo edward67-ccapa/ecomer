@@ -29,6 +29,20 @@ class CreateSite extends CreateRecord
 
     protected function afterCreate(): void
     {
+        // Copiar respuestas de plantilla si existe
+        $plantillaId = $this->form->getState()['plantilla_id'] ?? null;
+        if ($plantillaId) {
+            $plantillaRespuestas = Respuesta::where('plantilla_id', $plantillaId)->get();
+            foreach ($plantillaRespuestas as $respuesta) {
+                Respuesta::create([
+                    'site_id' => $this->record->id,
+                    'pregunta_id' => $respuesta->pregunta_id,
+                    'valor' => $respuesta->valor,
+                ]);
+            }
+        }
+
+        // Guardar respuestas del formulario (sobrescriben las de plantilla si existen)
         $this->guardarRespuestas($this->record->id);
     }
 
@@ -37,9 +51,16 @@ class CreateSite extends CreateRecord
         $respuestas = $this->form->getState()['respuestas'] ?? [];
 
         foreach ($respuestas as $preguntaId => $item) {
+            $valor = $item['valor'] ?? null;
+            
+            // Si es array, convertir a JSON
+            if (is_array($valor)) {
+                $valor = json_encode($valor);
+            }
+
             Respuesta::updateOrCreate(
                 ['site_id' => $siteId, 'pregunta_id' => $preguntaId],
-                ['valor' => $item['valor'] ?? null],
+                ['valor' => $valor],
             );
         }
     }

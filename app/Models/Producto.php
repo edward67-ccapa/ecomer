@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 #[Fillable(['site_id', 'categoria_id', 'nombre', 'slug', 'descripcion', 'precio', 'precio_oferta', 'cantidad', 'stock', 'sku', 'imagen', 'imagenes', 'activo', 'destacado', 'orden'])]
 class Producto extends Model
@@ -17,6 +18,11 @@ class Producto extends Model
     public function categoria(): BelongsTo
     {
         return $this->belongsTo(Categoria::class);
+    }
+
+    public function tiendas(): BelongsToMany
+    {
+        return $this->belongsToMany(Tienda::class)->withTimestamps();
     }
 
     /**

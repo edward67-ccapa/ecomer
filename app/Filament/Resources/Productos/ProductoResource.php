@@ -23,9 +23,9 @@ class ProductoResource extends Resource
 
     protected static ?string $navigationLabel = 'Productos';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Productos';
+    protected static string|UnitEnum|null $navigationGroup = 'Tienda';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
     {

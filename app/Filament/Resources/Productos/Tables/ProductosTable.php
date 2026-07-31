@@ -4,7 +4,7 @@ namespace App\Filament\Resources\Productos\Tables;
 
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\Layout;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
@@ -15,18 +15,26 @@ class ProductosTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->selectable(false)
-            ->contentGrid([
-                'sm' => 2,
-                'xl' => 3,
-                '2xl' => 4,
-            ])
             ->columns([
-                Layout\View::make('filament.tables.cards.producto'),
+                TextColumn::make('nombre')
+                    ->searchable()
+                    ->sortable(),
+                TextColumn::make('site.nombre')
+                    ->label('Sitio')
+                    ->sortable(),
+                TextColumn::make('categoria.nombre')
+                    ->label('Categoría'),
+                TextColumn::make('precio')
+                    ->money('USD'),
+                TextColumn::make('stock')
+                    ->numeric(),
+                TextColumn::make('activo')
+                    ->formatStateUsing(fn ($state) => $state ? '✓ Activo' : '✗ Inactivo'),
             ])
             ->modifyQueryUsing(fn (Builder $query) => $query->with([
                 'categoria',
                 'site',
+                'tiendas',
             ]))
             ->filters([
                 SelectFilter::make('site_id')
@@ -56,3 +64,4 @@ class ProductosTable
             ]);
     }
 }
+

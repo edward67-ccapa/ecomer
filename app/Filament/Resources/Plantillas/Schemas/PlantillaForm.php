@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Plantillas\Schemas;
 
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\MultiSelect;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -79,6 +80,17 @@ class PlantillaForm
                                 ]),
                             ])
                             ->columnSpan(1),
+                    ])
+                    ->columnSpanFull(),
+                
+                Section::make('Tiendas')
+                    ->icon('heroicon-o-shopping-bag')
+                    ->schema([
+                        MultiSelect::make('tiendas')
+                            ->label('Tiendas asociadas')
+                            ->relationship('tiendas', 'nombre')
+                            ->searchable()
+                            ->preload(),
                     ])
                     ->columnSpanFull(),
                 

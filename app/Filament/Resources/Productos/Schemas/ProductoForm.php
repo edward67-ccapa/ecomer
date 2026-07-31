@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Productos\Schemas;
 use App\Models\Categoria;
 use App\Models\Producto;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\MultiSelect;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -40,6 +41,11 @@ class ProductoForm
                                 ->searchable()
                                 ->preload()
                                 ->live(),
+                            MultiSelect::make('tiendas')
+                                ->label('Tiendas')
+                                ->relationship('tiendas', 'nombre')
+                                ->searchable()
+                                ->preload(),
                             Select::make('categoria_id')
                                 ->label('Categoría')
                                 ->options(fn ($get, ?Producto $record): array => Categoria::query()
