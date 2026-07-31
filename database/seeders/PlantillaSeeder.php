@@ -1,0 +1,171 @@
+<?php
+
+namespace Database\Seeders;
+
+use App\Models\Dominio;
+use App\Models\Plantilla;
+use App\Models\Respuesta;
+use App\Models\Seccion;
+use App\Models\Site;
+use App\Models\User;
+use Illuminate\Database\Seeder;
+use Illuminate\Support\Str;
+
+class PlantillaSeeder extends Seeder
+{
+    /**
+     * Seed the application's plantillas, dominios and demo sites.
+     */
+    public function run(): void
+    {
+        $ecomer = Plantilla::create([
+            'slug' => 'ecomer',
+            'tipo' => 'ecommerce',
+            'nombre' => 'Ecomer',
+            'descripcion' => 'Tienda online completa con inicio, nosotros, productos y contacto.',
+            'estilos' => [
+                'color_primario' => '#f59e0b',
+                'color_secundario' => '#1f2937',
+                'tipografia_titulos' => 'Inter',
+                'tipografia_texto' => 'Inter',
+                'radio_bordes' => '0.5rem',
+                'espaciado' => '1rem',
+            ],
+            'activa' => true,
+        ]);
+
+        $ecomer->secciones()->createMany([
+            $this->seccion('inicio', 'Inicio', 1),
+            $this->seccion('nosotros', 'Nosotros', 2),
+            $this->seccion('productos', 'Productos', 3),
+            $this->seccion('contacto', 'Contacto', 4),
+        ]);
+
+        $this->preguntas($ecomer->secciones[0], [
+            ['label' => 'portada', 'tipo' => 'imagen', 'orden' => 1, 'requerida' => true, 'ayuda' => 'Imagen principal del hero'],
+            ['label' => 'titulo1', 'tipo' => 'texto', 'orden' => 2, 'requerida' => true],
+            ['label' => 'subtitulo', 'tipo' => 'area', 'orden' => 3],
+            ['label' => 'boton_texto', 'tipo' => 'texto', 'orden' => 4],
+            ['label' => 'boton_enlace', 'tipo' => 'enlace', 'orden' => 5],
+        ]);
+
+        $this->preguntas($ecomer->secciones[1], [
+            ['label' => 'titulo', 'tipo' => 'texto', 'orden' => 1, 'requerida' => true],
+            ['label' => 'descripcion', 'tipo' => 'area', 'orden' => 2],
+            ['label' => 'foto', 'tipo' => 'imagen', 'orden' => 3],
+        ]);
+
+        $this->preguntas($ecomer->secciones[2], [
+            ['label' => 'titulo', 'tipo' => 'texto', 'orden' => 1, 'requerida' => true],
+            ['label' => 'galeria', 'tipo' => 'galeria', 'orden' => 2],
+        ]);
+
+        $this->preguntas($ecomer->secciones[3], [
+            ['label' => 'titulo', 'tipo' => 'texto', 'orden' => 1],
+            ['label' => 'direccion', 'tipo' => 'texto', 'orden' => 2],
+            ['label' => 'telefono', 'tipo' => 'texto', 'orden' => 3],
+            ['label' => 'whatsapp', 'tipo' => 'enlace', 'orden' => 4],
+            ['label' => 'color_fondo', 'tipo' => 'color', 'orden' => 5],
+        ]);
+
+        $landing = Plantilla::create([
+            'slug' => 'landing-page',
+            'tipo' => 'landing_page',
+            'nombre' => 'Landing Page',
+            'descripcion' => 'Página de aterrizaje minimalista con sección hero y contacto.',
+            'estilos' => [
+                'color_primario' => '#3b82f6',
+                'color_secundario' => '#111827',
+                'tipografia_titulos' => 'Inter',
+                'tipografia_texto' => 'Inter',
+                'radio_bordes' => '0.25rem',
+                'espaciado' => '0.75rem',
+            ],
+            'activa' => true,
+        ]);
+
+        $landing->secciones()->createMany([
+            $this->seccion('inicio', 'Inicio', 1),
+            $this->seccion('contacto', 'Contacto', 2),
+        ]);
+
+        $this->preguntas($landing->secciones[0], [
+            ['label' => 'portada', 'tipo' => 'imagen', 'orden' => 1, 'requerida' => true],
+            ['label' => 'titulo1', 'tipo' => 'texto', 'orden' => 2, 'requerida' => true],
+            ['label' => 'subtitulo', 'tipo' => 'area', 'orden' => 3],
+            ['label' => 'boton_texto', 'tipo' => 'texto', 'orden' => 4],
+            ['label' => 'boton_enlace', 'tipo' => 'enlace', 'orden' => 5],
+        ]);
+
+        $this->preguntas($landing->secciones[1], [
+            ['label' => 'titulo', 'tipo' => 'texto', 'orden' => 1],
+            ['label' => 'telefono', 'tipo' => 'texto', 'orden' => 2],
+            ['label' => 'whatsapp', 'tipo' => 'enlace', 'orden' => 3],
+        ]);
+
+        $user = User::firstOrCreate(
+            ['email' => 'test@example.com'],
+            ['name' => 'Test User', 'password' => bcrypt('password')],
+        );
+
+        $dominio = Dominio::create([
+            'user_id' => $user->id,
+            'nombre' => 'creadorDePaginas',
+            'estado' => 'activo',
+        ]);
+
+        $site = Site::create([
+            'user_id' => $user->id,
+            'dominio_id' => $dominio->id,
+            'plantilla_id' => $ecomer->id,
+            'nombre' => 'E-comer 1',
+            'slug' => 'e-comer1',
+            'estado' => 'publicado',
+            'estilos' => $ecomer->estilos,
+        ]);
+
+        $respuestas = [
+            'titulo1' => 'Bienvenido a mi tienda',
+            'subtitulo' => 'Productos de calidad al mejor precio.',
+            'boton_texto' => 'Ver productos',
+            'boton_enlace' => 'https://ejemplo.com/productos',
+            'titulo' => 'Sobre nosotros',
+            'descripcion' => 'Somos una tienda familiar con más de 10 años de experiencia.',
+            'direccion' => 'Av. Principal 123',
+            'telefono' => '+51 999 888 777',
+            'whatsapp' => 'https://wa.me/51999888777',
+            'color_fondo' => '#f3f4f6',
+        ];
+
+        foreach ($ecomer->secciones as $seccion) {
+            foreach ($seccion->preguntas as $pregunta) {
+                $label = Str::slug($pregunta->label);
+
+                if (! array_key_exists($label, $respuestas)) {
+                    continue;
+                }
+
+                Respuesta::updateOrCreate(
+                    ['site_id' => $site->id, 'pregunta_id' => $pregunta->id],
+                    ['valor' => $respuestas[$label]],
+                );
+            }
+        }
+    }
+
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    private function seccion(string $slug, string $nombre, int $orden): array
+    {
+        return ['slug' => $slug, 'nombre' => $nombre, 'orden' => $orden];
+    }
+
+    /**
+     * @param  array<int, array<string, mixed>>  $preguntas
+     */
+    private function preguntas(Seccion $seccion, array $preguntas): void
+    {
+        $seccion->preguntas()->createMany($preguntas);
+    }
+}

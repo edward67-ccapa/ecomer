@@ -1,0 +1,206 @@
+import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
+/**
+* @see \App\Http\Controllers\SitePageController::show
+* @see app/Http/Controllers/SitePageController.php:23
+* @route '/{dominio}/{site}/{seccion}'
+*/
+export const show = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(args, options),
+    method: 'get',
+})
+
+show.definition = {
+    methods: ["get","head"],
+    url: '/{dominio}/{site}/{seccion}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\SitePageController::show
+* @see app/Http/Controllers/SitePageController.php:23
+* @route '/{dominio}/{site}/{seccion}'
+*/
+show.url = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            dominio: args[0],
+            site: args[1],
+            seccion: args[2],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        dominio: args.dominio,
+        site: args.site,
+        seccion: args.seccion,
+    }
+
+    return show.definition.url
+            .replace('{dominio}', parsedArgs.dominio.toString())
+            .replace('{site}', parsedArgs.site.toString())
+            .replace('{seccion}', parsedArgs.seccion.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\SitePageController::show
+* @see app/Http/Controllers/SitePageController.php:23
+* @route '/{dominio}/{site}/{seccion}'
+*/
+show.get = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\SitePageController::show
+* @see app/Http/Controllers/SitePageController.php:23
+* @route '/{dominio}/{site}/{seccion}'
+*/
+show.head = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: show.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\SitePageController::show
+* @see app/Http/Controllers/SitePageController.php:23
+* @route '/{dominio}/{site}/{seccion}'
+*/
+const showForm = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\SitePageController::show
+* @see app/Http/Controllers/SitePageController.php:23
+* @route '/{dominio}/{site}/{seccion}'
+*/
+showForm.get = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\SitePageController::show
+* @see app/Http/Controllers/SitePageController.php:23
+* @route '/{dominio}/{site}/{seccion}'
+*/
+showForm.head = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: show.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+show.form = showForm
+
+/**
+* @see \App\Http\Controllers\SitePageController::home
+* @see app/Http/Controllers/SitePageController.php:16
+* @route '/{dominio}/{site}'
+*/
+export const home = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: home.url(args, options),
+    method: 'get',
+})
+
+home.definition = {
+    methods: ["get","head"],
+    url: '/{dominio}/{site}',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\SitePageController::home
+* @see app/Http/Controllers/SitePageController.php:16
+* @route '/{dominio}/{site}'
+*/
+home.url = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            dominio: args[0],
+            site: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        dominio: args.dominio,
+        site: args.site,
+    }
+
+    return home.definition.url
+            .replace('{dominio}', parsedArgs.dominio.toString())
+            .replace('{site}', parsedArgs.site.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\SitePageController::home
+* @see app/Http/Controllers/SitePageController.php:16
+* @route '/{dominio}/{site}'
+*/
+home.get = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: home.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\SitePageController::home
+* @see app/Http/Controllers/SitePageController.php:16
+* @route '/{dominio}/{site}'
+*/
+home.head = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: home.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\SitePageController::home
+* @see app/Http/Controllers/SitePageController.php:16
+* @route '/{dominio}/{site}'
+*/
+const homeForm = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: home.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\SitePageController::home
+* @see app/Http/Controllers/SitePageController.php:16
+* @route '/{dominio}/{site}'
+*/
+homeForm.get = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: home.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\SitePageController::home
+* @see app/Http/Controllers/SitePageController.php:16
+* @route '/{dominio}/{site}'
+*/
+homeForm.head = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: home.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+home.form = homeForm
+
+const sitios = {
+    show: Object.assign(show, show),
+    home: Object.assign(home, home),
+}
+
+export default sitios
