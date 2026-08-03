@@ -38,7 +38,7 @@ class SitePageController extends Controller
         $contenido = $seccion->preguntas->map(fn (Pregunta $pregunta): array => [
             'label' => $pregunta->label,
             'tipo' => $pregunta->tipo,
-            'valor' => $this->valorPublico($pregunta->tipo, $respuestas[$pregunta->id] ?? null),
+            'valor' => self::valorPublico($pregunta->tipo, $respuestas[$pregunta->id] ?? null),
         ]);
 
         $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
@@ -76,7 +76,7 @@ class SitePageController extends Controller
             ->firstOrFail();
     }
 
-    private function valorPublico(string $tipo, mixed $valor): mixed
+    public static function valorPublico(string $tipo, mixed $valor): mixed
     {
         if (is_null($valor)) {
             return null;

@@ -11,7 +11,6 @@ use Filament\Tables\Columns\Layout;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Support\Str;
 
 class PlantillasTable
@@ -29,11 +28,7 @@ class PlantillasTable
                 Layout\View::make('filament.tables.cards.plantilla'),
             ])
             ->modifyQueryUsing(fn (Builder $query) => $query
-                ->withCount('secciones')
-                ->with(['sites' => fn (HasMany $q) => $q
-                    ->where('estado', 'publicado')
-                    ->with('dominio'),
-                ]))
+                ->withCount('secciones'))
             ->filters([
                 //
             ])

@@ -2,15 +2,26 @@
 
 namespace Tests\Feature;
 
+use App\Filament\Resources\Colores\Pages\CreateColor;
+use App\Filament\Resources\Colores\Pages\ListColores;
 use App\Filament\Resources\Plantillas\Pages\CreatePlantilla;
+use App\Filament\Resources\Plantillas\Pages\EditPlantilla;
 use App\Filament\Resources\Plantillas\Pages\ListPlantillas;
 use App\Filament\Resources\Sites\Pages\CreateSite;
 use App\Filament\Resources\Sites\Pages\EditSite;
 use App\Filament\Resources\Sites\Pages\ListSites;
+use App\Filament\Resources\Subcategorias\Pages\CreateSubcategoria;
+use App\Filament\Resources\Subcategorias\Pages\ListSubcategorias;
+use App\Filament\Resources\Tallas\Pages\CreateTalla;
+use App\Filament\Resources\Tallas\Pages\ListTallas;
+use App\Models\Categoria;
+use App\Models\Color;
 use App\Models\Dominio;
 use App\Models\Plantilla;
 use App\Models\Respuesta;
 use App\Models\Site;
+use App\Models\Subcategoria;
+use App\Models\Talla;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -35,6 +46,75 @@ class FilamentResourceRenderTest extends TestCase
     {
         Livewire::test(ListPlantillas::class)->assertOk();
         Livewire::test(CreatePlantilla::class)->assertOk();
+    }
+
+    public function test_subcategoria_color_talla_pages_render(): void
+    {
+        Livewire::test(ListSubcategorias::class)->assertOk();
+        Livewire::test(CreateSubcategoria::class)->assertOk();
+        Livewire::test(ListColores::class)->assertOk();
+        Livewire::test(CreateColor::class)->assertOk();
+        Livewire::test(ListTallas::class)->assertOk();
+        Livewire::test(CreateTalla::class)->assertOk();
+    }
+
+    public function test_crear_subcategoria(): void
+    {
+        $plantilla = Plantilla::create([
+            'slug' => 'tienda',
+            'tipo' => 'ecommerce',
+            'nombre' => 'Tienda',
+        ]);
+
+        $site = Site::create([
+            'user_id' => $this->user->id,
+            'plantilla_id' => $plantilla->id,
+            'nombre' => 'Mi tienda',
+            'slug' => 'mi-tienda',
+        ]);
+
+        $categoria = Categoria::create([
+            'site_id' => $site->id,
+            'nombre' => 'Ropa',
+            'slug' => 'ropa',
+        ]);
+
+        Livewire::test(CreateSubcategoria::class)
+            ->fillForm([
+                'categoria_id' => $categoria->id,
+                'nombre' => 'Remeras',
+                'slug' => 'remeras',
+                'activa' => true,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('Remeras', Subcategoria::where('slug', 'remeras')->value('nombre'));
+    }
+
+    public function test_crear_color_y_talla(): void
+    {
+        Livewire::test(CreateColor::class)
+            ->fillForm([
+                'nombre' => 'Azul',
+                'slug' => 'azul',
+                'hex' => '#3b82f6',
+                'activa' => true,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        Livewire::test(CreateTalla::class)
+            ->fillForm([
+                'nombre' => 'M',
+                'slug' => 'm',
+                'activa' => true,
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame('Azul', Color::where('slug', 'azul')->value('nombre'));
+        $this->assertSame('M', Talla::where('slug', 'm')->value('nombre'));
     }
 
     public function test_crear_plantilla_con_secciones_y_preguntas(): void
@@ -74,6 +154,198 @@ class FilamentResourceRenderTest extends TestCase
     {
         Livewire::test(ListSites::class)->assertOk();
         Livewire::test(CreateSite::class)->assertOk();
+    }
+
+    public function test_editar_plantilla_guarda_respuestas(): void
+    {
+        $plantilla = Plantilla::create([
+            'slug' => 'editable',
+            'tipo' => 'landing_page',
+            'nombre' => 'Editable',
+        ]);
+
+        $seccion = $plantilla->secciones()->create([
+            'slug' => 'inicio',
+            'nombre' => 'Inicio',
+            'orden' => 1,
+        ]);
+
+        $pregunta = $seccion->preguntas()->create([
+            'label' => 'titulo1',
+            'tipo' => 'texto',
+            'orden' => 1,
+        ]);
+
+        Livewire::test(EditPlantilla::class, ['record' => $plantilla->getRouteKey()])
+            ->fillForm([
+                'respuestas' => [
+                    $pregunta->id => ['valor' => 'Contenido de plantilla'],
+                ],
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $respuesta = Respuesta::where('plantilla_id', $plantilla->id)
+            ->where('pregunta_id', $pregunta->id)
+            ->first();
+
+        $this->assertNotNull($respuesta);
+        $this->assertNull($respuesta->site_id);
+        $this->assertSame('Contenido de plantilla', $respuesta->valor);
+    }
+
+    public function test_crear_site_copia_respuestas_de_plantilla(): void
+    {
+        $plantilla = Plantilla::create([
+            'slug' => 'copia',
+            'tipo' => 'landing_page',
+            'nombre' => 'Copia',
+        ]);
+
+        $seccion = $plantilla->secciones()->create([
+            'slug' => 'inicio',
+            'nombre' => 'Inicio',
+            'orden' => 1,
+        ]);
+
+        $pregunta = $seccion->preguntas()->create([
+            'label' => 'titulo1',
+            'tipo' => 'texto',
+            'orden' => 1,
+        ]);
+
+        Respuesta::create([
+            'plantilla_id' => $plantilla->id,
+            'pregunta_id' => $pregunta->id,
+            'valor' => 'Contenido de plantilla',
+        ]);
+
+        $dominio = Dominio::create([
+            'user_id' => $this->user->id,
+            'nombre' => 'creadorDePaginas',
+        ]);
+
+        Livewire::test(CreateSite::class)
+            ->fillForm([
+                'user_id' => $this->user->id,
+                'plantilla_id' => $plantilla->id,
+                'dominio_id' => $dominio->id,
+                'nombre' => 'Mi tienda',
+                'slug' => 'mi-tienda',
+                'estado' => 'publicado',
+            ])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $site = Site::where('slug', 'mi-tienda')->first();
+
+        $this->assertNotNull($site);
+        $this->assertSame(
+            'Contenido de plantilla',
+            Respuesta::where('site_id', $site->id)->where('pregunta_id', $pregunta->id)->value('valor'),
+        );
+        $this->assertSame(
+            'Contenido de plantilla',
+            Respuesta::where('plantilla_id', $plantilla->id)->where('pregunta_id', $pregunta->id)->value('valor'),
+        );
+    }
+
+    public function test_respuestas_de_plantilla_y_site_son_independientes(): void
+    {
+        $plantilla = Plantilla::create([
+            'slug' => 'independiente',
+            'tipo' => 'landing_page',
+            'nombre' => 'Independiente',
+        ]);
+
+        $seccion = $plantilla->secciones()->create([
+            'slug' => 'inicio',
+            'nombre' => 'Inicio',
+            'orden' => 1,
+        ]);
+
+        $pregunta = $seccion->preguntas()->create([
+            'label' => 'titulo1',
+            'tipo' => 'texto',
+            'orden' => 1,
+        ]);
+
+        $site = Site::create([
+            'user_id' => $this->user->id,
+            'plantilla_id' => $plantilla->id,
+            'nombre' => 'Site A',
+            'slug' => 'site-a',
+        ]);
+
+        Respuesta::create([
+            'plantilla_id' => $plantilla->id,
+            'pregunta_id' => $pregunta->id,
+            'valor' => 'Valor plantilla',
+        ]);
+
+        Respuesta::create([
+            'site_id' => $site->id,
+            'pregunta_id' => $pregunta->id,
+            'valor' => 'Valor sitio',
+        ]);
+
+        Livewire::test(EditSite::class, ['record' => $site->getRouteKey()])
+            ->fillForm([
+                'respuestas' => [
+                    $pregunta->id => ['valor' => 'Valor sitio editado'],
+                ],
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(
+            'Valor sitio editado',
+            Respuesta::where('site_id', $site->id)->where('pregunta_id', $pregunta->id)->value('valor'),
+        );
+        $this->assertSame(
+            'Valor plantilla',
+            Respuesta::where('plantilla_id', $plantilla->id)->where('pregunta_id', $pregunta->id)->value('valor'),
+        );
+
+        Livewire::test(EditPlantilla::class, ['record' => $plantilla->getRouteKey()])
+            ->fillForm([
+                'respuestas' => [
+                    $pregunta->id => ['valor' => 'Valor plantilla editado'],
+                ],
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $this->assertSame(
+            'Valor sitio editado',
+            Respuesta::where('site_id', $site->id)->where('pregunta_id', $pregunta->id)->value('valor'),
+        );
+        $this->assertSame(
+            'Valor plantilla editado',
+            Respuesta::where('plantilla_id', $plantilla->id)->where('pregunta_id', $pregunta->id)->value('valor'),
+        );
+    }
+
+    public function test_crear_site_desde_plantilla_queda_publicado(): void
+    {
+        $plantilla = Plantilla::create([
+            'slug' => 'ecomer',
+            'tipo' => 'ecommerce',
+            'nombre' => 'Ecomer',
+        ]);
+
+        $dominio = Dominio::create([
+            'user_id' => $this->user->id,
+            'nombre' => 'creadorDePaginas',
+        ]);
+
+        Livewire::withQueryParams(['plantilla_id' => (string) $plantilla->id])
+            ->test(CreateSite::class)
+            ->assertFormSet([
+                'plantilla_id' => $plantilla->id,
+                'estado' => 'publicado',
+                'dominio_id' => $dominio->id,
+            ]);
     }
 
     public function test_crear_site_con_respuestas(): void

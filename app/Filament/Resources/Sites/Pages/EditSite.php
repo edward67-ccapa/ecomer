@@ -18,7 +18,7 @@ class EditSite extends EditRecord
         ];
     }
 
-    protected function mutateFormDataUsing(array $data): array
+    protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['respuestas'] = $this->record->respuestas
             ->mapWithKeys(fn (Respuesta $respuesta): array => [
@@ -40,7 +40,7 @@ class EditSite extends EditRecord
 
         foreach ($respuestas as $preguntaId => $item) {
             $valor = $item['valor'] ?? null;
-            
+
             // Si es array, convertir a JSON
             if (is_array($valor)) {
                 $valor = json_encode($valor);

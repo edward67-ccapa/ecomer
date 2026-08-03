@@ -75,22 +75,13 @@ class ProductosResourceTest extends TestCase
 
         $this->assertNotNull($categoria);
 
-        Livewire::test(CreateCategoria::class)
-            ->fillForm([
-                'site_id' => $this->site->id,
-                'parent_id' => $categoria->id,
-                'nombre' => 'Camisas',
-                'slug' => 'camisas',
-                'activa' => true,
-            ])
-            ->call('create')
-            ->assertHasNoFormErrors();
+        $subcategoria = $categoria->subcategorias()->create([
+            'nombre' => 'Camisas',
+            'slug' => 'camisas',
+        ]);
 
-        $subcategoria = Categoria::where('slug', 'camisas')->first();
-
-        $this->assertNotNull($subcategoria);
-        $this->assertSame($categoria->id, $subcategoria->parent_id);
-        $this->assertSame($this->site->id, $subcategoria->site_id);
+        $this->assertSame($categoria->id, $subcategoria->categoria_id);
+        $this->assertSame($this->site->id, $subcategoria->categoria->site_id);
     }
 
     public function test_producto_pages_render(): void

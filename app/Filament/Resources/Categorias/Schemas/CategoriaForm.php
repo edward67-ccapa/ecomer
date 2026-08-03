@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Categorias\Schemas;
 
-use App\Models\Categoria;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -40,17 +39,6 @@ class CategoriaForm
                                         ->required()
                                         ->searchable()
                                         ->preload(),
-                                    Select::make('parent_id')
-                                        ->label('Categoría padre')
-                                        ->options(fn ($get, ?Categoria $record): array => Categoria::query()
-                                            ->where('site_id', $get('site_id') ?? $record?->site_id)
-                                            ->where('parent_id', null)
-                                            ->when($record, fn ($query) => $query->whereKeyNot($record->id))
-                                            ->get()
-                                            ->mapWithKeys(fn (Categoria $categoria): array => [$categoria->id => $categoria->nombre])
-                                            ->all())
-                                        ->searchable()
-                                        ->placeholder('— sin padre —'),
                                     TextInput::make('orden')
                                         ->numeric()
                                         ->default(0),

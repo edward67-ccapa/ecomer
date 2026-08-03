@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Productos\Tables;
 
+use App\Models\Producto;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Tables\Columns\TextColumn;
@@ -22,8 +23,12 @@ class ProductosTable
                 TextColumn::make('site.nombre')
                     ->label('Sitio')
                     ->sortable(),
-                TextColumn::make('categoria.nombre')
-                    ->label('Categoría'),
+                TextColumn::make('categoria_id')
+                    ->label('Categoría')
+                    ->formatStateUsing(fn (Producto $record): ?string => $record->subcategoria?->nombre ?? $record->categoria?->nombre),
+                TextColumn::make('variantes_count')
+                    ->label('Variantes')
+                    ->numeric(),
                 TextColumn::make('precio')
                     ->money('USD'),
                 TextColumn::make('stock')
@@ -33,9 +38,10 @@ class ProductosTable
             ])
             ->modifyQueryUsing(fn (Builder $query) => $query->with([
                 'categoria',
+                'subcategoria',
                 'site',
                 'tiendas',
-            ]))
+            ])->withCount('variantes'))
             ->filters([
                 SelectFilter::make('site_id')
                     ->label('Sitio')
@@ -45,6 +51,11 @@ class ProductosTable
                 SelectFilter::make('categoria_id')
                     ->label('Categoría')
                     ->relationship('categoria', 'nombre')
+                    ->searchable()
+                    ->preload(),
+                SelectFilter::make('subcategoria_id')
+                    ->label('Subcategoría')
+                    ->relationship('subcategoria', 'nombre')
                     ->searchable()
                     ->preload(),
                 TernaryFilter::make('activo')
@@ -64,4 +75,3 @@ class ProductosTable
             ]);
     }
 }
-

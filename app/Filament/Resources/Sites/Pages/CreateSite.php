@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Sites\Pages;
 
 use App\Filament\Resources\Sites\SiteResource;
+use App\Models\Dominio;
 use App\Models\Plantilla;
 use App\Models\Respuesta;
 use Filament\Resources\Pages\CreateRecord;
@@ -16,12 +17,19 @@ class CreateSite extends CreateRecord
         parent::mount();
 
         if ($plantillaId = request()->query('plantilla_id')) {
-            $plantilla = Plantilla::find($plantillaId);
+            $plantilla = Plantilla::with('respuestas')->find($plantillaId);
 
             if ($plantilla) {
                 $this->form->fill([
                     'plantilla_id' => $plantilla->id,
+                    'estado' => 'publicado',
+                    'dominio_id' => Dominio::where('user_id', auth()->id())->value('id'),
                     'estilos' => $plantilla->estilos,
+                    'respuestas' => $plantilla->respuestas
+                        ->mapWithKeys(fn (Respuesta $respuesta): array => [
+                            $respuesta->pregunta_id => ['valor' => $respuesta->valor],
+                        ])
+                        ->all(),
                 ]);
             }
         }
@@ -52,7 +60,7 @@ class CreateSite extends CreateRecord
 
         foreach ($respuestas as $preguntaId => $item) {
             $valor = $item['valor'] ?? null;
-            
+
             // Si es array, convertir a JSON
             if (is_array($valor)) {
                 $valor = json_encode($valor);

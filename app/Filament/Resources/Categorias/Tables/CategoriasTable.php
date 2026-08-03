@@ -20,9 +20,10 @@ class CategoriasTable
                 TextColumn::make('slug')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('parent.nombre')
-                    ->label('Categoría padre')
-                    ->placeholder('—'),
+                TextColumn::make('subcategorias_count')
+                    ->label('Subcategorías')
+                    ->counts('subcategorias')
+                    ->sortable(),
                 TextColumn::make('productos_count')
                     ->label('Productos')
                     ->counts('productos')

@@ -69,6 +69,33 @@ class PublicPagesTest extends TestCase
                 ->where('seccionActiva.contenido.0.valor', 'Hola mundo'));
     }
 
+    public function test_preview_de_plantilla_usa_respuestas_de_plantilla(): void
+    {
+        [$plantilla, $site] = $this->crearEcosistema();
+
+        $pregunta = $plantilla->secciones()->where('slug', 'inicio')->first()->preguntas()->first();
+
+        Respuesta::create([
+            'plantilla_id' => $plantilla->id,
+            'pregunta_id' => $pregunta->id,
+            'valor' => 'Luciana',
+        ]);
+
+        $this->get("/plantillas/{$plantilla->slug}")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('sites/Index')
+                ->where('site.nombre', $plantilla->nombre)
+                ->where('seccionActiva.slug', 'inicio')
+                ->where('seccionActiva.contenido.0.valor', 'Luciana'));
+
+        $this->get("/plantillas/{$plantilla->slug}/inicio")
+            ->assertOk()
+            ->assertInertia(fn ($page) => $page
+                ->component('sites/Index')
+                ->where('seccionActiva.contenido.0.valor', 'Luciana'));
+    }
+
     public function test_sitio_redirige_a_primera_seccion(): void
     {
         [$plantilla, $site, $dominio] = $this->crearEcosistema();

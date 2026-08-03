@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Plantillas\Schemas;
 
+use App\Models\Plantilla;
+use App\Models\Pregunta;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\MultiSelect;
@@ -10,8 +12,10 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class PlantillaForm
@@ -51,7 +55,7 @@ class PlantillaForm
                                     ->directory('plantillas'),
                             ])
                             ->columnSpan(1),
-                        
+
                         Section::make('Estilos globales')
                             ->icon('heroicon-o-paint-brush')
                             ->description('Valores por defecto que copiarán los sites creados con esta plantilla.')
@@ -82,7 +86,7 @@ class PlantillaForm
                             ->columnSpan(1),
                     ])
                     ->columnSpanFull(),
-                
+
                 Section::make('Tiendas')
                     ->icon('heroicon-o-shopping-bag')
                     ->schema([
@@ -93,7 +97,7 @@ class PlantillaForm
                             ->preload(),
                     ])
                     ->columnSpanFull(),
-                
+
                 Section::make('Secciones')
                     ->icon('heroicon-o-squares-2x2')
                     ->description('Configura las secciones y preguntas de la plantilla')
@@ -145,7 +149,81 @@ class PlantillaForm
                                     ->columns(1),
                             ]),
                     ]),
+
+                Section::make('Contenido')
+                    ->icon('heroicon-o-document-text')
+                    ->description('Valores por defecto que copiarán los sites creados con esta plantilla.')
+                    ->columnSpanFull()
+                    ->visible(fn (Get $get): bool => filled($get('id')))
+                    ->schema(fn (Get $get): array => self::respuestasFieldsFromState($get)),
             ]);
+    }
+
+    /**
+     * @return array<int, Component>
+     */
+    public static function respuestasFields(Plantilla $plantilla): array
+    {
+        $components = [];
+
+        foreach ($plantilla->secciones as $seccion) {
+            $fields = [];
+
+            foreach ($seccion->preguntas as $pregunta) {
+                $fields[] = self::campoRespuesta($pregunta);
+            }
+
+            $components[] = Section::make($seccion->nombre)
+                ->schema($fields)
+                ->columns(2);
+        }
+
+        return $components;
+    }
+
+    /**
+     * @return array<int, Component>
+     */
+    private static function respuestasFieldsFromState(Get $get): array
+    {
+        $plantillaId = $get('id');
+
+        if (blank($plantillaId)) {
+            return [];
+        }
+
+        $plantilla = Plantilla::with('secciones.preguntas')->find($plantillaId);
+
+        if (! $plantilla) {
+            return [];
+        }
+
+        return self::respuestasFields($plantilla);
+    }
+
+    private static function campoRespuesta(Pregunta $pregunta): Component
+    {
+        $statePath = "respuestas.{$pregunta->id}.valor";
+
+        $field = match ($pregunta->tipo) {
+            'area' => Textarea::make($statePath)->rows(3),
+            'imagen' => FileUpload::make($statePath)
+                ->image()
+                ->imageEditor()
+                ->directory('sites/contenido'),
+            'galeria' => FileUpload::make($statePath)
+                ->image()
+                ->multiple()
+                ->directory('sites/contenido'),
+            'color' => ColorPicker::make($statePath),
+            'enlace' => TextInput::make($statePath)->url(),
+            default => TextInput::make($statePath),
+        };
+
+        return $field
+            ->label($pregunta->label)
+            ->helperText($pregunta->ayuda)
+            ->required($pregunta->requerida);
     }
 
     /**

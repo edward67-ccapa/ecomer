@@ -1,6 +1,5 @@
 @php($record = $getRecord())
 @php($imagen = $record->imagen ? asset('storage/'.$record->imagen) : null)
-@php($sitio = $record->sites->first())
 
 <div class="flex flex-col">
     @if ($imagen)
@@ -41,15 +40,22 @@
             </span>
         </div>
 
-        @if ($sitio?->dominio)
+        <div class="mt-3 grid grid-cols-2 gap-2">
             <a
-                href="/{{ $sitio->dominio->nombre }}/{{ $sitio->slug }}"
-                target="_blank"
-                class="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-500"
+                href="/admin/sites/create?plantilla_id={{ $record->id }}"
+                class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-500"
             >
-                <x-heroicon-o-eye class="h-1 w-1" />
-                Visitar sitio
+                <x-heroicon-o-plus class="h-4 w-4" />
+                Usar plantilla
             </a>
-        @endif
+            <a
+                href="/plantillas/{{ $record->slug }}"
+                target="_blank"
+                class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-gray-100 px-4 py-2 text-sm font-semibold text-gray-700 transition hover:bg-gray-200 dark:bg-white/5 dark:text-gray-300 dark:hover:bg-white/10"
+            >
+                <x-heroicon-o-eye class="h-4 w-4" />
+                Vista previa
+            </a>
+        </div>
     </div>
 </div>

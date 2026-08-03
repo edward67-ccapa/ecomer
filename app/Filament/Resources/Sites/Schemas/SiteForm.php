@@ -5,11 +5,11 @@ namespace App\Filament\Resources\Sites\Schemas;
 use App\Filament\Resources\Plantillas\Schemas\PlantillaForm;
 use App\Models\Dominio;
 use App\Models\Plantilla;
+use App\Models\Respuesta;
 use App\Models\User;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
@@ -41,7 +41,19 @@ class SiteForm
                                 ->required()
                                 ->searchable()
                                 ->live()
-                                ->afterStateUpdated(fn (Set $set, ?string $state) => $set('estilos', Plantilla::find($state)?->estilos ?? [])),
+                                ->afterStateUpdated(function (Set $set, Get $get, ?string $state): void {
+                                    $plantilla = Plantilla::with('respuestas')->find($state);
+
+                                    $set('estilos', $plantilla?->estilos ?? []);
+
+                                    if (blank($get('respuestas'))) {
+                                        $set('respuestas', $plantilla?->respuestas
+                                            ->mapWithKeys(fn (Respuesta $respuesta): array => [
+                                                $respuesta->pregunta_id => ['valor' => $respuesta->valor],
+                                            ])
+                                            ->all() ?? []);
+                                    }
+                                }),
                             Select::make('dominio_id')
                                 ->label('Dominio')
                                 ->options(fn (Get $get) => Dominio::where('user_id', $get('user_id'))->pluck('nombre', 'id'))
@@ -106,40 +118,6 @@ class SiteForm
             return [];
         }
 
-        $components = [];
-
-        foreach ($plantilla->secciones as $seccion) {
-            $fields = [];
-
-            foreach ($seccion->preguntas as $pregunta) {
-                $statePath = "respuestas.{$pregunta->id}.valor";
-
-                $field = match ($pregunta->tipo) {
-                    'area' => Textarea::make($statePath)->rows(3),
-                    'imagen' => FileUpload::make($statePath)
-                        ->image()
-                        ->imageEditor()
-                        ->directory('sites/contenido'),
-                    'galeria' => FileUpload::make($statePath)
-                        ->image()
-                        ->multiple()
-                        ->directory('sites/contenido'),
-                    'color' => ColorPicker::make($statePath),
-                    'enlace' => TextInput::make($statePath)->url(),
-                    default => TextInput::make($statePath),
-                };
-
-                $fields[] = $field
-                    ->label($pregunta->label)
-                    ->helperText($pregunta->ayuda)
-                    ->required($pregunta->requerida);
-            }
-
-            $components[] = Section::make($seccion->nombre)
-                ->schema($fields)
-                ->columns(2);
-        }
-
-        return $components;
+        return PlantillaForm::respuestasFields($plantilla);
     }
 }

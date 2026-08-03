@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Categorias;
 use App\Filament\Resources\Categorias\Pages\CreateCategoria;
 use App\Filament\Resources\Categorias\Pages\EditCategoria;
 use App\Filament\Resources\Categorias\Pages\ListCategorias;
+use App\Filament\Resources\Categorias\RelationManagers\SubcategoriasRelationManager;
 use App\Filament\Resources\Categorias\Schemas\CategoriaForm;
 use App\Filament\Resources\Categorias\Tables\CategoriasTable;
 use App\Models\Categoria;
@@ -23,9 +24,9 @@ class CategoriaResource extends Resource
 
     protected static ?string $navigationLabel = 'Categorías';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Tienda';
+    protected static string|UnitEnum|null $navigationGroup = 'Catálogo';
 
-    protected static ?int $navigationSort = 2;
+    protected static ?int $navigationSort = 1;
 
     public static function form(Schema $schema): Schema
     {
@@ -40,7 +41,7 @@ class CategoriaResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            SubcategoriasRelationManager::class,
         ];
     }
 
