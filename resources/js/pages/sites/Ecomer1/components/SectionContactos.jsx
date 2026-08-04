@@ -1,4 +1,4 @@
-import { BloqueContenido, EtiquetaBloque } from '../shared/components';
+import { BloqueContenido } from '../shared/components';
 
 export default function SectionContactos({ seccion, styles }) {
     const primeraImagen = seccion.contenido.find(
@@ -75,20 +75,10 @@ export default function SectionContactos({ seccion, styles }) {
                             key={item.label}
                             className="flex flex-col gap-3"
                         >
-                            {item.tipo === 'enlace' && item.label ? (
-                                <BloqueContenido
-                                    item={item}
-                                    styles={styles}
-                                />
-                            ) : (
-                                <>
-                                    <EtiquetaBloque item={item} />
-                                    <BloqueContenido
-                                        item={item}
-                                        styles={styles}
-                                    />
-                                </>
-                            )}
+                            <BloqueContenido
+                                item={item}
+                                styles={styles}
+                            />
                         </div>
                     ))}
                 </div>

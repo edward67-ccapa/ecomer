@@ -45,8 +45,7 @@ class PlantillaSeeder extends Seeder
             ['label' => 'portada', 'tipo' => 'imagen', 'orden' => 1, 'requerida' => true, 'ayuda' => 'Imagen principal del hero'],
             ['label' => 'titulo1', 'tipo' => 'texto', 'orden' => 2, 'requerida' => true],
             ['label' => 'subtitulo', 'tipo' => 'area', 'orden' => 3],
-            ['label' => 'boton_texto', 'tipo' => 'texto', 'orden' => 4],
-            ['label' => 'boton_enlace', 'tipo' => 'enlace', 'orden' => 5],
+            ['label' => 'boton', 'tipo' => 'texto', 'orden' => 4],
         ]);
 
         $this->preguntas($ecomer->secciones[1], [
@@ -64,7 +63,7 @@ class PlantillaSeeder extends Seeder
             ['label' => 'titulo', 'tipo' => 'texto', 'orden' => 1],
             ['label' => 'direccion', 'tipo' => 'texto', 'orden' => 2],
             ['label' => 'telefono', 'tipo' => 'texto', 'orden' => 3],
-            ['label' => 'whatsapp', 'tipo' => 'enlace', 'orden' => 4],
+            ['label' => 'whatsapp', 'tipo' => 'texto', 'orden' => 4],
             ['label' => 'color_fondo', 'tipo' => 'color', 'orden' => 5],
         ]);
 
@@ -93,14 +92,13 @@ class PlantillaSeeder extends Seeder
             ['label' => 'portada', 'tipo' => 'imagen', 'orden' => 1, 'requerida' => true],
             ['label' => 'titulo1', 'tipo' => 'texto', 'orden' => 2, 'requerida' => true],
             ['label' => 'subtitulo', 'tipo' => 'area', 'orden' => 3],
-            ['label' => 'boton_texto', 'tipo' => 'texto', 'orden' => 4],
-            ['label' => 'boton_enlace', 'tipo' => 'enlace', 'orden' => 5],
+            ['label' => 'boton', 'tipo' => 'texto', 'orden' => 4],
         ]);
 
         $this->preguntas($landing->secciones[1], [
             ['label' => 'titulo', 'tipo' => 'texto', 'orden' => 1],
             ['label' => 'telefono', 'tipo' => 'texto', 'orden' => 2],
-            ['label' => 'whatsapp', 'tipo' => 'enlace', 'orden' => 3],
+            ['label' => 'whatsapp', 'tipo' => 'texto', 'orden' => 3],
         ]);
 
         $user = User::firstOrCreate(
@@ -127,13 +125,12 @@ class PlantillaSeeder extends Seeder
         $respuestas = [
             'titulo1' => 'Bienvenido a mi tienda',
             'subtitulo' => 'Productos de calidad al mejor precio.',
-            'boton_texto' => 'Ver productos',
-            'boton_enlace' => 'https://ejemplo.com/productos',
+            'boton' => ['valor' => 'Ver productos', 'enlace' => 'https://ejemplo.com/productos'],
             'titulo' => 'Sobre nosotros',
             'descripcion' => 'Somos una tienda familiar con más de 10 años de experiencia.',
             'direccion' => 'Av. Principal 123',
             'telefono' => '+51 999 888 777',
-            'whatsapp' => 'https://wa.me/51999888777',
+            'whatsapp' => ['valor' => 'WhatsApp', 'enlace' => 'https://wa.me/51999888777'],
             'color_fondo' => '#f3f4f6',
         ];
 
@@ -145,9 +142,17 @@ class PlantillaSeeder extends Seeder
                     continue;
                 }
 
+                $valor = is_array($respuestas[$label])
+                    ? $respuestas[$label]['valor']
+                    : $respuestas[$label];
+
+                $enlace = is_array($respuestas[$label])
+                    ? ($respuestas[$label]['enlace'] ?? null)
+                    : null;
+
                 Respuesta::updateOrCreate(
                     ['site_id' => $site->id, 'pregunta_id' => $pregunta->id],
-                    ['valor' => $respuestas[$label]],
+                    ['valor' => $valor, 'enlace' => $enlace],
                 );
             }
         }

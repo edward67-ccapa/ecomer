@@ -49,7 +49,10 @@ class SiteForm
                                     if (blank($get('respuestas'))) {
                                         $set('respuestas', $plantilla?->respuestas
                                             ->mapWithKeys(fn (Respuesta $respuesta): array => [
-                                                $respuesta->pregunta_id => ['valor' => $respuesta->valor],
+                                                $respuesta->pregunta_id => [
+                                                    'valor' => $respuesta->valor,
+                                                    'enlace' => $respuesta->enlace,
+                                                ],
                                             ])
                                             ->all() ?? []);
                                     }

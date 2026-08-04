@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-#[Fillable(['site_id', 'plantilla_id', 'pregunta_id', 'valor'])]
+#[Fillable(['site_id', 'plantilla_id', 'pregunta_id', 'valor', 'enlace'])]
 class Respuesta extends Model
 {
     public function site(): BelongsTo

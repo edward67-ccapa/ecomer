@@ -32,18 +32,23 @@ class SitePageController extends Controller
         abort_unless($seccion instanceof Seccion, 404);
 
         $respuestas = $site->respuestas->mapWithKeys(
-            fn ($respuesta): array => [$respuesta->pregunta_id => $respuesta->valor],
+            fn ($respuesta): array => [$respuesta->pregunta_id => $respuesta],
         );
 
-        $contenido = $seccion->preguntas->map(fn (Pregunta $pregunta): array => [
-            'label' => $pregunta->label,
-            'tipo' => $pregunta->tipo,
-            'valor' => self::valorPublico($pregunta->tipo, $respuestas[$pregunta->id] ?? null),
-        ]);
+        $contenido = $seccion->preguntas->map(function (Pregunta $pregunta) use ($respuestas): array {
+            $respuesta = $respuestas[$pregunta->id] ?? null;
+
+            return [
+                'label' => $pregunta->label,
+                'tipo' => $pregunta->tipo,
+                'valor' => self::valorPublico($pregunta->tipo, $respuesta?->valor),
+                'enlace' => $respuesta?->enlace,
+            ];
+        });
 
         $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
 
-        return Inertia::render('sites/Index', [
+        return Inertia::render(self::paginaPlantilla($site->plantilla->tipo), [
             'site' => [
                 'nombre' => $site->nombre,
                 'imagen' => $site->imagen ? asset('storage/'.$site->imagen) : null,
@@ -74,6 +79,14 @@ class SitePageController extends Controller
             ->where('slug', $site)
             ->whereHas('dominio', fn ($query) => $query->where('nombre', $dominio))
             ->firstOrFail();
+    }
+
+    public static function paginaPlantilla(string $tipo): string
+    {
+        return match ($tipo) {
+            'ecommerce', 'landing_page' => 'sites/Ecomer1/Index',
+            default => 'sites/Index',
+        };
     }
 
     public static function valorPublico(string $tipo, mixed $valor): mixed

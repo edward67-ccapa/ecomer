@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../../../wayfinder'
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 const CreateRole = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ CreateRole.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 CreateRole.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ CreateRole.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 CreateRole.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,8 +34,8 @@ CreateRole.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 CreateRole.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,8 +44,8 @@ CreateRole.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 const CreateRoleForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,8 +54,8 @@ const CreateRoleForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'>
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 CreateRoleForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -64,8 +64,8 @@ CreateRoleForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 CreateRoleForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -22,7 +22,10 @@ class EditSite extends EditRecord
     {
         $data['respuestas'] = $this->record->respuestas
             ->mapWithKeys(fn (Respuesta $respuesta): array => [
-                $respuesta->pregunta_id => ['valor' => $respuesta->valor],
+                $respuesta->pregunta_id => [
+                    'valor' => $respuesta->valor,
+                    'enlace' => $respuesta->enlace,
+                ],
             ])
             ->all();
 
@@ -40,6 +43,7 @@ class EditSite extends EditRecord
 
         foreach ($respuestas as $preguntaId => $item) {
             $valor = $item['valor'] ?? null;
+            $enlace = $item['enlace'] ?? null;
 
             // Si es array, convertir a JSON
             if (is_array($valor)) {
@@ -48,7 +52,7 @@ class EditSite extends EditRecord
 
             Respuesta::updateOrCreate(
                 ['site_id' => $siteId, 'pregunta_id' => $preguntaId],
-                ['valor' => $valor],
+                ['valor' => $valor, 'enlace' => $enlace],
             );
         }
     }

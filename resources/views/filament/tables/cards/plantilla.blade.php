@@ -40,7 +40,7 @@
             </span>
         </div>
 
-        <div class="mt-3 grid grid-cols-2 gap-2">
+        <div class="mt-3 grid grid-cols-1 gap-2">
             <a
                 href="/admin/sites/create?plantilla_id={{ $record->id }}"
                 class="inline-flex items-center justify-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-500"

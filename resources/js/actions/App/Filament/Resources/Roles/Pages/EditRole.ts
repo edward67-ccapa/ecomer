@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 const EditRole = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ EditRole.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 EditRole.url = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -42,8 +42,8 @@ EditRole.url = (args: { record: string | number } | [record: string | number ] |
 }
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 EditRole.get = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -52,8 +52,8 @@ EditRole.get = (args: { record: string | number } | [record: string | number ] |
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 EditRole.head = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -62,8 +62,8 @@ EditRole.head = (args: { record: string | number } | [record: string | number ] 
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 const EditRoleForm = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -72,8 +72,8 @@ const EditRoleForm = (args: { record: string | number } | [record: string | numb
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 EditRoleForm.get = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,8 +82,8 @@ EditRoleForm.get = (args: { record: string | number } | [record: string | number
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 EditRoleForm.head = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

@@ -150,6 +150,136 @@ class FilamentResourceRenderTest extends TestCase
         $this->assertSame(['color_primario' => '#000000'], $plantilla->estilos);
     }
 
+    public function test_eliminar_pregunta_del_estado_quita_su_campo_respuesta(): void
+    {
+        $plantilla = Plantilla::create([
+            'slug' => 'reactiva',
+            'tipo' => 'landing_page',
+            'nombre' => 'Reactiva',
+        ]);
+
+        $seccion = $plantilla->secciones()->create([
+            'slug' => 'inicio',
+            'nombre' => 'Inicio',
+            'orden' => 1,
+        ]);
+
+        $mantenida = $seccion->preguntas()->create([
+            'label' => 'titulo1',
+            'tipo' => 'texto',
+            'orden' => 1,
+        ]);
+
+        $eliminada = $seccion->preguntas()->create([
+            'label' => 'titulo2',
+            'tipo' => 'texto',
+            'orden' => 2,
+        ]);
+
+        Livewire::test(EditPlantilla::class, ['record' => $plantilla->getRouteKey()])
+            ->fillForm([
+                'secciones' => [
+                    [
+                        'id' => $seccion->id,
+                        'nombre' => 'Inicio',
+                        'slug' => 'inicio',
+                        'preguntas' => [
+                            ['id' => $mantenida->id, 'label' => 'titulo1', 'tipo' => 'texto'],
+                        ],
+                    ],
+                ],
+            ])
+            ->assertFormFieldExists('respuestas.'.$mantenida->id.'.valor')
+            ->assertFormFieldDoesNotExist('respuestas.'.$eliminada->id.'.valor');
+    }
+
+    public function test_enlace_de_respuesta_se_guarda(): void
+    {
+        $plantilla = Plantilla::create([
+            'slug' => 'con-enlace',
+            'tipo' => 'landing_page',
+            'nombre' => 'Con enlace',
+        ]);
+
+        $seccion = $plantilla->secciones()->create([
+            'slug' => 'inicio',
+            'nombre' => 'Inicio',
+            'orden' => 1,
+        ]);
+
+        $pregunta = $seccion->preguntas()->create([
+            'label' => 'boton',
+            'tipo' => 'texto',
+            'orden' => 1,
+        ]);
+
+        Livewire::test(EditPlantilla::class, ['record' => $plantilla->getRouteKey()])
+            ->fillForm([
+                'respuestas' => [
+                    $pregunta->id => ['valor' => 'Ver productos', 'enlace' => 'https://ejemplo.com/productos'],
+                ],
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $respuesta = Respuesta::where('plantilla_id', $plantilla->id)
+            ->where('pregunta_id', $pregunta->id)
+            ->first();
+
+        $this->assertNotNull($respuesta);
+        $this->assertSame('Ver productos', $respuesta->valor);
+        $this->assertSame('https://ejemplo.com/productos', $respuesta->enlace);
+    }
+
+    public function test_nueva_pregunta_aparece_en_respuestas_despues_de_guardar(): void
+    {
+        $plantilla = Plantilla::create([
+            'slug' => 'con-nueva',
+            'tipo' => 'landing_page',
+            'nombre' => 'Con nueva',
+        ]);
+
+        $seccion = $plantilla->secciones()->create([
+            'slug' => 'inicio',
+            'nombre' => 'Inicio',
+            'orden' => 1,
+        ]);
+
+        $pregunta = $seccion->preguntas()->create([
+            'label' => 'titulo1',
+            'tipo' => 'texto',
+            'orden' => 1,
+        ]);
+
+        $component = Livewire::test(EditPlantilla::class, ['record' => $plantilla->getRouteKey()]);
+
+        $component
+            ->fillForm([
+                'secciones' => [
+                    'record-'.$seccion->id => [
+                        'id' => $seccion->id,
+                        'nombre' => 'Inicio',
+                        'slug' => 'inicio',
+                        'orden' => 1,
+                        'activa' => true,
+                        'preguntas' => [
+                            'record-'.$pregunta->id => ['id' => $pregunta->id, 'label' => 'titulo1', 'tipo' => 'texto', 'orden' => 1],
+                            ['label' => 'nueva_pregunta', 'tipo' => 'texto', 'orden' => 2],
+                        ],
+                    ],
+                ],
+            ])
+            ->call('save')
+            ->assertHasNoFormErrors();
+
+        $preguntaNueva = $seccion->refresh()->preguntas()->where('label', 'nueva_pregunta')->first();
+
+        $this->assertNotNull($preguntaNueva);
+
+        Livewire::test(EditPlantilla::class, ['record' => $plantilla->getRouteKey()])
+            ->assertFormFieldExists('respuestas.'.$preguntaNueva->id.'.valor');
+    }
+
     public function test_site_pages_render(): void
     {
         Livewire::test(ListSites::class)->assertOk();
@@ -447,5 +577,67 @@ class FilamentResourceRenderTest extends TestCase
 
         $this->assertSame('Mi tienda editada', $site->refresh()->nombre);
         $this->assertSame('Editado', Respuesta::where('site_id', $site->id)->where('pregunta_id', $pregunta->id)->value('valor'));
+    }
+
+    public function test_preguntas_se_reordenan_por_orden_al_escribir(): void
+    {
+        $plantilla = Plantilla::create([
+            'slug' => 'con-orden',
+            'tipo' => 'landing_page',
+            'nombre' => 'Con orden',
+        ]);
+
+        $seccion = $plantilla->secciones()->create([
+            'slug' => 'inicio',
+            'nombre' => 'Inicio',
+            'orden' => 1,
+        ]);
+
+        $preguntas = collect();
+        foreach (['portada', 'titulo1', 'subtitulo', 'boton'] as $i => $label) {
+            $preguntas->push($seccion->preguntas()->create([
+                'label' => $label,
+                'tipo' => 'texto',
+                'orden' => $i + 1,
+            ]));
+        }
+
+        $existing = $preguntas->mapWithKeys(fn ($q): array => ['record-'.$q->id => [
+            'id' => $q->id,
+            'label' => $q->label,
+            'tipo' => 'texto',
+            'orden' => $q->orden,
+        ]])->all();
+
+        $component = Livewire::test(EditPlantilla::class, ['record' => $plantilla->getRouteKey()]);
+
+        $component
+            ->fillForm([
+                'secciones' => [
+                    'record-'.$seccion->id => [
+                        'id' => $seccion->id,
+                        'nombre' => 'Inicio',
+                        'slug' => 'inicio',
+                        'orden' => 1,
+                        'activa' => true,
+                        'preguntas' => $existing + [
+                            ['label' => 'nueva', 'tipo' => 'texto', 'orden' => 5],
+                        ],
+                    ],
+                ],
+            ]);
+
+        $preguntasState = $component->getForm()->getState()['secciones'];
+        $preguntasActuales = reset($preguntasState)['preguntas'];
+
+        $this->assertSame([$preguntas->get(0)->id, $preguntas->get(1)->id, $preguntas->get(2)->id, $preguntas->get(3)->id, 0], array_keys($preguntasActuales), 'la nueva pregunta debe estar al final');
+
+        $component
+            ->set('secciones.record-'.$seccion->id.'.preguntas.0.orden', 1);
+
+        $preguntasState = $component->getForm()->getState()['secciones'];
+        $preguntasActuales = reset($preguntasState)['preguntas'];
+
+        $this->assertSame([0, $preguntas->get(0)->id, $preguntas->get(1)->id, $preguntas->get(2)->id, $preguntas->get(3)->id], array_keys($preguntasActuales), 'con orden 1 la nueva pregunta debe quedar primera');
     }
 }

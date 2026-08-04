@@ -27,7 +27,10 @@ class CreateSite extends CreateRecord
                     'estilos' => $plantilla->estilos,
                     'respuestas' => $plantilla->respuestas
                         ->mapWithKeys(fn (Respuesta $respuesta): array => [
-                            $respuesta->pregunta_id => ['valor' => $respuesta->valor],
+                            $respuesta->pregunta_id => [
+                                'valor' => $respuesta->valor,
+                                'enlace' => $respuesta->enlace,
+                            ],
                         ])
                         ->all(),
                 ]);
@@ -46,6 +49,7 @@ class CreateSite extends CreateRecord
                     'site_id' => $this->record->id,
                     'pregunta_id' => $respuesta->pregunta_id,
                     'valor' => $respuesta->valor,
+                    'enlace' => $respuesta->enlace,
                 ]);
             }
         }
@@ -60,6 +64,7 @@ class CreateSite extends CreateRecord
 
         foreach ($respuestas as $preguntaId => $item) {
             $valor = $item['valor'] ?? null;
+            $enlace = $item['enlace'] ?? null;
 
             // Si es array, convertir a JSON
             if (is_array($valor)) {
@@ -68,7 +73,7 @@ class CreateSite extends CreateRecord
 
             Respuesta::updateOrCreate(
                 ['site_id' => $siteId, 'pregunta_id' => $preguntaId],
-                ['valor' => $valor],
+                ['valor' => $valor, 'enlace' => $enlace],
             );
         }
     }

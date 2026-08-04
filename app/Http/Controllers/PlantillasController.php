@@ -53,16 +53,21 @@ class PlantillasController extends Controller
         abort_unless($seccionModel instanceof Seccion, 404);
 
         $respuestas = $plantilla->respuestas->mapWithKeys(
-            fn (Respuesta $respuesta): array => [$respuesta->pregunta_id => $respuesta->valor],
+            fn (Respuesta $respuesta): array => [$respuesta->pregunta_id => $respuesta],
         );
 
-        $contenido = $seccionModel->preguntas->map(fn (Pregunta $pregunta): array => [
-            'label' => $pregunta->label,
-            'tipo' => $pregunta->tipo,
-            'valor' => SitePageController::valorPublico($pregunta->tipo, $respuestas[$pregunta->id] ?? null),
-        ]);
+        $contenido = $seccionModel->preguntas->map(function (Pregunta $pregunta) use ($respuestas): array {
+            $respuesta = $respuestas[$pregunta->id] ?? null;
 
-        return Inertia::render('sites/Index', [
+            return [
+                'label' => $pregunta->label,
+                'tipo' => $pregunta->tipo,
+                'valor' => SitePageController::valorPublico($pregunta->tipo, $respuesta?->valor),
+                'enlace' => $respuesta?->enlace,
+            ];
+        });
+
+        return Inertia::render(SitePageController::paginaPlantilla($plantilla->tipo), [
             'site' => [
                 'nombre' => $plantilla->nombre,
                 'imagen' => $plantilla->imagen ? asset('storage/'.$plantilla->imagen) : null,

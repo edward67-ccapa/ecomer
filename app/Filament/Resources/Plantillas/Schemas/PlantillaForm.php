@@ -107,6 +107,7 @@ class PlantillaForm
                             ->relationship()
                             ->label('Secciones de la plantilla')
                             ->reorderableWithDragAndDrop()
+                            ->live()
                             ->grid(['default' => 1, 'md' => 2])
                             ->schema([
                                 Grid::make(4)->schema([
@@ -125,7 +126,7 @@ class PlantillaForm
                                 Repeater::make('preguntas')
                                     ->relationship()
                                     ->label('Preguntas')
-                                    ->reorderableWithDragAndDrop()
+                                    ->live()
                                     ->schema([
                                         Grid::make(5)->schema([
                                             TextInput::make('label')
@@ -138,7 +139,22 @@ class PlantillaForm
                                                 ->default('texto'),
                                             TextInput::make('orden')
                                                 ->numeric()
-                                                ->default(0),
+                                                ->default(0)
+                                                ->afterStateUpdated(function (TextInput $component): void {
+                                                    $repeater = $component->getParentRepeater();
+
+                                                    if (! $repeater instanceof Repeater) {
+                                                        return;
+                                                    }
+
+                                                    $items = $repeater->getRawState();
+
+                                                    uasort($items, static fn (array $a, array $b): int => ($a['orden'] ?? 0) <=> ($b['orden'] ?? 0));
+
+                                                    $repeater->rawState($items);
+
+                                                    $repeater->callAfterStateUpdated();
+                                                }),
                                             Toggle::make('requerida')
                                                 ->default(false),
                                             Textarea::make('ayuda')
@@ -152,7 +168,7 @@ class PlantillaForm
 
                 Section::make('Contenido')
                     ->icon('heroicon-o-document-text')
-                    ->description('Valores por defecto que copiarán los sites creados con esta plantilla.')
+                    ->description('Valores por defecto que copiarán los sites creados con esta plantilla. Las preguntas nuevas aparecen aquí después de guardar la plantilla.')
                     ->columnSpanFull()
                     ->visible(fn (Get $get): bool => filled($get('id')))
                     ->schema(fn (Get $get): array => self::respuestasFieldsFromState($get)),
@@ -186,45 +202,95 @@ class PlantillaForm
      */
     private static function respuestasFieldsFromState(Get $get): array
     {
-        $plantillaId = $get('id');
+        $components = [];
 
-        if (blank($plantillaId)) {
-            return [];
+        foreach ($get('secciones') ?? [] as $seccion) {
+            $fields = [];
+
+            foreach ($seccion['preguntas'] ?? [] as $pregunta) {
+                $id = $pregunta['id'] ?? null;
+
+                if (! $id) {
+                    continue;
+                }
+
+                $modelo = new Pregunta;
+                $modelo->forceFill([
+                    'id' => $id,
+                    'label' => $pregunta['label'] ?? '',
+                    'tipo' => $pregunta['tipo'] ?? 'texto',
+                    'ayuda' => $pregunta['ayuda'] ?? null,
+                    'requerida' => (bool) ($pregunta['requerida'] ?? false),
+                ]);
+
+                $fields[] = self::campoRespuesta($modelo);
+            }
+
+            if ($fields) {
+                $components[] = Section::make($seccion['nombre'])
+                    ->schema($fields)
+                    ->columns(2);
+            }
         }
 
-        $plantilla = Plantilla::with('secciones.preguntas')->find($plantillaId);
-
-        if (! $plantilla) {
-            return [];
-        }
-
-        return self::respuestasFields($plantilla);
+        return $components;
     }
 
-    private static function campoRespuesta(Pregunta $pregunta): Component
-    {
-        $statePath = "respuestas.{$pregunta->id}.valor";
+  private static function campoRespuesta(Pregunta $pregunta): Component
+{
+    $statePath = "respuestas.{$pregunta->id}.valor";
+    $linkPath = "respuestas.{$pregunta->id}.enlace";
 
-        $field = match ($pregunta->tipo) {
-            'area' => Textarea::make($statePath)->rows(3),
-            'imagen' => FileUpload::make($statePath)
-                ->image()
-                ->imageEditor()
-                ->directory('sites/contenido'),
-            'galeria' => FileUpload::make($statePath)
-                ->image()
-                ->multiple()
-                ->directory('sites/contenido'),
-            'color' => ColorPicker::make($statePath),
-            'enlace' => TextInput::make($statePath)->url(),
-            default => TextInput::make($statePath),
-        };
+    // Construir el campo principal
+    $field = match ($pregunta->tipo) {
+        'area' => Textarea::make($statePath)
+            ->rows(3)
+            ->placeholder('Escribe el contenido aquí...'),
+            
+        'imagen' => FileUpload::make($statePath)
+            ->image()
+            ->imageEditor()
+            ->directory('sites/contenido')
+            ->helperText('Formatos: JPG, PNG, WebP'),
+            
+        'galeria' => FileUpload::make($statePath)
+            ->image()
+            ->multiple()
+            ->directory('sites/contenido')
+            ->helperText('Puedes subir múltiples imágenes'),
+            
+        'color' => ColorPicker::make($statePath)
+            ->helperText('Selecciona un color'),
+            
+        'enlace' => TextInput::make($statePath)
+            ->url()
+            ->placeholder('https://ejemplo.com'),
+            
+        default => TextInput::make($statePath)
+            ->placeholder('Ingresa el valor...'),
+    };
 
-        return $field
-            ->label($pregunta->label)
-            ->helperText($pregunta->ayuda)
-            ->required($pregunta->requerida);
-    }
+    // Aplicar propiedades comunes
+    $field = $field
+        ->label($pregunta->label)
+        ->helperText($pregunta->ayuda)
+        ->required($pregunta->requerida);
+
+    // Retornar con disposición vertical (uno debajo del otro)
+    return Grid::make(1) // Una sola columna = disposición vertical
+        ->schema([
+            // Campo principal (arriba)
+            $field,
+            
+            // Enlace opcional (abajo)
+            TextInput::make($linkPath)
+                ->label('🔗 Enlace (opcional)')
+                ->url()
+                ->placeholder('https://...')
+                ->helperText('Asocia una URL a este contenido'),
+        ])
+        ->gap(4); // Espaciado entre campos
+}
 
     /**
      * @return array<string, string>
@@ -237,7 +303,6 @@ class PlantillaForm
             'imagen' => 'Imagen',
             'galeria' => 'Galería',
             'color' => 'Color',
-            'enlace' => 'Enlace',
         ];
     }
 

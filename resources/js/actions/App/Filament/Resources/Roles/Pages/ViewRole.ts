@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 const ViewRole = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ ViewRole.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 ViewRole.url = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -42,8 +42,8 @@ ViewRole.url = (args: { record: string | number } | [record: string | number ] |
 }
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 ViewRole.get = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -52,8 +52,8 @@ ViewRole.get = (args: { record: string | number } | [record: string | number ] |
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 ViewRole.head = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -62,8 +62,8 @@ ViewRole.head = (args: { record: string | number } | [record: string | number ] 
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 const ViewRoleForm = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -72,8 +72,8 @@ const ViewRoleForm = (args: { record: string | number } | [record: string | numb
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 ViewRoleForm.get = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -82,8 +82,8 @@ ViewRoleForm.get = (args: { record: string | number } | [record: string | number
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 ViewRoleForm.head = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

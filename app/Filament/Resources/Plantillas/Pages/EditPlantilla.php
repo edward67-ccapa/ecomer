@@ -22,7 +22,10 @@ class EditPlantilla extends EditRecord
     {
         $data['respuestas'] = $this->record->respuestas
             ->mapWithKeys(fn (Respuesta $respuesta): array => [
-                $respuesta->pregunta_id => ['valor' => $respuesta->valor],
+                $respuesta->pregunta_id => [
+                    'valor' => $respuesta->valor,
+                    'enlace' => $respuesta->enlace,
+                ],
             ])
             ->all();
 
@@ -40,6 +43,7 @@ class EditPlantilla extends EditRecord
 
         foreach ($respuestas as $preguntaId => $item) {
             $valor = $item['valor'] ?? null;
+            $enlace = $item['enlace'] ?? null;
 
             if (is_array($valor)) {
                 $valor = json_encode($valor);
@@ -47,7 +51,7 @@ class EditPlantilla extends EditRecord
 
             Respuesta::updateOrCreate(
                 ['plantilla_id' => $this->record->id, 'pregunta_id' => $preguntaId],
-                ['site_id' => null, 'valor' => $valor],
+                ['site_id' => null, 'valor' => $valor, 'enlace' => $enlace],
             );
         }
     }

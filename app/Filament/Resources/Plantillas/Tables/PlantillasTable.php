@@ -46,11 +46,9 @@ class PlantillasTable
 
     private static function clonar(Plantilla $plantilla): void
     {
-        $copia = $plantilla->replicate([
-            'slug',
-            'nombre',
-            'secciones',
-        ]);
+        $copia = new Plantilla(
+            $plantilla->only(['tipo', 'descripcion', 'imagen', 'estilos', 'activa']),
+        );
 
         $copia->slug = Str::slug($plantilla->slug.'-copia');
         $copia->nombre = $plantilla->nombre.' (copia)';

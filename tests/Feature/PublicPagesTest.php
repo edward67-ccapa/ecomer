@@ -63,7 +63,7 @@ class PublicPagesTest extends TestCase
         $this->get("/{$dominio->nombre}/{$site->slug}/inicio")
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('sites/Index')
+                ->component('sites/Ecomer1/Index')
                 ->where('site.nombre', 'Mi tienda')
                 ->where('seccionActiva.slug', 'inicio')
                 ->where('seccionActiva.contenido.0.valor', 'Hola mundo'));
@@ -84,7 +84,7 @@ class PublicPagesTest extends TestCase
         $this->get("/plantillas/{$plantilla->slug}")
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('sites/Index')
+                ->component('sites/Ecomer1/Index')
                 ->where('site.nombre', $plantilla->nombre)
                 ->where('seccionActiva.slug', 'inicio')
                 ->where('seccionActiva.contenido.0.valor', 'Luciana'));
@@ -92,7 +92,7 @@ class PublicPagesTest extends TestCase
         $this->get("/plantillas/{$plantilla->slug}/inicio")
             ->assertOk()
             ->assertInertia(fn ($page) => $page
-                ->component('sites/Index')
+                ->component('sites/Ecomer1/Index')
                 ->where('seccionActiva.contenido.0.valor', 'Luciana'));
     }
 

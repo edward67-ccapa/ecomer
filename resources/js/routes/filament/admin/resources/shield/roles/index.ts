@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../../../../../wayfinder'
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ListRoles::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ListRoles.php:7
+* @see \App\Filament\Resources\Roles\Pages\ListRoles::__invoke
+* @see app/Filament/Resources/Roles/Pages/ListRoles.php:7
 * @route '/admin/shield/roles'
 */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ index.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ListRoles::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ListRoles.php:7
+* @see \App\Filament\Resources\Roles\Pages\ListRoles::__invoke
+* @see app/Filament/Resources/Roles/Pages/ListRoles.php:7
 * @route '/admin/shield/roles'
 */
 index.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ index.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ListRoles::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ListRoles.php:7
+* @see \App\Filament\Resources\Roles\Pages\ListRoles::__invoke
+* @see app/Filament/Resources/Roles/Pages/ListRoles.php:7
 * @route '/admin/shield/roles'
 */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,8 +34,8 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ListRoles::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ListRoles.php:7
+* @see \App\Filament\Resources\Roles\Pages\ListRoles::__invoke
+* @see app/Filament/Resources/Roles/Pages/ListRoles.php:7
 * @route '/admin/shield/roles'
 */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,8 +44,8 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ListRoles::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ListRoles.php:7
+* @see \App\Filament\Resources\Roles\Pages\ListRoles::__invoke
+* @see app/Filament/Resources/Roles/Pages/ListRoles.php:7
 * @route '/admin/shield/roles'
 */
 const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,8 +54,8 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ListRoles::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ListRoles.php:7
+* @see \App\Filament\Resources\Roles\Pages\ListRoles::__invoke
+* @see app/Filament/Resources/Roles/Pages/ListRoles.php:7
 * @route '/admin/shield/roles'
 */
 indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -64,8 +64,8 @@ indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ListRoles::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ListRoles.php:7
+* @see \App\Filament\Resources\Roles\Pages\ListRoles::__invoke
+* @see app/Filament/Resources/Roles/Pages/ListRoles.php:7
 * @route '/admin/shield/roles'
 */
 indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -81,8 +81,8 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 export const create = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -96,8 +96,8 @@ create.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 create.url = (options?: RouteQueryOptions) => {
@@ -105,8 +105,8 @@ create.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -115,8 +115,8 @@ create.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -125,8 +125,8 @@ create.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -135,8 +135,8 @@ const createForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => 
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -145,8 +145,8 @@ createForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\CreateRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/CreateRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\CreateRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/CreateRole.php:7
 * @route '/admin/shield/roles/create'
 */
 createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -162,8 +162,8 @@ createForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 create.form = createForm
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 export const view = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -177,8 +177,8 @@ view.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 view.url = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -204,8 +204,8 @@ view.url = (args: { record: string | number } | [record: string | number ] | str
 }
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 view.get = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -214,8 +214,8 @@ view.get = (args: { record: string | number } | [record: string | number ] | str
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 view.head = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -224,8 +224,8 @@ view.head = (args: { record: string | number } | [record: string | number ] | st
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 const viewForm = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -234,8 +234,8 @@ const viewForm = (args: { record: string | number } | [record: string | number ]
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 viewForm.get = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -244,8 +244,8 @@ viewForm.get = (args: { record: string | number } | [record: string | number ] |
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\ViewRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/ViewRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\ViewRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/ViewRole.php:7
 * @route '/admin/shield/roles/{record}'
 */
 viewForm.head = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -261,8 +261,8 @@ viewForm.head = (args: { record: string | number } | [record: string | number ] 
 view.form = viewForm
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 export const edit = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -276,8 +276,8 @@ edit.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 edit.url = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions) => {
@@ -303,8 +303,8 @@ edit.url = (args: { record: string | number } | [record: string | number ] | str
 }
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 edit.get = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -313,8 +313,8 @@ edit.get = (args: { record: string | number } | [record: string | number ] | str
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 edit.head = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -323,8 +323,8 @@ edit.head = (args: { record: string | number } | [record: string | number ] | st
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 const editForm = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -333,8 +333,8 @@ const editForm = (args: { record: string | number } | [record: string | number ]
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 editForm.get = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -343,8 +343,8 @@ editForm.get = (args: { record: string | number } | [record: string | number ] |
 })
 
 /**
-* @see \BezhanSalleh\FilamentShield\Resources\Roles\Pages\EditRole::__invoke
-* @see vendor/bezhansalleh/filament-shield/src/Resources/Roles/Pages/EditRole.php:7
+* @see \App\Filament\Resources\Roles\Pages\EditRole::__invoke
+* @see app/Filament/Resources/Roles/Pages/EditRole.php:7
 * @route '/admin/shield/roles/{record}/edit'
 */
 editForm.head = (args: { record: string | number } | [record: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
