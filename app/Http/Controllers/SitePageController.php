@@ -35,16 +35,7 @@ class SitePageController extends Controller
             fn ($respuesta): array => [$respuesta->pregunta_id => $respuesta],
         );
 
-        $contenido = $seccion->preguntas->map(function (Pregunta $pregunta) use ($respuestas): array {
-            $respuesta = $respuestas[$pregunta->id] ?? null;
-
-            return [
-                'label' => $pregunta->label,
-                'tipo' => $pregunta->tipo,
-                'valor' => self::valorPublico($pregunta->tipo, $respuesta?->valor),
-                'enlace' => $respuesta?->enlace,
-            ];
-        });
+        $contenido = self::formatearPreguntas($seccion->preguntas, $respuestas);
 
         $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
 
@@ -89,16 +80,57 @@ class SitePageController extends Controller
         };
     }
 
+    public static function formatearPreguntas($preguntas, $respuestas): array
+    {
+        return $preguntas->whereNull('parent_id')->map(function (Pregunta $pregunta) use ($preguntas, $respuestas): array {
+            $respuesta = $respuestas[$pregunta->id] ?? null;
+
+            $data = [
+                'label' => $pregunta->label,
+                'tipo' => $pregunta->tipo,
+                'estructura' => $pregunta->estructura ?? 'objeto',
+                'max_items' => $pregunta->max_items,
+                'valor' => self::valorPublico($pregunta->tipo, $respuesta?->valor),
+                'enlace' => $respuesta?->enlace,
+            ];
+
+            if ($pregunta->tipo === 'grupo') {
+                $data['plantilla_campos'] = $preguntas->where('parent_id', $pregunta->id)->map(function ($child) {
+                    return [
+                        'label' => $child->label,
+                        'tipo' => $child->tipo,
+                        'valor' => null,
+                    ];
+                })->values()->toArray();
+            }
+
+            return $data;
+        })->values()->toArray();
+    }
+
     public static function valorPublico(string $tipo, mixed $valor): mixed
     {
         if (is_null($valor)) {
             return null;
         }
 
+        if (is_string($valor) && is_array($decoded = json_decode($valor, true))) {
+            $valor = $decoded;
+        }
+
+        if ($tipo === 'grupo' && is_array($valor)) {
+            return array_map(function ($grupo) {
+                return array_map(function ($campo) {
+                    $campo['valor'] = self::valorPublico($campo['tipo'] ?? 'texto', $campo['valor'] ?? null);
+                    return $campo;
+                }, $grupo);
+            }, $valor);
+        }
+
         $rutas = is_array($valor) ? $valor : [$valor];
 
         return match ($tipo) {
-            'imagen' => Storage::disk('public')->url($rutas[0]),
+            'imagen' => Storage::disk('public')->url($rutas[0] ?? ''),
             'galeria' => array_map(
                 fn (string $ruta): string => Storage::disk('public')->url($ruta),
                 $rutas,

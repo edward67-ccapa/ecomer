@@ -128,7 +128,7 @@ class PlantillaForm
                                     ->label('Preguntas')
                                     ->live()
                                     ->schema([
-                                        Grid::make(5)->schema([
+                                        Grid::make(7)->schema([
                                             TextInput::make('label')
                                                 ->required()
                                                 ->maxLength(255)
@@ -136,7 +136,21 @@ class PlantillaForm
                                             Select::make('tipo')
                                                 ->options(self::tiposPregunta())
                                                 ->required()
+                                                ->live()
                                                 ->default('texto'),
+                                            Select::make('estructura')
+                                                ->options([
+                                                    'objeto' => 'Objeto (Valor único)',
+                                                    'array' => 'Array (Múltiple/Repetible)',
+                                                ])
+                                                ->default('objeto')
+                                                ->live()
+                                                ->required(),
+                                            TextInput::make('max_items')
+                                                ->numeric()
+                                                ->label('Límite')
+                                                ->placeholder('Infinito')
+                                                ->visible(fn (Get $get): bool => $get('estructura') === 'array'),
                                             TextInput::make('orden')
                                                 ->numeric()
                                                 ->default(0)
@@ -161,6 +175,37 @@ class PlantillaForm
                                                 ->rows(1)
                                                 ->columnSpanFull(),
                                         ]),
+                                        Repeater::make('children')
+                                            ->relationship()
+                                            ->label('Campos del Conjunto (Plantilla Base)')
+                                            ->visible(fn (Get $get): bool => $get('tipo') === 'grupo')
+                                            ->schema([
+                                                Grid::make(5)->schema([
+                                                    TextInput::make('label')
+                                                        ->required()
+                                                        ->maxLength(255),
+                                                    Select::make('tipo')
+                                                        ->options(self::tiposPregunta())
+                                                        ->required()
+                                                        ->default('texto'),
+                                                    Select::make('estructura')
+                                                        ->options([
+                                                            'objeto' => 'Objeto',
+                                                            'array' => 'Array',
+                                                        ])
+                                                        ->default('objeto')
+                                                        ->required(),
+                                                    TextInput::make('orden')
+                                                        ->numeric()
+                                                        ->default(0),
+                                                    Toggle::make('requerida')
+                                                        ->default(false),
+                                                ]),
+                                            ])
+                                            ->itemLabel(fn (array $state): ?string => $state['label'] ?? null)
+                                            ->reorderableWithDragAndDrop()
+                                            ->collapsible()
+                                            ->columns(1),
                                     ])
                                     ->columns(1),
                             ]),
@@ -303,6 +348,7 @@ class PlantillaForm
             'imagen' => 'Imagen',
             'galeria' => 'Galería',
             'color' => 'Color',
+            'grupo' => 'Grupo (Conjunto)',
         ];
     }
 

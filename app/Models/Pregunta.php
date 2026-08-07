@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['seccion_id', 'label', 'tipo', 'orden', 'requerida', 'ayuda'])]
+#[Fillable(['seccion_id', 'label', 'tipo', 'orden', 'requerida', 'ayuda', 'parent_id', 'estructura', 'max_items'])]
 class Pregunta extends Model
 {
     public function seccion(): BelongsTo
@@ -18,6 +18,16 @@ class Pregunta extends Model
     public function respuestas(): HasMany
     {
         return $this->hasMany(Respuesta::class);
+    }
+
+    public function parent(): BelongsTo
+    {
+        return $this->belongsTo(Pregunta::class, 'parent_id');
+    }
+
+    public function children(): HasMany
+    {
+        return $this->hasMany(Pregunta::class, 'parent_id')->orderBy('orden');
     }
 
     /**
