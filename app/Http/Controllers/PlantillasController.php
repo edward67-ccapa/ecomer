@@ -56,16 +56,7 @@ class PlantillasController extends Controller
             fn (Respuesta $respuesta): array => [$respuesta->pregunta_id => $respuesta],
         );
 
-        $contenido = $seccionModel->preguntas->map(function (Pregunta $pregunta) use ($respuestas): array {
-            $respuesta = $respuestas[$pregunta->id] ?? null;
-
-            return [
-                'label' => $pregunta->label,
-                'tipo' => $pregunta->tipo,
-                'valor' => SitePageController::valorPublico($pregunta->tipo, $respuesta?->valor),
-                'enlace' => $respuesta?->enlace,
-            ];
-        });
+        $contenido = SitePageController::formatearPreguntas($seccionModel->preguntas, $respuestas);
 
         return Inertia::render(SitePageController::paginaPlantilla($plantilla->tipo), [
             'site' => [
