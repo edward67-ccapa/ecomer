@@ -37,7 +37,7 @@ class SiteForm
                                 ->live(),
                             Select::make('plantilla_id')
                                 ->label('Plantilla')
-                                ->options(fn () => Plantilla::where('activa', true)->pluck('nombre', 'id'))
+                                ->options(fn () => Plantilla::where('activa', true)->get()->pluck('nombre_con_tipo', 'id'))
                                 ->required()
                                 ->searchable()
                                 ->live()

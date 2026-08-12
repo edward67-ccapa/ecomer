@@ -83,7 +83,9 @@ class SitePageController extends Controller
         }
 
         return match ($tipo) {
-            'ecommerce', 'landing_page' => 'sites/Ecomer1/Index',
+            'ecommerce' => 'sites/Ecomer1/Index',
+            'landing_page' => 'sites/Corporativa/Index',
+            'anuncio' => 'sites/Anuncio/Index',
             default => 'sites/Index',
         };
     }

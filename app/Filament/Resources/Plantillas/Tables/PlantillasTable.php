@@ -30,7 +30,13 @@ class PlantillasTable
             ->modifyQueryUsing(fn (Builder $query) => $query
                 ->withCount('secciones'))
             ->filters([
-                //
+                \Filament\Tables\Filters\SelectFilter::make('tipo')
+                    ->label('Tipo de plantilla')
+                    ->options([
+                        'ecommerce' => 'Ecommerce',
+                        'landing_page' => 'Landing Page',
+                        'anuncio' => 'Anuncio / Promoción',
+                    ]),
             ])
             ->recordActions([
                 EditAction::make(),

@@ -41,6 +41,7 @@ class PlantillaForm
                                         ->options([
                                             'ecommerce' => 'Ecommerce',
                                             'landing_page' => 'Landing Page',
+                                            'anuncio' => 'Anuncio / Promoción',
                                         ])
                                         ->default('ecommerce')
                                         ->required(),

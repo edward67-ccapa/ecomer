@@ -52,4 +52,17 @@ class Plantilla extends Model
             ? null
             : json_encode(array_filter($value, static fn (mixed $item): bool => $item !== null));
     }
+
+    public function getNombreConTipoAttribute(): string
+    {
+        $tipos = [
+            'ecommerce' => 'Ecommerce',
+            'landing_page' => 'Landing Page',
+            'anuncio' => 'Anuncio / Promoción',
+        ];
+
+        $tipoNombre = $tipos[$this->tipo] ?? $this->tipo;
+
+        return "{$this->nombre} ({$tipoNombre})";
+    }
 }
