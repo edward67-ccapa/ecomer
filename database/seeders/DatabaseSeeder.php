@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(PlantillaSeeder::class);
+        $this->call(PlantillaEjemploSeeder::class);
         $this->call(TiendaSeeder::class);
         $this->call(ColoresTallasSeeder::class);
     }

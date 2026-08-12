@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Plantilla;
 use App\Models\Pregunta;
 use App\Models\Seccion;
 use App\Models\Site;
@@ -31,15 +32,15 @@ class SitePageController extends Controller
 
         abort_unless($seccion instanceof Seccion, 404);
 
-        $respuestas = $site->respuestas->mapWithKeys(
-            fn ($respuesta): array => [$respuesta->pregunta_id => $respuesta],
-        );
+        $respuestas = $site->plantilla->respuestas
+            ->concat($site->respuestas)
+            ->keyBy('pregunta_id');
 
         $contenido = self::formatearPreguntas($seccion->preguntas, $respuestas);
 
         $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
 
-        return Inertia::render(self::paginaPlantilla($site->plantilla->tipo), [
+        return Inertia::render(self::paginaPlantilla($site->plantilla), [
             'site' => [
                 'nombre' => $site->nombre,
                 'imagen' => $site->imagen ? asset('storage/'.$site->imagen) : null,
@@ -72,8 +73,15 @@ class SitePageController extends Controller
             ->firstOrFail();
     }
 
-    public static function paginaPlantilla(string $tipo): string
+    public static function paginaPlantilla(Plantilla|string $plantillaOrTipo): string
     {
+        $slug = $plantillaOrTipo instanceof Plantilla ? $plantillaOrTipo->slug : null;
+        $tipo = $plantillaOrTipo instanceof Plantilla ? $plantillaOrTipo->tipo : $plantillaOrTipo;
+
+        if ($slug === 'plantilla-corporativa') {
+            return 'sites/Corporativa/Index';
+        }
+
         return match ($tipo) {
             'ecommerce', 'landing_page' => 'sites/Ecomer1/Index',
             default => 'sites/Index',
@@ -90,7 +98,7 @@ class SitePageController extends Controller
                 'tipo' => $pregunta->tipo,
                 'estructura' => $pregunta->estructura ?? 'objeto',
                 'max_items' => $pregunta->max_items,
-                'valor' => self::valorPublico($pregunta->tipo, $respuesta?->valor),
+                'valor' => self::valorPublico($pregunta->tipo, $respuesta?->valor, $preguntas->where('parent_id', $pregunta->id)),
                 'enlace' => $respuesta?->enlace,
             ];
 
@@ -108,7 +116,7 @@ class SitePageController extends Controller
         })->values()->toArray();
     }
 
-    public static function valorPublico(string $tipo, mixed $valor): mixed
+    public static function valorPublico(string $tipo, mixed $valor, $children = null): mixed
     {
         if (is_null($valor)) {
             return null;
@@ -119,23 +127,43 @@ class SitePageController extends Controller
         }
 
         if ($tipo === 'grupo' && is_array($valor)) {
-            return array_map(function ($grupo) {
-                return array_map(function ($campo) {
-                    $campo['valor'] = self::valorPublico($campo['tipo'] ?? 'texto', $campo['valor'] ?? null);
-                    return $campo;
-                }, $grupo);
+            $childrenMap = $children ? $children->keyBy('label') : collect();
+
+            return array_map(function ($item) use ($childrenMap) {
+                if (! is_array($item)) {
+                    return $item;
+                }
+
+                // Normalizar si viene en formato antiguo [[{"label": "x", "valor": "y"}]]
+                if (isset($item[0]) && is_array($item[0]) && isset($item[0]['label'])) {
+                    $normalized = [];
+                    foreach ($item as $campo) {
+                        if (isset($campo['label'])) {
+                            $normalized[$campo['label']] = $campo['valor'] ?? null;
+                        }
+                    }
+                    $item = $normalized;
+                }
+
+                // Formatear cada campo del objeto (por ejemplo URLs de imágenes)
+                $formattedItem = [];
+                foreach ($item as $key => $val) {
+                    $childPregunta = $childrenMap[$key] ?? null;
+                    $childTipo = $childPregunta ? $childPregunta->tipo : 'texto';
+
+                    $formattedItem[$key] = self::valorPublico($childTipo, $val);
+                }
+
+                return $formattedItem;
             }, $valor);
         }
 
-        $rutas = is_array($valor) ? $valor : [$valor];
+        if ($tipo === 'imagen' || $tipo === 'galeria') {
+            return is_array($valor)
+                ? array_map(fn (string $ruta): string => Storage::disk('public')->url($ruta), $valor)
+                : Storage::disk('public')->url((string) $valor);
+        }
 
-        return match ($tipo) {
-            'imagen' => Storage::disk('public')->url($rutas[0] ?? ''),
-            'galeria' => array_map(
-                fn (string $ruta): string => Storage::disk('public')->url($ruta),
-                $rutas,
-            ),
-            default => $valor,
-        };
+        return $valor;
     }
 }

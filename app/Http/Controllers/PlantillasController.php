@@ -52,13 +52,11 @@ class PlantillasController extends Controller
 
         abort_unless($seccionModel instanceof Seccion, 404);
 
-        $respuestas = $plantilla->respuestas->mapWithKeys(
-            fn (Respuesta $respuesta): array => [$respuesta->pregunta_id => $respuesta],
-        );
+        $respuestas = $plantilla->respuestas->keyBy('pregunta_id');
 
         $contenido = SitePageController::formatearPreguntas($seccionModel->preguntas, $respuestas);
 
-        return Inertia::render(SitePageController::paginaPlantilla($plantilla->tipo), [
+        return Inertia::render(SitePageController::paginaPlantilla($plantilla), [
             'site' => [
                 'nombre' => $plantilla->nombre,
                 'imagen' => $plantilla->imagen ? asset('storage/'.$plantilla->imagen) : null,

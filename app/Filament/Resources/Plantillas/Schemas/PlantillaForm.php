@@ -108,7 +108,7 @@ class PlantillaForm
                             ->label('Secciones de la plantilla')
                             ->reorderableWithDragAndDrop()
                             ->live()
-                            ->grid(['default' => 1, 'md' => 2])
+                            ->grid(['default' => 1])
                             ->schema([
                                 Grid::make(4)->schema([
                                     TextInput::make('nombre')
@@ -230,13 +230,15 @@ class PlantillaForm
         foreach ($plantilla->secciones as $seccion) {
             $fields = [];
 
-            foreach ($seccion->preguntas as $pregunta) {
+            foreach ($seccion->preguntas->whereNull('parent_id') as $pregunta) {
                 $fields[] = self::campoRespuesta($pregunta);
             }
 
-            $components[] = Section::make($seccion->nombre)
-                ->schema($fields)
-                ->columns(2);
+            if ($fields) {
+                $components[] = Section::make($seccion->nombre)
+                    ->schema($fields)
+                    ->columns(2);
+            }
         }
 
         return $components;
@@ -255,18 +257,22 @@ class PlantillaForm
             foreach ($seccion['preguntas'] ?? [] as $pregunta) {
                 $id = $pregunta['id'] ?? null;
 
-                if (! $id) {
+                if (! $id || ! empty($pregunta['parent_id'])) {
                     continue;
                 }
 
-                $modelo = new Pregunta;
-                $modelo->forceFill([
-                    'id' => $id,
-                    'label' => $pregunta['label'] ?? '',
-                    'tipo' => $pregunta['tipo'] ?? 'texto',
-                    'ayuda' => $pregunta['ayuda'] ?? null,
-                    'requerida' => (bool) ($pregunta['requerida'] ?? false),
-                ]);
+                $modelo = Pregunta::with('children')->find($id);
+                if (! $modelo) {
+                    $modelo = new Pregunta;
+                    $modelo->forceFill([
+                        'id' => $id,
+                        'label' => $pregunta['label'] ?? '',
+                        'tipo' => $pregunta['tipo'] ?? 'texto',
+                        'ayuda' => $pregunta['ayuda'] ?? null,
+                        'requerida' => (bool) ($pregunta['requerida'] ?? false),
+                        'max_items' => $pregunta['max_items'] ?? null,
+                    ]);
+                }
 
                 $fields[] = self::campoRespuesta($modelo);
             }
@@ -281,61 +287,88 @@ class PlantillaForm
         return $components;
     }
 
-  private static function campoRespuesta(Pregunta $pregunta): Component
-{
-    $statePath = "respuestas.{$pregunta->id}.valor";
-    $linkPath = "respuestas.{$pregunta->id}.enlace";
+    private static function campoRespuesta(Pregunta $pregunta): Component
+    {
+        $statePath = "respuestas.{$pregunta->id}.valor";
+        $linkPath = "respuestas.{$pregunta->id}.enlace";
 
-    // Construir el campo principal
-    $field = match ($pregunta->tipo) {
-        'area' => Textarea::make($statePath)
-            ->rows(3)
-            ->placeholder('Escribe el contenido aquí...'),
-            
-        'imagen' => FileUpload::make($statePath)
-            ->image()
-            ->imageEditor()
-            ->directory('sites/contenido')
-            ->helperText('Formatos: JPG, PNG, WebP'),
-            
-        'galeria' => FileUpload::make($statePath)
-            ->image()
-            ->multiple()
-            ->directory('sites/contenido')
-            ->helperText('Puedes subir múltiples imágenes'),
-            
-        'color' => ColorPicker::make($statePath)
-            ->helperText('Selecciona un color'),
-            
-        'enlace' => TextInput::make($statePath)
-            ->url()
-            ->placeholder('https://ejemplo.com'),
-            
-        default => TextInput::make($statePath)
-            ->placeholder('Ingresa el valor...'),
-    };
+        // Construir el campo principal
+        $field = match ($pregunta->tipo) {
+            'area' => Textarea::make($statePath)
+                ->rows(3)
+                ->placeholder('Escribe el contenido aquí...'),
 
-    // Aplicar propiedades comunes
-    $field = $field
-        ->label($pregunta->label)
-        ->helperText($pregunta->ayuda)
-        ->required($pregunta->requerida);
+            'imagen' => FileUpload::make($statePath)
+                ->image()
+                ->imageEditor()
+                ->directory('sites/contenido')
+                ->helperText('Formatos: JPG, PNG, WebP'),
 
-    // Retornar con disposición vertical (uno debajo del otro)
-    return Grid::make(1) // Una sola columna = disposición vertical
-        ->schema([
-            // Campo principal (arriba)
-            $field,
-            
-            // Enlace opcional (abajo)
-            TextInput::make($linkPath)
-                ->label('🔗 Enlace (opcional)')
+            'galeria' => FileUpload::make($statePath)
+                ->image()
+                ->multiple()
+                ->directory('sites/contenido')
+                ->helperText('Puedes subir múltiples imágenes'),
+
+            'color' => ColorPicker::make($statePath)
+                ->helperText('Selecciona un color'),
+
+            'enlace' => TextInput::make($statePath)
                 ->url()
-                ->placeholder('https://...')
-                ->helperText('Asocia una URL a este contenido'),
-        ])
-        ->gap(4); // Espaciado entre campos
-}
+                ->placeholder('https://ejemplo.com'),
+
+            'grupo' => Repeater::make($statePath)
+                ->schema(function () use ($pregunta) {
+                    $children = $pregunta->children;
+                    if ($children->isEmpty() && isset($pregunta->id)) {
+                        $children = Pregunta::where('parent_id', $pregunta->id)->orderBy('orden')->get();
+                    }
+
+                    return $children->map(function (Pregunta $child) {
+                        $childPath = $child->label;
+
+                        $subField = match ($child->tipo) {
+                            'area' => Textarea::make($childPath)->rows(2),
+                            'imagen' => FileUpload::make($childPath)->image()->directory('sites/contenido'),
+                            'galeria' => FileUpload::make($childPath)->image()->multiple()->directory('sites/contenido'),
+                            'color' => ColorPicker::make($childPath),
+                            'enlace' => TextInput::make($childPath)->url(),
+                            default => TextInput::make($childPath),
+                        };
+
+                        return $subField->label($child->label);
+                    })->toArray();
+                })
+                ->itemLabel(fn (array $state): ?string => $state['nombre'] ?? $state['titulo'] ?? $state['label'] ?? null)
+                ->maxItems($pregunta->max_items)
+                ->reorderableWithDragAndDrop()
+                ->collapsible(),
+
+            default => TextInput::make($statePath)
+                ->placeholder('Ingresa el valor...'),
+        };
+
+        // Aplicar propiedades comunes
+        $field = $field
+            ->label($pregunta->label)
+            ->helperText($pregunta->ayuda)
+            ->required($pregunta->requerida);
+
+        // Retornar con disposición vertical (uno debajo del otro)
+        return Grid::make(1)
+            ->schema([
+                // Campo principal (arriba)
+                $field,
+
+                // Enlace opcional (abajo)
+                TextInput::make($linkPath)
+                    ->label('🔗 Enlace (opcional)')
+                    ->url()
+                    ->placeholder('https://...')
+                    ->helperText('Asocia una URL a este contenido'),
+            ])
+            ->gap(4);
+    }
 
     /**
      * @return array<string, string>

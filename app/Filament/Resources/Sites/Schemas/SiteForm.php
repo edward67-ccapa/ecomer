@@ -48,12 +48,19 @@ class SiteForm
 
                                     if (blank($get('respuestas'))) {
                                         $set('respuestas', $plantilla?->respuestas
-                                            ->mapWithKeys(fn (Respuesta $respuesta): array => [
-                                                $respuesta->pregunta_id => [
-                                                    'valor' => $respuesta->valor,
-                                                    'enlace' => $respuesta->enlace,
-                                                ],
-                                            ])
+                                            ->mapWithKeys(function (Respuesta $respuesta): array {
+                                                $valor = $respuesta->valor;
+                                                if (is_string($valor) && is_array($decoded = json_decode($valor, true))) {
+                                                    $valor = $decoded;
+                                                }
+
+                                                return [
+                                                    $respuesta->pregunta_id => [
+                                                        'valor' => $valor,
+                                                        'enlace' => $respuesta->enlace,
+                                                    ],
+                                                ];
+                                            })
                                             ->all() ?? []);
                                     }
                                 }),
