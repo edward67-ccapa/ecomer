@@ -1,11 +1,11 @@
 import { Head } from '@inertiajs/react';
 import Header from './shared/Header';
 import Footer from './shared/Footer';
-import SectionInicio from './components/SectionInicio';
-import SectionNosotros from './components/SectionNosotros';
-import SectionContactos from './components/SectionContactos';
+import SectionInicio from './components/Inicio/SectionInicio';
+import SectionNosotros from './components/Nosotros/SectionNosotros';
+import SectionContactos from './components/Contactos/SectionContactos';
 
-export default function Ecomer1({
+export default function Tortas({
     site,
     dominio,
     siteSlug,

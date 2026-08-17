@@ -60,7 +60,15 @@ export default function Corporativa({
         };
 
         const Component = sectionMap[seccionActiva?.slug] || GenericSection;
-        return <Component seccion={seccionActiva} styles={styles} />;
+        return (
+            <Component
+                site={site}
+                dominio={dominio}
+                siteSlug={siteSlug}
+                seccion={seccionActiva}
+                styles={styles}
+            />
+        );
     };
 
     return (
