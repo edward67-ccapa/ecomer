@@ -11,6 +11,8 @@ use Filament\Tables\Columns\Layout;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Filament\Notifications\Notification;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
 class PlantillasTable
@@ -52,11 +54,20 @@ class PlantillasTable
 
     private static function clonar(Plantilla $plantilla): void
     {
+        $baseSlug = Str::slug($plantilla->slug.'-copia');
+        $nuevoSlug = $baseSlug;
+        $counter = 1;
+
+        while (Plantilla::where('slug', $nuevoSlug)->exists()) {
+            $counter++;
+            $nuevoSlug = $baseSlug.'-'.$counter;
+        }
+
         $copia = new Plantilla(
             $plantilla->only(['tipo', 'descripcion', 'imagen', 'estilos', 'activa']),
         );
 
-        $copia->slug = Str::slug($plantilla->slug.'-copia');
+        $copia->slug = $nuevoSlug;
         $copia->nombre = $plantilla->nombre.' (copia)';
         $copia->save();
 
@@ -71,5 +82,48 @@ class PlantillasTable
                 );
             }
         }
+
+        // Clonar la carpeta física del frontend en resources/js/pages/sites/
+        $folderOrigen = self::obtenerCarpetaFrontend($plantilla);
+        $folderDestinoStudly = Str::studly($nuevoSlug);
+        $pathDestino = resource_path("js/pages/sites/{$folderDestinoStudly}");
+
+        if ($folderOrigen && File::isDirectory($folderOrigen)) {
+            File::copyDirectory($folderOrigen, $pathDestino);
+
+            Notification::make()
+                ->title('Plantilla clonada con éxito')
+                ->body("Se clonó en BD y se creó la carpeta frontend: resources/js/pages/sites/{$folderDestinoStudly}")
+                ->success()
+                ->send();
+        } else {
+            Notification::make()
+                ->title('Plantilla clonada en BD')
+                ->body("Se clonó la plantilla '{$copia->nombre}' en la base de datos.")
+                ->success()
+                ->send();
+        }
+    }
+
+    private static function obtenerCarpetaFrontend(Plantilla $plantilla): ?string
+    {
+        $studlySlug = Str::studly($plantilla->slug);
+        $pathEspecifico = resource_path("js/pages/sites/{$studlySlug}");
+
+        if (File::isDirectory($pathEspecifico)) {
+            return $pathEspecifico;
+        }
+
+        if ($plantilla->slug === 'plantilla-corporativa') {
+            return resource_path('js/pages/sites/Corporativa');
+        }
+
+        $mapaTipo = [
+            'ecommerce' => resource_path('js/pages/sites/Ecomer1'),
+            'landing_page' => resource_path('js/pages/sites/Corporativa'),
+            'anuncio' => resource_path('js/pages/sites/Anuncio'),
+        ];
+
+        return $mapaTipo[$plantilla->tipo] ?? null;
     }
 }

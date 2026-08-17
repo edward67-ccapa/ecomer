@@ -1,3 +1,5 @@
+import DynamicIcon from '@/components/DynamicIcon';
+
 function etiqueta(label) {
     return label.replace(/[-_]/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 }
@@ -11,22 +13,50 @@ function BloqueContenido({ item, styles }) {
         return null;
     }
 
-    // Manejo especial de tipo 'grupo' (Ejemplo: miembros_equipo)
+    if (item.tipo === 'icono' || item.tipo === 'icon') {
+        return (
+            <div className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-3.5 shadow-sm" style={{ borderRadius: 'var(--radio-bordes)' }}>
+                <div className="flex h-10 w-10 items-center justify-center rounded-lg text-white shadow-sm" style={{ backgroundColor: 'var(--color-primario)' }}>
+                    <DynamicIcon name={item.valor} className="h-5 w-5" />
+                </div>
+                <span className="font-semibold text-gray-800">{item.valor}</span>
+            </div>
+        );
+    }
+
+    // Manejo especial de tipo 'grupo' (Ejemplo: miembros_equipo, tarjetas con icono/numero/enlace)
     if (item.tipo === 'grupo' && Array.isArray(item.valor)) {
         return (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {item.valor.map((subItem, index) => {
                     const nombre = subItem.nombre || subItem.titulo || subItem.label || `Elemento ${index + 1}`;
-                    const cargo = subItem.cargo || subItem.subtitulo || subItem.descripcion || '';
+                    const cargo = subItem.cargo || subItem.subtitulo || subItem.descripcion || subItem.numero || '';
                     const foto = subItem.foto || subItem.imagen || subItem.portada || '';
+                    const icono = subItem.icono || subItem.icon || '';
+                    const enlace = subItem.enlace || subItem.url || subItem.link || '';
+
+                    const CardTag = enlace ? 'a' : 'div';
+                    const linkProps = enlace ? { href: enlace, target: '_blank', rel: 'noreferrer' } : {};
 
                     return (
-                        <div
+                        <CardTag
                             key={index}
-                            className="group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl"
+                            {...linkProps}
+                            className={`group flex flex-col overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl ${
+                                enlace ? 'cursor-pointer hover:border-gray-300' : ''
+                            }`}
                             style={{ borderRadius: 'var(--radio-bordes)' }}
                         >
-                            {foto && (
+                            {icono && (
+                                <div
+                                    className="mb-4 flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-md transition-transform duration-300 group-hover:scale-110"
+                                    style={{ backgroundColor: 'var(--color-primario)' }}
+                                >
+                                    <DynamicIcon name={icono} className="h-6 w-6" />
+                                </div>
+                            )}
+
+                            {foto && !icono && (
                                 <div className="mb-4 overflow-hidden rounded-xl bg-gray-100">
                                     <img
                                         src={foto}
@@ -35,21 +65,48 @@ function BloqueContenido({ item, styles }) {
                                     />
                                 </div>
                             )}
+
                             <h3
-                                className="text-xl font-bold text-gray-900"
+                                className="flex items-center justify-between text-xl font-bold text-gray-900"
                                 style={{ fontFamily: 'var(--tipografia-titulos)' }}
                             >
-                                {nombre}
+                                <span>{nombre}</span>
+                                {enlace && (
+                                    <span
+                                        className="text-sm opacity-0 transition-opacity group-hover:opacity-100"
+                                        style={{ color: 'var(--color-primario)' }}
+                                    >
+                                        ↗
+                                    </span>
+                                )}
                             </h3>
+
                             {cargo && (
-                                <p className="mt-1 text-sm font-medium" style={{ color: 'var(--color-primario)' }}>
+                                <p className="mt-1 text-sm font-semibold" style={{ color: 'var(--color-primario)' }}>
                                     {cargo}
                                 </p>
                             )}
 
                             <div className="mt-3 space-y-1">
                                 {Object.entries(subItem).map(([key, val]) => {
-                                    if (['nombre', 'cargo', 'foto', 'titulo', 'imagen', 'subtitulo', 'descripcion'].includes(key) || !val) {
+                                    if (
+                                        [
+                                            'nombre',
+                                            'cargo',
+                                            'foto',
+                                            'titulo',
+                                            'imagen',
+                                            'subtitulo',
+                                            'descripcion',
+                                            'numero',
+                                            'icono',
+                                            'icon',
+                                            'enlace',
+                                            'url',
+                                            'link',
+                                        ].includes(key) ||
+                                        !val
+                                    ) {
                                         return null;
                                     }
                                     return (
@@ -59,7 +116,7 @@ function BloqueContenido({ item, styles }) {
                                     );
                                 })}
                             </div>
-                        </div>
+                        </CardTag>
                     );
                 })}
             </div>

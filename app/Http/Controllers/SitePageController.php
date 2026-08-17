@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class SitePageController extends Controller
@@ -25,16 +26,13 @@ class SitePageController extends Controller
     {
         $site = $this->findSite($dominio, $siteSlug);
 
-        $seccion = $site->plantilla->secciones
-            ->where('slug', $seccionSlug)
-            ->where('activa', true)
-            ->first();
+        $secciones = $site->plantilla->secciones->where('activa', true);
+
+        $seccion = $secciones->firstWhere('slug', $seccionSlug);
 
         abort_unless($seccion instanceof Seccion, 404);
 
-        $respuestas = $site->plantilla->respuestas
-            ->concat($site->respuestas)
-            ->keyBy('pregunta_id');
+        $respuestas = $site->respuestas->keyBy('pregunta_id');
 
         $contenido = self::formatearPreguntas($seccion->preguntas, $respuestas);
 
@@ -47,8 +45,7 @@ class SitePageController extends Controller
             ],
             'dominio' => $dominio,
             'siteSlug' => $site->slug,
-            'secciones' => $site->plantilla->secciones
-                ->where('activa', true)
+            'secciones' => $secciones
                 ->map(fn (Seccion $s): array => [
                     'slug' => $s->slug,
                     'nombre' => $s->nombre,
@@ -75,11 +72,19 @@ class SitePageController extends Controller
 
     public static function paginaPlantilla(Plantilla|string $plantillaOrTipo): string
     {
-        $slug = $plantillaOrTipo instanceof Plantilla ? $plantillaOrTipo->slug : null;
-        $tipo = $plantillaOrTipo instanceof Plantilla ? $plantillaOrTipo->tipo : $plantillaOrTipo;
+        if ($plantillaOrTipo instanceof Plantilla) {
+            $studlySlug = Str::studly($plantillaOrTipo->slug);
+            if (file_exists(resource_path("js/pages/sites/{$studlySlug}/Index.jsx"))) {
+                return "sites/{$studlySlug}/Index";
+            }
 
-        if ($slug === 'plantilla-corporativa') {
-            return 'sites/Corporativa/Index';
+            if ($plantillaOrTipo->slug === 'plantilla-corporativa') {
+                return 'sites/Corporativa/Index';
+            }
+
+            $tipo = $plantillaOrTipo->tipo;
+        } else {
+            $tipo = $plantillaOrTipo;
         }
 
         return match ($tipo) {

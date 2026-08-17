@@ -86,8 +86,13 @@ class SiteForm
                             FileUpload::make('imagen')
                                 ->label('Logo / imagen')
                                 ->image()
-                                ->imageEditor()
+                                ->disk('public')
                                 ->directory('sites')
+                                ->orientImagesFromExif(false)
+                                ->uploadingMessage('Subiendo imagen...')
+                                ->deletable(true)
+                                ->openable()
+                                ->downloadable()
                                 ->columnSpanFull(),
                         ]),
                     ]),

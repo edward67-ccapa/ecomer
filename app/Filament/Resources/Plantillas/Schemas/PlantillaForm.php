@@ -17,6 +17,7 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Support\HtmlString;
 
 class PlantillaForm
 {
@@ -52,8 +53,13 @@ class PlantillaForm
                                     ->rows(2),
                                 FileUpload::make('imagen')
                                     ->image()
-                                    ->imageEditor()
-                                    ->directory('plantillas'),
+                                    ->disk('public')
+                                    ->directory('plantillas')
+                                    ->orientImagesFromExif(false)
+                                    ->uploadingMessage('Subiendo imagen...')
+                                    ->deletable(true)
+                                    ->openable()
+                                    ->downloadable(),
                             ])
                             ->columnSpan(1),
 
@@ -181,7 +187,7 @@ class PlantillaForm
                                             ->label('Campos del Conjunto (Plantilla Base)')
                                             ->visible(fn (Get $get): bool => $get('tipo') === 'grupo')
                                             ->schema([
-                                                Grid::make(5)->schema([
+                                                Grid::make(6)->schema([
                                                     TextInput::make('label')
                                                         ->required()
                                                         ->maxLength(255),
@@ -201,6 +207,9 @@ class PlantillaForm
                                                         ->default(0),
                                                     Toggle::make('requerida')
                                                         ->default(false),
+                                                    TextInput::make('ayuda')
+                                                        ->placeholder('Texto de ayuda')
+                                                        ->columnSpan(1),
                                                 ]),
                                             ])
                                             ->itemLabel(fn (array $state): ?string => $state['label'] ?? null)
@@ -301,18 +310,37 @@ class PlantillaForm
 
             'imagen' => FileUpload::make($statePath)
                 ->image()
-                ->imageEditor()
+                ->disk('public')
                 ->directory('sites/contenido')
+                ->orientImagesFromExif(false)
+                ->uploadingMessage('Subiendo imagen...')
+                ->deletable(true)
+                ->openable()
+                ->downloadable()
                 ->helperText('Formatos: JPG, PNG, WebP'),
 
             'galeria' => FileUpload::make($statePath)
                 ->image()
                 ->multiple()
+                ->disk('public')
                 ->directory('sites/contenido')
+                ->orientImagesFromExif(false)
+                ->uploadingMessage('Subiendo imágenes...')
+                ->deletable(true)
+                ->openable()
+                ->downloadable()
                 ->helperText('Puedes subir múltiples imágenes'),
 
             'color' => ColorPicker::make($statePath)
                 ->helperText('Selecciona un color'),
+
+            'icono' => TextInput::make($statePath)
+                ->prefixIcon('heroicon-o-sparkles')
+                ->placeholder('Ej. FaStar, FaShoppingBag, FaStore, MdPhone, HiHome')
+                ->helperText(new HtmlString(
+                    '<b>Íconos populares:</b> FaStar, FaShoppingBag, FaStore, FaPhone, FaEnvelope, FaUser, FaHeart, FaTruck, MdHome, HiSparkles, FaInstagram, FaWhatsapp.<br>' .
+                    '💡 Copia y pega cualquier ícono desde el catálogo: <a href="https://react-icons.github.io/react-icons/" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 600;">Catálogo react-icons ↗</a>'
+                )),
 
             'enlace' => TextInput::make($statePath)
                 ->url()
@@ -327,17 +355,47 @@ class PlantillaForm
 
                     return $children->map(function (Pregunta $child) {
                         $childPath = $child->label;
+                        $childTogglePath = "{$child->label}_activar_enlace";
+                        $childLinkPath = "{$child->label}_enlace";
 
                         $subField = match ($child->tipo) {
                             'area' => Textarea::make($childPath)->rows(2),
-                            'imagen' => FileUpload::make($childPath)->image()->directory('sites/contenido'),
-                            'galeria' => FileUpload::make($childPath)->image()->multiple()->directory('sites/contenido'),
+                            'imagen' => FileUpload::make($childPath)->image()->disk('public')->directory('sites/contenido')->orientImagesFromExif(false)->uploadingMessage('Subiendo imagen...')->deletable(true)->openable()->downloadable(),
+                            'galeria' => FileUpload::make($childPath)->image()->multiple()->disk('public')->directory('sites/contenido')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable(),
                             'color' => ColorPicker::make($childPath),
+                            'icono' => TextInput::make($childPath)
+                                ->prefixIcon('heroicon-o-sparkles')
+                                ->placeholder('Ej. FaStar, FaStore, HiHome')
+                                ->helperText(new HtmlString(
+                                    'Populares: <b>FaStar, FaShoppingBag, FaStore, FaPhone, FaUser</b> | <a href="https://react-icons.github.io/react-icons/" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 600;">Ver todos ↗</a>'
+                                )),
                             'enlace' => TextInput::make($childPath)->url(),
                             default => TextInput::make($childPath),
                         };
 
-                        return $subField->label($child->label);
+                        $subField = $subField->label($child->label);
+
+                        if ($child->tipo === 'enlace') {
+                            return $subField;
+                        }
+
+                        return Grid::make(1)
+                            ->schema([
+                                $subField,
+
+                                Toggle::make($childTogglePath)
+                                    ->label("🔗 ¿Agregar enlace a '{$child->label}'?")
+                                    ->live()
+                                    ->default(fn (Get $get): bool => filled($get($childLinkPath))),
+
+                                TextInput::make($childLinkPath)
+                                    ->label("🔗 Enlace para '{$child->label}'")
+                                    ->url()
+                                    ->placeholder('https://ejemplo.com')
+                                    ->helperText("URL opcional asociada a '{$child->label}'")
+                                    ->visible(fn (Get $get): bool => (bool) $get($childTogglePath) || filled($get($childLinkPath))),
+                            ])
+                            ->gap(2);
                     })->toArray();
                 })
                 ->itemLabel(fn (array $state): ?string => $state['nombre'] ?? $state['titulo'] ?? $state['label'] ?? null)
@@ -355,20 +413,26 @@ class PlantillaForm
             ->helperText($pregunta->ayuda)
             ->required($pregunta->requerida);
 
-        // Retornar con disposición vertical (uno debajo del otro)
+        $togglePath = "respuestas.{$pregunta->id}.activar_enlace";
+
+        // Retornar el campo principal con Toggle reactivo para mostrar u ocultar el enlace
         return Grid::make(1)
             ->schema([
-                // Campo principal (arriba)
                 $field,
 
-                // Enlace opcional (abajo)
+                Toggle::make($togglePath)
+                    ->label('🔗 ¿Agregar enlace?')
+                    ->live()
+                    ->default(fn (Get $get): bool => filled($get($linkPath))),
+
                 TextInput::make($linkPath)
-                    ->label('🔗 Enlace (opcional)')
+                    ->label('🔗 Enlace (URL)')
                     ->url()
-                    ->placeholder('https://...')
-                    ->helperText('Asocia una URL a este contenido'),
+                    ->placeholder('https://ejemplo.com')
+                    ->helperText('Asocia una URL a este contenido')
+                    ->visible(fn (Get $get): bool => (bool) $get($togglePath) || filled($get($linkPath))),
             ])
-            ->gap(4);
+            ->gap(3);
     }
 
     /**
@@ -382,6 +446,8 @@ class PlantillaForm
             'imagen' => 'Imagen',
             'galeria' => 'Galería',
             'color' => 'Color',
+            'icono' => 'Ícono (react-icons)',
+            'enlace' => 'Enlace / URL',
             'grupo' => 'Grupo (Conjunto)',
         ];
     }
