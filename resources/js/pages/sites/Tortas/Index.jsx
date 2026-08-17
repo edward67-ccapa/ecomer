@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import Header from './shared/Header';
 import Footer from './shared/Footer';
@@ -13,13 +14,37 @@ export default function Tortas({
     seccionActiva,
     estilos,
 }) {
+    const titulosFont = estilos?.tipografia_titulos || 'Montserrat';
+    const textoFont = estilos?.tipografia_texto || 'Montserrat';
+
+    // Carga dinámica de fuentes de Google Fonts
+    useEffect(() => {
+        const fonts = [titulosFont, textoFont].filter(Boolean);
+        if (fonts.length > 0) {
+            const uniqueFonts = [...new Set(fonts)];
+            const fontQuery = uniqueFonts
+                .map((f) => `family=${f.replace(/ /g, '+')}:wght@400;600;700;800`)
+                .join('&');
+            const linkId = 'dynamic-google-fonts';
+
+            let link = document.getElementById(linkId);
+            if (!link) {
+                link = document.createElement('link');
+                link.id = linkId;
+                link.rel = 'stylesheet';
+                document.head.appendChild(link);
+            }
+            link.href = `https://fonts.googleapis.com/css2?${fontQuery}&display=swap`;
+        }
+    }, [titulosFont, textoFont]);
+
     const styles = {
-        '--color-primario': estilos?.color_primario || '#f59e0b',
-        '--color-secundario': estilos?.color_secundario || '#1f2937',
-        '--tipografia-titulos': estilos?.tipografia_titulos || 'Inter',
-        '--tipografia-texto': estilos?.tipografia_texto || 'Inter',
-        '--radio-bordes': estilos?.radio_bordes || '1rem',
-        '--espaciado': estilos?.espaciado || '1.5rem',
+        '--color-primario': estilos?.color_primario || '#F72F46',
+        '--color-secundario': estilos?.color_secundario || '#ffffff',
+        '--tipografia-titulos': `'${titulosFont}', sans-serif`,
+        '--tipografia-texto': `'${textoFont}', sans-serif`,
+        '--radio-bordes': estilos?.radio_bordes || '0.5rem',
+        '--espaciado': estilos?.espaciado || '1rem',
     };
 
     const renderSection = () => {
@@ -29,7 +54,7 @@ export default function Tortas({
             contactos: SectionContactos,
         };
 
-        const Component = sectionMap[seccionActiva.slug] || SectionInicio;
+        const Component = sectionMap[seccionActiva?.slug?.toLowerCase()] || SectionInicio;
         return (
             <Component
                 site={site}
@@ -43,14 +68,14 @@ export default function Tortas({
 
     return (
         <>
-            <Head title={`${site.nombre} — ${seccionActiva.nombre}`} />
+            <Head title={`${site.nombre} — ${seccionActiva?.nombre || 'Inicio'}`} />
 
             <div
                 suppressHydrationWarning
                 className="flex min-h-screen flex-col bg-white text-gray-900"
                 style={{
                     ...styles,
-                    fontFamily: `var(--tipografia-texto), ui-sans-serif, system-ui, sans-serif`,
+                    fontFamily: `var(--tipografia-texto)`,
                 }}
             >
                 <Header

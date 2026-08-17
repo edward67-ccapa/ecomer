@@ -65,17 +65,9 @@ class SiteApiController extends Controller
         $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
 
         return response()->json([
-            'site' => new SiteResource($site),
-            'secciones' => $secciones->map(fn (Seccion $s): array => [
-                'slug' => $s->slug,
-                'nombre' => $s->nombre,
-            ])->values(),
-            'seccionActiva' => [
-                'slug' => $seccion->slug,
-                'nombre' => $seccion->nombre,
-                'contenido' => $contenido,
-            ],
-            'estilos' => $estilos,
+            'slug' => $seccion->slug,
+            'nombre' => $seccion->nombre,
+            'contenido' => $contenido,
         ]);
     }
 }

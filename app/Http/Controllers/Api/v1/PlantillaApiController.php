@@ -36,20 +36,22 @@ class PlantillaApiController extends Controller
 
         $secciones = $plantilla->secciones;
 
-        $seccionModel = $secciones
-            ->when(filled($seccion), fn ($items) => $items->first(
-                fn ($s) => strtolower($s->slug) === strtolower($seccion)
-            ))
-            ->first();
-
-        if (filled($seccion) && ! $seccionModel) {
-            return response()->json(['message' => 'Sección no encontrada'], 404);
+        // Si no se especifica sección, devolver metadatos generales (plantilla, secciones, estilos)
+        if (blank($seccion)) {
+            return response()->json([
+                'plantilla' => new PlantillaResource($plantilla),
+                'secciones' => $secciones->where('activa', true)->map(fn ($s) => ['slug' => $s->slug, 'nombre' => $s->nombre])->values(),
+                'estilos' => $plantilla->estilos,
+            ]);
         }
 
-        $seccionModel ??= $secciones->first();
+        // Devolver únicamente el contenido de la sección solicitada (ligero y rápido)
+        $seccionModel = $secciones->first(
+            fn ($s) => strtolower($s->slug) === strtolower($seccion)
+        );
 
         if (! $seccionModel instanceof Seccion) {
-            return response()->json(['message' => 'No hay secciones activas'], 404);
+            return response()->json(['message' => 'Sección no encontrada'], 404);
         }
 
         $respuestas = $plantilla->respuestas->whereNull('site_id')->keyBy('pregunta_id');
@@ -57,14 +59,9 @@ class PlantillaApiController extends Controller
         $contenido = SitePageController::formatearPreguntas($seccionModel->preguntas, $respuestas);
 
         return response()->json([
-            'plantilla' => new PlantillaResource($plantilla),
-            'secciones' => $secciones->where('activa', true)->map(fn ($s) => ['slug' => $s->slug, 'nombre' => $s->nombre])->values(),
-            'seccionActiva' => [
-                'slug' => $seccionModel->slug,
-                'nombre' => $seccionModel->nombre,
-                'contenido' => $contenido,
-            ],
-            'estilos' => $plantilla->estilos,
+            'slug' => $seccionModel->slug,
+            'nombre' => $seccionModel->nombre,
+            'contenido' => $contenido,
         ]);
     }
 }
