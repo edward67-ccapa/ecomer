@@ -19,6 +19,11 @@ class Seccion extends Model
 
     public function preguntas(): HasMany
     {
+        return $this->hasMany(Pregunta::class)->whereNull('parent_id')->orderBy('orden');
+    }
+
+    public function todasLasPreguntas(): HasMany
+    {
         return $this->hasMany(Pregunta::class)->orderBy('orden');
     }
 

@@ -20,6 +20,11 @@ class EditPlantilla extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
+        $this->record->loadMissing([
+            'respuestas',
+            'secciones.preguntas.children',
+        ]);
+
         $data['respuestas'] = $this->record->respuestas
             ->mapWithKeys(function (Respuesta $respuesta): array {
                 $valor = $respuesta->valor;
@@ -31,6 +36,7 @@ class EditPlantilla extends EditRecord
                     $respuesta->pregunta_id => [
                         'valor' => $valor,
                         'enlace' => $respuesta->enlace,
+                        'activar_enlace' => filled($respuesta->enlace),
                     ],
                 ];
             })

@@ -34,10 +34,12 @@ class PlantillaApiController extends Controller
     {
         $plantilla->load(['secciones.preguntas', 'respuestas']);
 
-        $secciones = $plantilla->secciones->where('activa', true);
+        $secciones = $plantilla->secciones;
 
         $seccionModel = $secciones
-            ->when(filled($seccion), fn ($items) => $items->where('slug', $seccion))
+            ->when(filled($seccion), fn ($items) => $items->first(
+                fn ($s) => strtolower($s->slug) === strtolower($seccion)
+            ))
             ->first();
 
         if (filled($seccion) && ! $seccionModel) {
@@ -50,13 +52,13 @@ class PlantillaApiController extends Controller
             return response()->json(['message' => 'No hay secciones activas'], 404);
         }
 
-        $respuestas = $plantilla->respuestas->keyBy('pregunta_id');
+        $respuestas = $plantilla->respuestas->whereNull('site_id')->keyBy('pregunta_id');
 
         $contenido = SitePageController::formatearPreguntas($seccionModel->preguntas, $respuestas);
 
         return response()->json([
             'plantilla' => new PlantillaResource($plantilla),
-            'secciones' => $secciones->map(fn ($s) => ['slug' => $s->slug, 'nombre' => $s->nombre])->values(),
+            'secciones' => $secciones->where('activa', true)->map(fn ($s) => ['slug' => $s->slug, 'nombre' => $s->nombre])->values(),
             'seccionActiva' => [
                 'slug' => $seccionModel->slug,
                 'nombre' => $seccionModel->nombre,

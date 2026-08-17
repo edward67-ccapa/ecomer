@@ -46,6 +46,7 @@ export default function Tortas({
             <Head title={`${site.nombre} — ${seccionActiva.nombre}`} />
 
             <div
+                suppressHydrationWarning
                 className="flex min-h-screen flex-col bg-white text-gray-900"
                 style={{
                     ...styles,

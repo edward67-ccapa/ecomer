@@ -58,7 +58,7 @@ export default function SectionInicio({ site, dominio, siteSlug, styles }) {
     const otrosBloques = bloques.filter(
         (item) => !elementosClave.includes(item.label),
     );
-
+    console.log(seccionData)
     return (
         <main className="flex-1">
             {primeraImagen ? (

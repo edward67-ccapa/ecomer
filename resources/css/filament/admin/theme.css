@@ -2,3 +2,9 @@
 
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
+
+.fi-main-sidebar .fi-sidebar-nav {
+    overflow-y: auto !important;
+    max-height: calc(100vh - 4rem) !important;
+    scrollbar-width: thin;
+}

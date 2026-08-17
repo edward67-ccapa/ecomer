@@ -50,7 +50,9 @@ class SiteApiController extends Controller
 
         $secciones = $site->plantilla->secciones->where('activa', true);
 
-        $seccion = $secciones->firstWhere('slug', $seccionSlug);
+        $seccion = $secciones->first(
+            fn ($s) => strtolower($s->slug) === strtolower($seccionSlug)
+        );
 
         if (! $seccion instanceof Seccion) {
             return response()->json(['message' => 'Sección no encontrada'], 404);
