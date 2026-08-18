@@ -77,17 +77,6 @@ class SiteForm
                                                 ->label('Dominio')
                                                 ->options(fn (Get $get) => Dominio::where('user_id', $get('user_id'))->pluck('nombre', 'id'))
                                                 ->searchable(),
-                                            Select::make('tienda_id')
-                                                ->label('Tienda asociada')
-                                                ->options(fn () => \App\Models\Tienda::pluck('nombre', 'id'))
-                                                ->searchable()
-                                                ->preload()
-                                                ->placeholder('— Seleccionar Tienda —'),
-                                            MultiSelect::make('monedas')
-                                                ->label('Monedas Aceptadas del Sitio')
-                                                ->relationship('monedas', 'nombre')
-                                                ->searchable()
-                                                ->preload(),
                                             Select::make('estado')
                                                 ->options([
                                                     'borrador' => 'Borrador',
@@ -115,6 +104,17 @@ class SiteForm
                                                 ->downloadable()
                                                 ->columnSpanFull(),
                                         ]),
+
+                                        Section::make('Tiendas')
+                                            ->icon('heroicon-o-shopping-bag')
+                                            ->schema([
+                                                MultiSelect::make('tiendas')
+                                                    ->label('Tiendas asociadas')
+                                                    ->relationship('tiendas', 'nombre')
+                                                    ->searchable()
+                                                    ->preload(),
+                                            ])
+                                            ->columnSpanFull(),
                                     ]),
                                 Section::make('Estilos globales')
                                     ->description('Sobrescribe los estilos por defecto de la plantilla.')

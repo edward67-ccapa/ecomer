@@ -1,7 +1,8 @@
 import { motion } from 'framer-motion';
+import { Link } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
 
-export default function ServiciosSection({ seccionData }) {
+export default function ServiciosSection({ seccionData, dominio, siteSlug }) {
     if (!seccionData) return null;
 
     const getValor = (label) => seccionData?.contenido?.find((item) => item.label === label)?.valor;
@@ -74,48 +75,61 @@ export default function ServiciosSection({ seccionData }) {
                 </div>
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
-                    {servicios.map((servicio, idx) => (
-                        <motion.div
-                            key={idx}
-                            initial={{ opacity: 0, y: 30 }}
-                            whileInView={{ opacity: 1, y: 0 }}
-                            viewport={{ once: true }}
-                            transition={{ duration: 0.5, delay: idx * 0.1 }}
-                            whileHover={{ y: -6 }}
-                            className="bg-white rounded-xl p-5 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col items-center text-center group"
-                            style={{ borderRadius: 'var(--radio-bordes)' }}
-                        >
-                            {servicio.imagen && (
-                                <div className="w-20 h-20 mb-4 rounded-full overflow-hidden flex items-center justify-center bg-gray-50 group-hover:scale-105 transition-transform duration-300">
-                                    <img
-                                        src={servicio.imagen}
-                                        alt={servicio.titulo || 'Servicio'}
-                                        className="w-full h-full object-cover"
-                                    />
-                                </div>
-                            )}
+                    {servicios.map((servicio, idx) => {
+                        const customEnlace = servicio.enlace || servicio.titulo_enlace || servicio.url;
+                        const targetUrl = customEnlace || (
+                            (dominio && siteSlug)
+                                ? `/${dominio}/${siteSlug}/Productos?categoria=${encodeURIComponent(servicio.titulo)}`
+                                : `#`
+                        );
 
-                            <div className="flex-1 flex flex-col justify-center">
-                                {servicio.titulo && (
-                                    <h3
-                                        className="text-sm font-bold mb-1 group-hover:text-[var(--color-primario)] transition-colors"
-                                        style={{ fontFamily: 'var(--tipografia-titulos)', color: '#1a1a2e' }}
-                                    >
-                                        {servicio.titulo}
-                                    </h3>
-                                )}
+                        return (
+                            <motion.div
+                                key={idx}
+                                initial={{ opacity: 0, y: 30 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                viewport={{ once: true }}
+                                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                                whileHover={{ y: -6 }}
+                            >
+                                <Link
+                                    href={targetUrl}
+                                    className="bg-white rounded-xl p-5 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col items-center text-center group h-full cursor-pointer block"
+                                    style={{ borderRadius: 'var(--radio-bordes)' }}
+                                >
+                                    {servicio.imagen && (
+                                        <div className="w-20 h-20 mb-4 rounded-full overflow-hidden flex items-center justify-center bg-gray-50 group-hover:scale-105 transition-transform duration-300">
+                                            <img
+                                                src={servicio.imagen}
+                                                alt={servicio.titulo || 'Servicio'}
+                                                className="w-full h-full object-cover"
+                                            />
+                                        </div>
+                                    )}
 
-                                {servicio.descripción && (
-                                    <p
-                                        className="text-xs leading-relaxed"
-                                        style={{ fontFamily: 'var(--tipografia-texto)', color: '#666666' }}
-                                    >
-                                        {servicio.descripción}
-                                    </p>
-                                )}
-                            </div>
-                        </motion.div>
-                    ))}
+                                    <div className="flex-1 flex flex-col justify-center">
+                                        {servicio.titulo && (
+                                            <h3
+                                                className="text-sm font-bold mb-1 group-hover:text-[var(--color-primario)] transition-colors"
+                                                style={{ fontFamily: 'var(--tipografia-titulos)', color: '#1a1a2e' }}
+                                            >
+                                                {servicio.titulo}
+                                            </h3>
+                                        )}
+
+                                        {servicio.descripción && (
+                                            <p
+                                                className="text-xs leading-relaxed"
+                                                style={{ fontFamily: 'var(--tipografia-texto)', color: '#666666' }}
+                                            >
+                                                {servicio.descripción}
+                                            </p>
+                                        )}
+                                    </div>
+                                </Link>
+                            </motion.div>
+                        );
+                    })}
                 </div>
             </div>
         </section>

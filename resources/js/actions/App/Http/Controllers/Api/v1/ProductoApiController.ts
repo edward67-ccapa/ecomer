@@ -210,6 +210,104 @@ destacadosByPlantillaForm.head = (args: { plantilla: string | { slug: string } }
 destacadosByPlantilla.form = destacadosByPlantillaForm
 
 /**
+* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:118
+* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
+*/
+export const destacadosBySite = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: destacadosBySite.url(args, options),
+    method: 'get',
+})
+
+destacadosBySite.definition = {
+    methods: ["get","head"],
+    url: '/api/v1/sites/{dominio}/{site}/productos/destacados',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:118
+* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
+*/
+destacadosBySite.url = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions) => {
+    if (Array.isArray(args)) {
+        args = {
+            dominio: args[0],
+            site: args[1],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        dominio: args.dominio,
+        site: args.site,
+    }
+
+    return destacadosBySite.definition.url
+            .replace('{dominio}', parsedArgs.dominio.toString())
+            .replace('{site}', parsedArgs.site.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:118
+* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
+*/
+destacadosBySite.get = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: destacadosBySite.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:118
+* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
+*/
+destacadosBySite.head = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: destacadosBySite.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:118
+* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
+*/
+const destacadosBySiteForm = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: destacadosBySite.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:118
+* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
+*/
+destacadosBySiteForm.get = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: destacadosBySite.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:118
+* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
+*/
+destacadosBySiteForm.head = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: destacadosBySite.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+destacadosBySite.form = destacadosBySiteForm
+
+/**
 * @see \App\Http\Controllers\Api\v1\ProductoApiController::indexBySite
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:95
 * @route '/api/v1/sites/{dominio}/{site}/productos'
@@ -306,104 +404,6 @@ indexBySiteForm.head = (args: { dominio: string | number, site: string | number 
 })
 
 indexBySite.form = indexBySiteForm
-
-/**
-* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:114
-* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
-*/
-export const destacadosBySite = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: destacadosBySite.url(args, options),
-    method: 'get',
-})
-
-destacadosBySite.definition = {
-    methods: ["get","head"],
-    url: '/api/v1/sites/{dominio}/{site}/productos/destacados',
-} satisfies RouteDefinition<["get","head"]>
-
-/**
-* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:114
-* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
-*/
-destacadosBySite.url = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions) => {
-    if (Array.isArray(args)) {
-        args = {
-            dominio: args[0],
-            site: args[1],
-        }
-    }
-
-    args = applyUrlDefaults(args)
-
-    const parsedArgs = {
-        dominio: args.dominio,
-        site: args.site,
-    }
-
-    return destacadosBySite.definition.url
-            .replace('{dominio}', parsedArgs.dominio.toString())
-            .replace('{site}', parsedArgs.site.toString())
-            .replace(/\/+$/, '') + queryParams(options)
-}
-
-/**
-* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:114
-* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
-*/
-destacadosBySite.get = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
-    url: destacadosBySite.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:114
-* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
-*/
-destacadosBySite.head = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
-    url: destacadosBySite.url(args, options),
-    method: 'head',
-})
-
-/**
-* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:114
-* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
-*/
-const destacadosBySiteForm = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: destacadosBySite.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:114
-* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
-*/
-destacadosBySiteForm.get = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: destacadosBySite.url(args, options),
-    method: 'get',
-})
-
-/**
-* @see \App\Http\Controllers\Api\v1\ProductoApiController::destacadosBySite
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:114
-* @route '/api/v1/sites/{dominio}/{site}/productos/destacados'
-*/
-destacadosBySiteForm.head = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-    action: destacadosBySite.url(args, {
-        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-            _method: 'HEAD',
-            ...(options?.query ?? options?.mergeQuery ?? {}),
-        }
-    }),
-    method: 'get',
-})
-
-destacadosBySite.form = destacadosBySiteForm
 
 /**
 * @see \App\Http\Controllers\Api\v1\ProductoApiController::index
@@ -569,7 +569,7 @@ destacados.form = destacadosForm
 
 /**
 * @see \App\Http\Controllers\Api\v1\ProductoApiController::show
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:134
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:142
 * @route '/api/v1/productos/{producto}'
 */
 export const show = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -584,7 +584,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\Api\v1\ProductoApiController::show
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:134
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:142
 * @route '/api/v1/productos/{producto}'
 */
 show.url = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
@@ -617,7 +617,7 @@ show.url = (args: { producto: string | { slug: string } } | [producto: string | 
 
 /**
 * @see \App\Http\Controllers\Api\v1\ProductoApiController::show
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:134
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:142
 * @route '/api/v1/productos/{producto}'
 */
 show.get = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -627,7 +627,7 @@ show.get = (args: { producto: string | { slug: string } } | [producto: string | 
 
 /**
 * @see \App\Http\Controllers\Api\v1\ProductoApiController::show
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:134
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:142
 * @route '/api/v1/productos/{producto}'
 */
 show.head = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -637,7 +637,7 @@ show.head = (args: { producto: string | { slug: string } } | [producto: string |
 
 /**
 * @see \App\Http\Controllers\Api\v1\ProductoApiController::show
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:134
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:142
 * @route '/api/v1/productos/{producto}'
 */
 const showForm = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -647,7 +647,7 @@ const showForm = (args: { producto: string | { slug: string } } | [producto: str
 
 /**
 * @see \App\Http\Controllers\Api\v1\ProductoApiController::show
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:134
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:142
 * @route '/api/v1/productos/{producto}'
 */
 showForm.get = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -657,7 +657,7 @@ showForm.get = (args: { producto: string | { slug: string } } | [producto: strin
 
 /**
 * @see \App\Http\Controllers\Api\v1\ProductoApiController::show
-* @see app/Http/Controllers/Api/v1/ProductoApiController.php:134
+* @see app/Http/Controllers/Api/v1/ProductoApiController.php:142
 * @route '/api/v1/productos/{producto}'
 */
 showForm.head = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -882,6 +882,6 @@ indexByTiendaForm.head = (args: { tienda: number | { id: number } } | [tienda: n
 
 indexByTienda.form = indexByTiendaForm
 
-const ProductoApiController = { indexByPlantilla, destacadosByPlantilla, indexBySite, destacadosBySite, index, destacados, show, showTienda, indexByTienda }
+const ProductoApiController = { indexByPlantilla, destacadosByPlantilla, destacadosBySite, indexBySite, index, destacados, show, showTienda, indexByTienda }
 
 export default ProductoApiController

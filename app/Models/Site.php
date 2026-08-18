@@ -32,6 +32,11 @@ class Site extends Model
         return $this->belongsTo(Tienda::class);
     }
 
+    public function tiendas(): BelongsToMany
+    {
+        return $this->belongsToMany(Tienda::class, 'site_tienda')->withTimestamps();
+    }
+
     public function moneda(): BelongsTo
     {
         return $this->belongsTo(Moneda::class);

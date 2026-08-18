@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { Link } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Pagination } from 'swiper/modules';
@@ -9,12 +10,15 @@ import 'swiper/css/pagination';
 export default function ProductosDestacadosSection({ seccionData, productos }) {
     if (!seccionData && (!productos || productos.length === 0)) return null;
 
-    const getValor = (label) => seccionData?.contenido?.find((item) => item.label === label)?.valor;
+    const getItem = (label) => seccionData?.contenido?.find((item) => item.label === label);
+    const getValor = (label) => getItem(label)?.valor;
+    const getEnlace = (label) => getItem(label)?.enlace;
 
     const subTitulo = getValor('sub_titulo') || '';
     const titulo = getValor('titulo') || '';
     const icono = getValor('icono') || '';
     const botonText = getValor('boton') || '';
+    const botonEnlace = getEnlace('boton') || '#productos';
 
     const renderIcon = (iconName, className = 'h-8 w-8', customStyle = null) => {
         if (!iconName) return null;
@@ -167,13 +171,13 @@ export default function ProductosDestacadosSection({ seccionData, productos }) {
                 {/* Botón Ver Más */}
                 {botonText && (
                     <div className="text-center mt-12">
-                        <a
-                            href="#productos"
+                        <Link
+                            href={botonEnlace}
                             className="inline-flex items-center gap-2 px-8 py-3.5 rounded-full font-bold text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:-translate-y-0.5"
                             style={{ backgroundColor: 'var(--color-primario)', borderRadius: 'var(--radio-bordes)' }}
                         >
                             {botonText}
-                        </a>
+                        </Link>
                     </div>
                 )}
             </div>

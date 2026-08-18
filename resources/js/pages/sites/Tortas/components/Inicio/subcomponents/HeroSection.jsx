@@ -94,25 +94,28 @@ export default function HeroSection({ seccionData }) {
                             className="mt-8 flex flex-wrap"
                             style={{ gap: 'var(--espaciado)' }}
                         >
-                            {botones.map((btn, idx) => (
-                                <motion.a
-                                    key={idx}
-                                    whileHover={{ scale: 1.04 }}
-                                    whileTap={{ scale: 0.96 }}
-                                    href={whatsappUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="inline-flex items-center gap-3 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:brightness-105 hover:shadow-2xl"
-                                    style={{
-                                        backgroundColor: 'var(--color-primario)',
-                                        borderRadius: 'var(--radio-bordes)',
-                                        fontFamily: 'var(--tipografia-texto)',
-                                    }}
-                                >
-                                    {renderIcon(btn.icon, 'h-6 w-6 text-white')}
-                                    <span>{btn.texto}</span>
-                                </motion.a>
-                            ))}
+                            {botones.map((btn, idx) => {
+                                const btnUrl = btn.enlace || btn.texto_enlace || btn.url || whatsappUrl;
+                                return (
+                                    <motion.a
+                                        key={idx}
+                                        whileHover={{ scale: 1.04 }}
+                                        whileTap={{ scale: 0.96 }}
+                                        href={btnUrl}
+                                        target={btnUrl.startsWith('http') ? '_blank' : '_self'}
+                                        rel="noopener noreferrer"
+                                        className="inline-flex items-center gap-3 px-8 py-4 text-lg font-semibold text-white shadow-lg transition-all duration-200 hover:brightness-105 hover:shadow-2xl"
+                                        style={{
+                                            backgroundColor: 'var(--color-primario)',
+                                            borderRadius: 'var(--radio-bordes)',
+                                            fontFamily: 'var(--tipografia-texto)',
+                                        }}
+                                    >
+                                        {renderIcon(btn.icon, 'h-6 w-6 text-white')}
+                                        <span>{btn.texto}</span>
+                                    </motion.a>
+                                );
+                            })}
                         </div>
                     )}
                 </motion.div>

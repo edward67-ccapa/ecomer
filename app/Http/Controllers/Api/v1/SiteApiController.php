@@ -48,7 +48,7 @@ class SiteApiController extends Controller
             ->whereHas('dominio', fn ($query) => $query->where('nombre', $dominio))
             ->firstOrFail();
 
-        $secciones = $site->plantilla->secciones->where('activa', true);
+        $secciones = $site->plantilla->secciones;
 
         $seccion = $secciones->first(function ($s) use ($seccionSlug) {
             $normalize = fn ($str) => strtolower(str_replace(['_', ' '], '-', $str));

@@ -17,26 +17,31 @@ class SitePageController extends Controller
 {
     public function redirectToFirst(string $dominio, string $site): RedirectResponse
     {
-        $site = $this->findSite($dominio, $site);
+        $siteModel = $this->findSite($dominio, $site);
+        $primeraSeccion = $siteModel->plantilla->secciones->where('activa', true)->first();
+        $seccionSlug = $primeraSeccion ? $primeraSeccion->slug : 'inicio';
 
-        return Redirect::to("/{$dominio}/{$site->slug}/{$site->plantilla->secciones->first()->slug}");
+        return Redirect::to("/{$dominio}/{$siteModel->slug}/{$seccionSlug}");
     }
 
     public function show(string $dominio, string $siteSlug, string $seccionSlug): Response
     {
         $site = $this->findSite($dominio, $siteSlug);
 
-        $secciones = $site->plantilla->secciones->where('activa', true);
+        $seccionesNav = $site->plantilla->secciones->where('activa', true);
 
-        $seccion = $secciones->firstWhere('slug', $seccionSlug);
+        $targetSlug = strtolower(str_replace(['_', ' '], '-', $seccionSlug));
+        $seccion = $site->plantilla->secciones->first(function ($s) use ($targetSlug) {
+            return strtolower(str_replace(['_', ' '], '-', $s->slug)) === $targetSlug;
+        }) ?? $seccionesNav->first();
 
         abort_unless($seccion instanceof Seccion, 404);
 
         $respuestas = $site->respuestas->keyBy('pregunta_id');
 
-        // Pre-cargar el contenido de TODAS las secciones activas para renderizado instantáneo
+        // Pre-cargar el contenido de TODAS las secciones (activas e inanimadas/ocultas del nav) para renderizado instantáneo
         $seccionesData = [];
-        foreach ($secciones as $s) {
+        foreach ($site->plantilla->secciones as $s) {
             $key = strtolower(str_replace(['_', ' '], '-', $s->slug));
             $seccionesData[$key] = [
                 'slug' => $s->slug,
@@ -45,12 +50,22 @@ class SitePageController extends Controller
             ];
         }
 
-        // Pre-cargar productos destacados si tiene tienda asignada
+        // Pre-cargar productos (catálogo completo y destacados) únicamente de las tiendas asociadas al sitio
+        $tiendaIds = $site->tiendas->pluck('id')->all();
+
+        $productos = [];
         $productosDestacados = [];
-        if ($site->tienda) {
-            $productosDestacados = \App\Http\Controllers\Api\v1\ProductoApiController::formatearProductos(
-                $site->tienda->productos()->where('destacado', true)->get()
-            );
+
+        if (! empty($tiendaIds)) {
+            $baseQuery = \App\Models\Producto::with(['categoria', 'subcategoria', 'variantes', 'tiendas.moneda'])
+                ->where('activo', true)
+                ->whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds));
+
+            $allProds = (clone $baseQuery)->orderBy('orden')->orderBy('nombre')->get();
+            $destProds = (clone $baseQuery)->where('destacado', true)->orderBy('orden')->orderBy('nombre')->get();
+
+            $productos = \App\Http\Resources\v1\ProductoResource::collection($allProds)->resolve();
+            $productosDestacados = \App\Http\Resources\v1\ProductoResource::collection($destProds)->resolve();
         }
 
         $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
@@ -62,7 +77,7 @@ class SitePageController extends Controller
             ],
             'dominio' => $dominio,
             'siteSlug' => $site->slug,
-            'secciones' => $secciones
+            'secciones' => $seccionesNav
                 ->map(fn (Seccion $s): array => [
                     'slug' => $s->slug,
                     'nombre' => $s->nombre,
@@ -74,6 +89,7 @@ class SitePageController extends Controller
                 'contenido' => self::formatearPreguntas($seccion->preguntas, $respuestas),
             ],
             'seccionesData' => $seccionesData,
+            'productos' => $productos,
             'productosDestacados' => $productosDestacados,
             'estilos' => $estilos,
         ]);

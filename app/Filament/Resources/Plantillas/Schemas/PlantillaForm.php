@@ -355,7 +355,8 @@ class PlantillaForm
                                 $subField,
 
                                 Toggle::make($childTogglePath)
-                                    ->label("🔗 ¿Agregar enlace a '{$child->label}'?"),
+                                    ->label("🔗 ¿Agregar enlace a '{$child->label}'?")
+                                    ->live(),
 
                                 TextInput::make($childLinkPath)
                                     ->label("🔗 Enlace para '{$child->label}'")
@@ -389,7 +390,8 @@ class PlantillaForm
                 $field,
 
                 Toggle::make($togglePath)
-                    ->label('🔗 ¿Agregar enlace?'),
+                    ->label('🔗 ¿Agregar enlace?')
+                    ->live(),
 
                 TextInput::make($linkPath)
                     ->label('🔗 Enlace (URL)')

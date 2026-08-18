@@ -94,16 +94,20 @@ class ProductoApiController extends Controller
 
     public function indexBySite(string $dominio, string $siteSlug): AnonymousResourceCollection
     {
-        $site = Site::with('tienda')
+        $site = Site::with('tiendas')
             ->where('slug', $siteSlug)
             ->whereHas('dominio', fn ($q) => $q->where('nombre', $dominio))
             ->firstOrFail();
 
+        $tiendaIds = $site->tiendas->pluck('id')->all();
+
         $query = Producto::with(['categoria', 'subcategoria', 'variantes', 'tiendas.moneda'])
             ->where('activo', true);
 
-        if ($site->tienda_id) {
-            $query->whereHas('tiendas', fn ($q) => $q->where('tiendas.id', $site->tienda_id));
+        if (! empty($tiendaIds)) {
+            $query->whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds));
+        } else {
+            $query->whereRaw('1 = 0');
         }
 
         $productos = $query->orderBy('orden')->orderBy('nombre')->get();
@@ -113,17 +117,21 @@ class ProductoApiController extends Controller
 
     public function destacadosBySite(string $dominio, string $siteSlug): AnonymousResourceCollection
     {
-        $site = Site::with('tienda')
+        $site = Site::with('tiendas')
             ->where('slug', $siteSlug)
             ->whereHas('dominio', fn ($q) => $q->where('nombre', $dominio))
             ->firstOrFail();
+
+        $tiendaIds = $site->tiendas->pluck('id')->all();
 
         $query = Producto::with(['categoria', 'subcategoria', 'variantes', 'tiendas.moneda'])
             ->where('activo', true)
             ->where('destacado', true);
 
-        if ($site->tienda_id) {
-            $query->whereHas('tiendas', fn ($q) => $q->where('tiendas.id', $site->tienda_id));
+        if (! empty($tiendaIds)) {
+            $query->whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds));
+        } else {
+            $query->whereRaw('1 = 0');
         }
 
         $productos = $query->orderBy('orden')->orderBy('nombre')->get();

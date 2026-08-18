@@ -16,9 +16,9 @@ Route::prefix('v1')->group(function () {
     // Sitios (Sites)
     Route::get('/sites', [SiteApiController::class, 'index']);
     Route::get('/sites/{dominio}/{site}', [SiteApiController::class, 'showSite']);
-    Route::get('/sites/{dominio}/{site}/{seccion}', [SiteApiController::class, 'showSection']);
-    Route::get('/sites/{dominio}/{site}/productos', [ProductoApiController::class, 'indexBySite']);
     Route::get('/sites/{dominio}/{site}/productos/destacados', [ProductoApiController::class, 'destacadosBySite']);
+    Route::get('/sites/{dominio}/{site}/productos', [ProductoApiController::class, 'indexBySite']);
+    Route::get('/sites/{dominio}/{site}/{seccion}', [SiteApiController::class, 'showSection']);
 
     // Productos / Ecommerce
     Route::get('/productos', [ProductoApiController::class, 'index']);

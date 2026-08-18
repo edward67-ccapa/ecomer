@@ -4,6 +4,7 @@ import Footer from './shared/Footer';
 import SectionInicio from './components/Inicio/SectionInicio';
 import SectionNosotros from './components/Nosotros/SectionNosotros';
 import SectionContactos from './components/Contactos/SectionContactos';
+import SectionProductos from './components/Productos/SectionProductos';
 
 export default function Tortas({
     site,
@@ -12,6 +13,7 @@ export default function Tortas({
     secciones,
     seccionActiva,
     seccionesData,
+    productos,
     productosDestacados,
     estilos,
 }) {
@@ -37,6 +39,7 @@ export default function Tortas({
         inicio: SectionInicio,
         nosotros: SectionNosotros,
         contactos: SectionContactos,
+        productos: SectionProductos,
     };
 
     const ActiveComponent = sectionMap[seccionActiva?.slug?.toLowerCase()] || SectionInicio;
@@ -74,6 +77,7 @@ export default function Tortas({
                     siteSlug={siteSlug}
                     seccion={seccionActiva}
                     seccionesData={seccionesData}
+                    productos={productos}
                     productosDestacados={productosDestacados}
                     styles={styles}
                 />

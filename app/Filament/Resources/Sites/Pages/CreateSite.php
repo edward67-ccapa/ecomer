@@ -17,21 +17,29 @@ class CreateSite extends CreateRecord
         parent::mount();
 
         if ($plantillaId = request()->query('plantilla_id')) {
-            $plantilla = Plantilla::with('respuestas')->find($plantillaId);
+            $plantilla = Plantilla::with(['respuestas', 'tiendas'])->find($plantillaId);
 
             if ($plantilla) {
                 $this->form->fill([
                     'plantilla_id' => $plantilla->id,
                     'estado' => 'publicado',
                     'dominio_id' => Dominio::where('user_id', auth()->id())->value('id'),
+                    'tiendas' => $plantilla->tiendas->pluck('id')->all(),
                     'estilos' => $plantilla->estilos,
                     'respuestas' => $plantilla->respuestas
-                        ->mapWithKeys(fn (Respuesta $respuesta): array => [
-                            $respuesta->pregunta_id => [
-                                'valor' => $respuesta->valor,
-                                'enlace' => $respuesta->enlace,
-                            ],
-                        ])
+                        ->mapWithKeys(function (Respuesta $respuesta): array {
+                            $valor = $respuesta->valor;
+                            if (is_string($valor) && is_array($decoded = json_decode($valor, true))) {
+                                $valor = $decoded;
+                            }
+
+                            return [
+                                $respuesta->pregunta_id => [
+                                    'valor' => $valor,
+                                    'enlace' => $respuesta->enlace,
+                                ],
+                            ];
+                        })
                         ->all(),
                 ]);
             }

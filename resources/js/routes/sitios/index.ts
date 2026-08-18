@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\SitePageController::show
-* @see app/Http/Controllers/SitePageController.php:25
+* @see app/Http/Controllers/SitePageController.php:27
 * @route '/{dominio}/{site}/{seccion}'
 */
 export const show = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ show.definition = {
 
 /**
 * @see \App\Http\Controllers\SitePageController::show
-* @see app/Http/Controllers/SitePageController.php:25
+* @see app/Http/Controllers/SitePageController.php:27
 * @route '/{dominio}/{site}/{seccion}'
 */
 show.url = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions) => {
@@ -45,7 +45,7 @@ show.url = (args: { dominio: string | number, site: string | number, seccion: st
 
 /**
 * @see \App\Http\Controllers\SitePageController::show
-* @see app/Http/Controllers/SitePageController.php:25
+* @see app/Http/Controllers/SitePageController.php:27
 * @route '/{dominio}/{site}/{seccion}'
 */
 show.get = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -55,7 +55,7 @@ show.get = (args: { dominio: string | number, site: string | number, seccion: st
 
 /**
 * @see \App\Http\Controllers\SitePageController::show
-* @see app/Http/Controllers/SitePageController.php:25
+* @see app/Http/Controllers/SitePageController.php:27
 * @route '/{dominio}/{site}/{seccion}'
 */
 show.head = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -65,7 +65,7 @@ show.head = (args: { dominio: string | number, site: string | number, seccion: s
 
 /**
 * @see \App\Http\Controllers\SitePageController::show
-* @see app/Http/Controllers/SitePageController.php:25
+* @see app/Http/Controllers/SitePageController.php:27
 * @route '/{dominio}/{site}/{seccion}'
 */
 const showForm = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -75,7 +75,7 @@ const showForm = (args: { dominio: string | number, site: string | number, secci
 
 /**
 * @see \App\Http\Controllers\SitePageController::show
-* @see app/Http/Controllers/SitePageController.php:25
+* @see app/Http/Controllers/SitePageController.php:27
 * @route '/{dominio}/{site}/{seccion}'
 */
 showForm.get = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -85,7 +85,7 @@ showForm.get = (args: { dominio: string | number, site: string | number, seccion
 
 /**
 * @see \App\Http\Controllers\SitePageController::show
-* @see app/Http/Controllers/SitePageController.php:25
+* @see app/Http/Controllers/SitePageController.php:27
 * @route '/{dominio}/{site}/{seccion}'
 */
 showForm.head = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
