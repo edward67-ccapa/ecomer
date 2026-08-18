@@ -11,6 +11,8 @@ export default function Tortas({
     siteSlug,
     secciones,
     seccionActiva,
+    seccionesData,
+    productosDestacados,
     estilos,
 }) {
     const titulosFont = estilos?.tipografia_titulos || 'Montserrat';
@@ -71,6 +73,8 @@ export default function Tortas({
                     dominio={dominio}
                     siteSlug={siteSlug}
                     seccion={seccionActiva}
+                    seccionesData={seccionesData}
+                    productosDestacados={productosDestacados}
                     styles={styles}
                 />
 

@@ -4,18 +4,21 @@ import ServiciosSection from './subcomponents/ServiciosSection';
 import SomosSection from './subcomponents/SomosSection';
 import ProductosDestacadosSection from './subcomponents/ProductosDestacadosSection';
 
-export default function SectionInicio({ dominio, siteSlug }) {
-    const { inicio, servicios, somos, tortasDestacadas, productosDestacados, loading, error } = useInicioData(
+export default function SectionInicio({ dominio, siteSlug, seccion, seccionesData, productosDestacados }) {
+    const { inicio, servicios, somos, tortasDestacadas, productosDestacados: productos, loading, error } = useInicioData(
         dominio,
-        siteSlug
+        siteSlug,
+        seccion,
+        seccionesData,
+        productosDestacados
     );
 
     if (loading) {
         return (
-            <div className="flex flex-1 min-h-[60vh] items-center justify-center py-20">
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">
                 <div className="flex flex-col items-center gap-4">
-                    <div className="h-10 w-10 animate-spin rounded-full border-4 border-gray-200 border-t-[var(--color-primario)]" />
-                    <span className="text-sm font-medium text-gray-500">Cargando experiencia...</span>
+                    <div className="h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-[var(--color-primario)]" />
+                    <span className="text-base font-semibold tracking-wide text-gray-700">Cargando experiencia...</span>
                 </div>
             </div>
         );
@@ -34,7 +37,7 @@ export default function SectionInicio({ dominio, siteSlug }) {
             <HeroSection seccionData={inicio} />
             <ServiciosSection seccionData={servicios} />
             <SomosSection seccionData={somos} />
-            <ProductosDestacadosSection seccionData={tortasDestacadas} productos={productosDestacados} />
+            <ProductosDestacadosSection seccionData={tortasDestacadas} productos={productos} />
         </main>
     );
 }

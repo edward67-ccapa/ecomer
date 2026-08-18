@@ -34,7 +34,24 @@ class SitePageController extends Controller
 
         $respuestas = $site->respuestas->keyBy('pregunta_id');
 
-        $contenido = self::formatearPreguntas($seccion->preguntas, $respuestas);
+        // Pre-cargar el contenido de TODAS las secciones activas para renderizado instantáneo
+        $seccionesData = [];
+        foreach ($secciones as $s) {
+            $key = strtolower(str_replace(['_', ' '], '-', $s->slug));
+            $seccionesData[$key] = [
+                'slug' => $s->slug,
+                'nombre' => $s->nombre,
+                'contenido' => self::formatearPreguntas($s->preguntas, $respuestas),
+            ];
+        }
+
+        // Pre-cargar productos destacados si tiene tienda asignada
+        $productosDestacados = [];
+        if ($site->tienda) {
+            $productosDestacados = \App\Http\Controllers\Api\v1\ProductoApiController::formatearProductos(
+                $site->tienda->productos()->where('destacado', true)->get()
+            );
+        }
 
         $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
 
@@ -51,11 +68,13 @@ class SitePageController extends Controller
                     'nombre' => $s->nombre,
                 ])
                 ->values(),
-            'seccionActiva' => [
+            'seccionActiva' => $seccionesData[strtolower(str_replace(['_', ' '], '-', $seccion->slug))] ?? [
                 'slug' => $seccion->slug,
                 'nombre' => $seccion->nombre,
-                'contenido' => $contenido,
+                'contenido' => self::formatearPreguntas($seccion->preguntas, $respuestas),
             ],
+            'seccionesData' => $seccionesData,
+            'productosDestacados' => $productosDestacados,
             'estilos' => $estilos,
         ]);
     }
