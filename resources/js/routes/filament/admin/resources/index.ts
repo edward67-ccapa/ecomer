@@ -1,6 +1,7 @@
 import categorias from './categorias'
 import colores from './colores'
 import dominios from './dominios'
+import monedas from './monedas'
 import plantillas from './plantillas'
 import productos from './productos'
 import shield from './shield'
@@ -14,6 +15,7 @@ const resources = {
     categorias: Object.assign(categorias, categorias),
     colores: Object.assign(colores, colores),
     dominios: Object.assign(dominios, dominios),
+    monedas: Object.assign(monedas, monedas),
     plantillas: Object.assign(plantillas, plantillas),
     productos: Object.assign(productos, productos),
     shield: Object.assign(shield, shield),

@@ -100,17 +100,23 @@ class SitePageController extends Controller
         return $preguntas->whereNull('parent_id')->map(function (Pregunta $pregunta) use ($preguntas, $respuestas): array {
             $respuesta = $respuestas[$pregunta->id] ?? null;
 
+            $children = ($pregunta->relationLoaded('children') && $pregunta->children->isNotEmpty())
+                ? $pregunta->children
+                : ($preguntas->where('parent_id', $pregunta->id)->isNotEmpty()
+                    ? $preguntas->where('parent_id', $pregunta->id)
+                    : $pregunta->children);
+
             $data = [
                 'label' => $pregunta->label,
                 'tipo' => $pregunta->tipo,
                 'estructura' => $pregunta->estructura ?? 'objeto',
                 'max_items' => $pregunta->max_items,
-                'valor' => self::valorPublico($pregunta->tipo, $respuesta?->valor, $preguntas->where('parent_id', $pregunta->id)),
+                'valor' => self::valorPublico($pregunta->tipo, $respuesta?->valor, $children),
                 'enlace' => $respuesta?->enlace,
             ];
 
             if ($pregunta->tipo === 'grupo') {
-                $data['plantilla_campos'] = $preguntas->where('parent_id', $pregunta->id)->map(function ($child) {
+                $data['plantilla_campos'] = $children->map(function ($child) {
                     return [
                         'label' => $child->label,
                         'tipo' => $child->tipo,
@@ -134,7 +140,7 @@ class SitePageController extends Controller
         }
 
         if ($tipo === 'grupo' && is_array($valor)) {
-            $childrenMap = $children ? $children->keyBy('label') : collect();
+            $childrenMap = ($children && $children->isNotEmpty()) ? $children->keyBy('label') : collect();
 
             return array_map(function ($item) use ($childrenMap) {
                 if (! is_array($item)) {
@@ -156,7 +162,16 @@ class SitePageController extends Controller
                 $formattedItem = [];
                 foreach ($item as $key => $val) {
                     $childPregunta = $childrenMap[$key] ?? null;
-                    $childTipo = $childPregunta ? $childPregunta->tipo : 'texto';
+                    $childTipo = $childPregunta ? $childPregunta->tipo : null;
+
+                    if (! $childTipo) {
+                        $lowerKey = strtolower((string) $key);
+                        if (str_contains($lowerKey, 'imagen') || str_contains($lowerKey, 'foto') || str_contains($lowerKey, 'logo') || str_contains($lowerKey, 'img')) {
+                            $childTipo = 'imagen';
+                        } else {
+                            $childTipo = 'texto';
+                        }
+                    }
 
                     $formattedItem[$key] = self::valorPublico($childTipo, $val);
                 }
@@ -166,9 +181,24 @@ class SitePageController extends Controller
         }
 
         if ($tipo === 'imagen' || $tipo === 'galeria') {
+            if (empty($valor)) {
+                return null;
+            }
+
+            $formatUrl = function ($ruta) {
+                if (empty($ruta) || ! is_string($ruta)) {
+                    return $ruta;
+                }
+                if (str_starts_with($ruta, 'http://') || str_starts_with($ruta, 'https://')) {
+                    return $ruta;
+                }
+
+                return Storage::disk('public')->url(ltrim($ruta, '/'));
+            };
+
             return is_array($valor)
-                ? array_map(fn (string $ruta): string => Storage::disk('public')->url($ruta), $valor)
-                : Storage::disk('public')->url((string) $valor);
+                ? array_map($formatUrl, $valor)
+                : $formatUrl((string) $valor);
         }
 
         return $valor;

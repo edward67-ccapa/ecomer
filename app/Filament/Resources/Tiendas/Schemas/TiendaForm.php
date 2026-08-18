@@ -3,6 +3,8 @@
 namespace App\Filament\Resources\Tiendas\Schemas;
 
 use App\Models\Tienda;
+use Filament\Forms\Components\MultiSelect;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
@@ -30,6 +32,11 @@ class TiendaForm
                                 ->maxLength(255),
                             TextInput::make('descripcion')
                                 ->maxLength(255),
+                            MultiSelect::make('monedas')
+                                ->label('Monedas Aceptadas')
+                                ->relationship('monedas', 'nombre')
+                                ->searchable()
+                                ->preload(),
                             Toggle::make('estado')
                                 ->default(true)
                                 ->label('Activa'),

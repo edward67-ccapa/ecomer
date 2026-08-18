@@ -9,6 +9,7 @@ use App\Models\Respuesta;
 use App\Models\User;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\MultiSelect;
 use Filament\Forms\Components\Select;
 
 use Filament\Schemas\Components\Tabs;
@@ -76,6 +77,17 @@ class SiteForm
                                                 ->label('Dominio')
                                                 ->options(fn (Get $get) => Dominio::where('user_id', $get('user_id'))->pluck('nombre', 'id'))
                                                 ->searchable(),
+                                            Select::make('tienda_id')
+                                                ->label('Tienda asociada')
+                                                ->options(fn () => \App\Models\Tienda::pluck('nombre', 'id'))
+                                                ->searchable()
+                                                ->preload()
+                                                ->placeholder('— Seleccionar Tienda —'),
+                                            MultiSelect::make('monedas')
+                                                ->label('Monedas Aceptadas del Sitio')
+                                                ->relationship('monedas', 'nombre')
+                                                ->searchable()
+                                                ->preload(),
                                             Select::make('estado')
                                                 ->options([
                                                     'borrador' => 'Borrador',

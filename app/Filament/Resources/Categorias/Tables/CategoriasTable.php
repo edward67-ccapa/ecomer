@@ -28,8 +28,8 @@ class CategoriasTable
                     ->label('Productos')
                     ->counts('productos')
                     ->sortable(),
-                TextColumn::make('site.nombre')
-                    ->label('Sitio')
+                TextColumn::make('tienda.nombre')
+                    ->label('Tienda')
                     ->searchable()
                     ->sortable(),
                 IconColumn::make('activa')

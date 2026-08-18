@@ -23,6 +23,21 @@ use Illuminate\Support\Str;
 
 class ProductoForm
 {
+    public static function tieneMoneda(Get $get, ?Producto $record, string $codigoIso): bool
+    {
+        $tiendaIds = (array) ($get('tiendas') ?? []);
+        if (empty($tiendaIds) && $record) {
+            $tiendaIds = $record->tiendas->pluck('id')->all();
+        }
+        if (empty($tiendaIds)) {
+            return in_array($codigoIso, ['PEN', 'USD']);
+        }
+
+        return \App\Models\Moneda::whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds))
+            ->where('codigo', $codigoIso)
+            ->exists();
+    }
+
     public static function configure(Schema $schema): Schema
     {
         $armarVariante = static function (Get $get, Set $set): void {
@@ -56,25 +71,27 @@ class ProductoForm
                                 ->required()
                                 ->unique(ignoreRecord: true)
                                 ->maxLength(255),
-                            Select::make('site_id')
-                                ->label('Sitio')
-                                ->relationship('site', 'nombre')
+                            MultiSelect::make('tiendas')
+                                ->label('Tiendas')
+                                ->relationship('tiendas', 'nombre')
                                 ->required()
                                 ->searchable()
                                 ->preload()
                                 ->live(),
-                            MultiSelect::make('tiendas')
-                                ->label('Tiendas')
-                                ->relationship('tiendas', 'nombre')
-                                ->searchable()
-                                ->preload(),
                             Select::make('categoria_id')
                                 ->label('Categoría')
-                                ->options(fn (Get $get, ?Producto $record): array => Categoria::query()
-                                    ->where('site_id', $get('site_id') ?? $record?->site_id)
-                                    ->get()
-                                    ->mapWithKeys(fn (Categoria $categoria): array => [$categoria->id => $categoria->nombre])
-                                    ->all())
+                                ->options(function (Get $get, ?Producto $record): array {
+                                    $tiendaIds = (array) ($get('tiendas') ?? []);
+                                    if (empty($tiendaIds) && $record) {
+                                        $tiendaIds = $record->tiendas->pluck('id')->all();
+                                    }
+
+                                    return Categoria::query()
+                                        ->when(! empty($tiendaIds), fn ($q) => $q->whereIn('tienda_id', $tiendaIds))
+                                        ->get()
+                                        ->mapWithKeys(fn (Categoria $categoria): array => [$categoria->id => $categoria->nombre])
+                                        ->all();
+                                })
                                 ->searchable()
                                 ->live()
                                 ->afterStateUpdated(fn (Set $set) => $set('subcategoria_id', null))
@@ -110,23 +127,53 @@ class ProductoForm
                     ->columns(2)
                     ->schema([
                         TextInput::make('precio')
+                            ->label('Precio en Soles (S/)')
                             ->numeric()
-                            ->required()
-                            ->prefix('$')
-                            ->minValue(0),
+                            ->required(fn (Get $get, ?Producto $record) => self::tieneMoneda($get, $record, 'PEN'))
+                            ->prefix('S/')
+                            ->minValue(0)
+                            ->visible(fn (Get $get, ?Producto $record) => self::tieneMoneda($get, $record, 'PEN')),
                         TextInput::make('precio_oferta')
-                            ->label('Precio de oferta')
+                            ->label('Precio de oferta (S/)')
+                            ->numeric()
+                            ->prefix('S/')
+                            ->minValue(0)
+                            ->visible(fn (Get $get, ?Producto $record) => self::tieneMoneda($get, $record, 'PEN')),
+
+                        TextInput::make('precio_dolares')
+                            ->label('Precio en Dólares ($)')
                             ->numeric()
                             ->prefix('$')
-                            ->minValue(0),
+                            ->minValue(0)
+                            ->visible(fn (Get $get, ?Producto $record) => self::tieneMoneda($get, $record, 'USD')),
+                        TextInput::make('precio_oferta_dolares')
+                            ->label('Precio de oferta ($)')
+                            ->numeric()
+                            ->prefix('$')
+                            ->minValue(0)
+                            ->visible(fn (Get $get, ?Producto $record) => self::tieneMoneda($get, $record, 'USD')),
+
+                        TextInput::make('precio_euros')
+                            ->label('Precio en Euros (€)')
+                            ->numeric()
+                            ->prefix('€')
+                            ->minValue(0)
+                            ->visible(fn (Get $get, ?Producto $record) => self::tieneMoneda($get, $record, 'EUR')),
+                        TextInput::make('precio_oferta_euros')
+                            ->label('Precio de oferta (€)')
+                            ->numeric()
+                            ->prefix('€')
+                            ->minValue(0)
+                            ->visible(fn (Get $get, ?Producto $record) => self::tieneMoneda($get, $record, 'EUR')),
+
                         TextInput::make('cantidad')
                             ->helperText('Cantidad por unidad de venta, p. ej. 500 g')
                             ->maxLength(255),
                         TextInput::make('stock')
                             ->numeric()
-                            ->required()
                             ->minValue(0)
-                            ->default(0),
+                            ->placeholder('Stock ilimitado (dejar vacío)')
+                            ->helperText('Dejar vacío para considerar stock infinito / ilimitado.'),
                     ])
                     ->columnSpanFull(),
                 Section::make('Variantes')
@@ -158,7 +205,19 @@ class ProductoForm
                                                     ->label('Código hex')
                                                     ->placeholder('#ffffff'),
                                             ]),
-                                        ]),
+                                        ])
+                                        ->createOptionUsing(function (array $data): int {
+                                            $slug = filled($data['slug'] ?? null) ? $data['slug'] : Str::slug($data['nombre']);
+                                            $color = Color::firstOrCreate(
+                                                ['slug' => $slug],
+                                                [
+                                                    'nombre' => $data['nombre'],
+                                                    'hex' => $data['hex'] ?? null,
+                                                ]
+                                            );
+
+                                            return $color->id;
+                                        }),
                                     Select::make('talla_id')
                                         ->label('Talla')
                                         ->relationship('talla', 'nombre')
@@ -175,7 +234,16 @@ class ProductoForm
                                             TextInput::make('slug')
                                                 ->required()
                                                 ->maxLength(255),
-                                        ]),
+                                        ])
+                                        ->createOptionUsing(function (array $data): int {
+                                            $slug = filled($data['slug'] ?? null) ? $data['slug'] : Str::slug($data['nombre']);
+                                            $talla = Talla::firstOrCreate(
+                                                ['slug' => $slug],
+                                                ['nombre' => $data['nombre']]
+                                            );
+
+                                            return $talla->id;
+                                        }),
                                     TextInput::make('nombre')
                                         ->helperText('Se compone con color y talla.')
                                         ->live(onBlur: true)
@@ -196,7 +264,7 @@ class ProductoForm
                                     TextInput::make('stock')
                                         ->numeric()
                                         ->minValue(0)
-                                        ->default(0),
+                                        ->placeholder('Ilimitado (vacío)'),
                                 ]),
                                 Grid::make(2)->schema([
                                     FileUpload::make('imagen')

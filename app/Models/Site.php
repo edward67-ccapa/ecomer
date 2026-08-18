@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['user_id', 'dominio_id', 'plantilla_id', 'nombre', 'slug', 'imagen', 'estado', 'estilos'])]
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+
+#[Fillable(['user_id', 'dominio_id', 'plantilla_id', 'tienda_id', 'moneda_id', 'nombre', 'slug', 'imagen', 'estado', 'estilos'])]
 class Site extends Model
 {
     public function user(): BelongsTo
@@ -23,6 +25,21 @@ class Site extends Model
     public function plantilla(): BelongsTo
     {
         return $this->belongsTo(Plantilla::class);
+    }
+
+    public function tienda(): BelongsTo
+    {
+        return $this->belongsTo(Tienda::class);
+    }
+
+    public function moneda(): BelongsTo
+    {
+        return $this->belongsTo(Moneda::class);
+    }
+
+    public function monedas(): BelongsToMany
+    {
+        return $this->belongsToMany(Moneda::class, 'moneda_site')->withTimestamps();
     }
 
     public function respuestas(): HasMany

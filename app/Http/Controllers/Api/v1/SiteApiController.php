@@ -14,7 +14,7 @@ class SiteApiController extends Controller
 {
     public function index(): AnonymousResourceCollection
     {
-        $sites = Site::with(['plantilla.secciones', 'dominio'])
+        $sites = Site::with(['plantilla.secciones', 'dominio', 'tienda.monedas', 'monedas'])
             ->where('estado', 'publicado')
             ->orderBy('nombre')
             ->get();
@@ -25,7 +25,7 @@ class SiteApiController extends Controller
     public function showSite(string $dominio, string $siteSlug): JsonResponse
     {
         $site = Site::query()
-            ->with(['plantilla.secciones', 'dominio'])
+            ->with(['plantilla.secciones', 'dominio', 'tienda.monedas', 'monedas'])
             ->where('estado', 'publicado')
             ->where('slug', $siteSlug)
             ->whereHas('dominio', fn ($query) => $query->where('nombre', $dominio))

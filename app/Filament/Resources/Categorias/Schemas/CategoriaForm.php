@@ -33,9 +33,9 @@ class CategoriaForm
                                         ->required()
                                         ->unique(ignoreRecord: true)
                                         ->maxLength(255),
-                                    Select::make('site_id')
-                                        ->label('Sitio')
-                                        ->relationship('site', 'nombre')
+                                    Select::make('tienda_id')
+                                        ->label('Tienda')
+                                        ->relationship('tienda', 'nombre')
                                         ->required()
                                         ->searchable()
                                         ->preload(),

@@ -20,9 +20,9 @@ class ProductosTable
                 TextColumn::make('nombre')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('site.nombre')
-                    ->label('Sitio')
-                    ->sortable(),
+                TextColumn::make('tiendas.nombre')
+                    ->label('Tiendas')
+                    ->badge(),
                 TextColumn::make('categoria_id')
                     ->label('Categoría')
                     ->formatStateUsing(fn (Producto $record): ?string => $record->subcategoria?->nombre ?? $record->categoria?->nombre),
@@ -30,7 +30,11 @@ class ProductosTable
                     ->label('Variantes')
                     ->numeric(),
                 TextColumn::make('precio')
-                    ->money('USD'),
+                    ->label('Precio')
+                    ->formatStateUsing(function (Producto $record): string {
+                        $simbolo = $record->tiendas->first()?->moneda?->simbolo ?? 'S/';
+                        return $simbolo . ' ' . number_format((float) $record->precio, 2);
+                    }),
                 TextColumn::make('stock')
                     ->numeric(),
                 TextColumn::make('activo')
@@ -39,13 +43,12 @@ class ProductosTable
             ->modifyQueryUsing(fn (Builder $query) => $query->with([
                 'categoria',
                 'subcategoria',
-                'site',
-                'tiendas',
+                'tiendas.moneda',
             ])->withCount('variantes'))
             ->filters([
-                SelectFilter::make('site_id')
-                    ->label('Sitio')
-                    ->relationship('site', 'nombre')
+                SelectFilter::make('tiendas')
+                    ->label('Tienda')
+                    ->relationship('tiendas', 'nombre')
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('categoria_id')
