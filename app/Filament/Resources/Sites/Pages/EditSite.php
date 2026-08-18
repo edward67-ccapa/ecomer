@@ -48,7 +48,17 @@ class EditSite extends EditRecord
     {
         $respuestas = $this->form->getState()['respuestas'] ?? [];
 
+        if (empty($respuestas)) {
+            return;
+        }
+
+        $validPreguntaIds = \App\Models\Pregunta::whereIn('id', array_keys($respuestas))->pluck('id')->all();
+
         foreach ($respuestas as $preguntaId => $item) {
+            if (! in_array((int) $preguntaId, $validPreguntaIds, true)) {
+                continue;
+            }
+
             $valor = $item['valor'] ?? null;
             $enlace = $item['enlace'] ?? null;
 

@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import Header from './shared/Header';
 import Footer from './shared/Footer';
@@ -17,26 +16,11 @@ export default function Tortas({
     const titulosFont = estilos?.tipografia_titulos || 'Montserrat';
     const textoFont = estilos?.tipografia_texto || 'Montserrat';
 
-    // Carga dinámica de fuentes de Google Fonts
-    useEffect(() => {
-        const fonts = [titulosFont, textoFont].filter(Boolean);
-        if (fonts.length > 0) {
-            const uniqueFonts = [...new Set(fonts)];
-            const fontQuery = uniqueFonts
-                .map((f) => `family=${f.replace(/ /g, '+')}:wght@400;600;700;800`)
-                .join('&');
-            const linkId = 'dynamic-google-fonts';
-
-            let link = document.getElementById(linkId);
-            if (!link) {
-                link = document.createElement('link');
-                link.id = linkId;
-                link.rel = 'stylesheet';
-                document.head.appendChild(link);
-            }
-            link.href = `https://fonts.googleapis.com/css2?${fontQuery}&display=swap`;
-        }
-    }, [titulosFont, textoFont]);
+    // Generar consulta para Google Fonts declarativo (elimina CLS/saltos visuales)
+    const uniqueFonts = [...new Set([titulosFont, textoFont].filter(Boolean))];
+    const fontQuery = uniqueFonts.length > 0
+        ? uniqueFonts.map((f) => `family=${f.replace(/ /g, '+')}:wght@400;600;700;800`).join('&')
+        : null;
 
     const styles = {
         '--color-primario': estilos?.color_primario || '#F72F46',
@@ -47,28 +31,24 @@ export default function Tortas({
         '--espaciado': estilos?.espaciado || '1rem',
     };
 
-    const renderSection = () => {
-        const sectionMap = {
-            inicio: SectionInicio,
-            nosotros: SectionNosotros,
-            contactos: SectionContactos,
-        };
-
-        const Component = sectionMap[seccionActiva?.slug?.toLowerCase()] || SectionInicio;
-        return (
-            <Component
-                site={site}
-                dominio={dominio}
-                siteSlug={siteSlug}
-                seccion={seccionActiva}
-                styles={styles}
-            />
-        );
+    const sectionMap = {
+        inicio: SectionInicio,
+        nosotros: SectionNosotros,
+        contactos: SectionContactos,
     };
+
+    const ActiveComponent = sectionMap[seccionActiva?.slug?.toLowerCase()] || SectionInicio;
 
     return (
         <>
-            <Head title={`${site.nombre} — ${seccionActiva?.nombre || 'Inicio'}`} />
+            <Head title={`${site.nombre} — ${seccionActiva?.nombre || 'Inicio'}`}>
+                {fontQuery && (
+                    <link
+                        rel="stylesheet"
+                        href={`https://fonts.googleapis.com/css2?${fontQuery}&display=swap`}
+                    />
+                )}
+            </Head>
 
             <div
                 suppressHydrationWarning
@@ -86,7 +66,13 @@ export default function Tortas({
                     seccionActiva={seccionActiva}
                 />
 
-                {renderSection()}
+                <ActiveComponent
+                    site={site}
+                    dominio={dominio}
+                    siteSlug={siteSlug}
+                    seccion={seccionActiva}
+                    styles={styles}
+                />
 
                 <Footer site={site} dominio={dominio} siteSlug={siteSlug} />
             </div>

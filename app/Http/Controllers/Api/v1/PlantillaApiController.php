@@ -46,9 +46,10 @@ class PlantillaApiController extends Controller
         }
 
         // Devolver únicamente el contenido de la sección solicitada (ligero y rápido)
-        $seccionModel = $secciones->first(
-            fn ($s) => strtolower($s->slug) === strtolower($seccion)
-        );
+        $seccionModel = $secciones->first(function ($s) use ($seccion) {
+            $normalize = fn ($str) => strtolower(str_replace(['_', ' '], '-', $str));
+            return $normalize($s->slug) === $normalize($seccion);
+        });
 
         if (! $seccionModel instanceof Seccion) {
             return response()->json(['message' => 'Sección no encontrada'], 404);
