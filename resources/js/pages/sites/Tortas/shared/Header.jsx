@@ -111,7 +111,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                     </Link>
 
                     {/* NAV LINKS & CART */}
-                    <div className="flex items-center gap-3">
+                    <div suppressHydrationWarning className="flex items-center gap-3">
                         <nav className="flex flex-wrap items-center gap-1">
                             {secciones?.map((seccion) => {
                                 const activa =

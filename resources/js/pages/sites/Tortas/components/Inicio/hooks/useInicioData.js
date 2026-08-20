@@ -6,6 +6,7 @@ import {
     fetchTortasDestacadasData,
     fetchProductosDestacados,
     fetchPorQueElegirnosData,
+    fetchContactoData,
 } from '../api';
 
 export function useInicioData(
@@ -34,6 +35,7 @@ export function useInicioData(
     const initialSomos = findSeccion('somos') || null;
     const initialTortasDestacadas = findSeccion('tortas-destacadas') || findSeccion('tortas_destacadas') || null;
     const initialPorQueElegirnos = findSeccion('elegirnos') || findSeccion('por-que-elegirnos') || findSeccion('por_que_elegirnos') || null;
+    const initialContacto = findSeccion('contacto') || null;
 
     const hasAllInitialData = Boolean(initialInicio && initialServicios && initialSomos && initialPorQueElegirnos);
 
@@ -43,6 +45,7 @@ export function useInicioData(
         somos: initialSomos,
         tortasDestacadas: initialTortasDestacadas,
         porQueElegirnos: initialPorQueElegirnos,
+        contacto: initialContacto,
         productosDestacados: initialProductosDestacados || [],
     });
 
@@ -50,8 +53,7 @@ export function useInicioData(
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Si la data fue entregada por Inertia, NO se ejecutan peticiones ni re-renders extras
-        if (hasAllInitialData) {
+        if (hasAllInitialData && initialContacto) {
             setLoading(false);
             return;
         }
@@ -65,11 +67,12 @@ export function useInicioData(
             initialSomos ? Promise.resolve(initialSomos) : fetchSomosData(dominio, siteSlug).catch(() => null),
             initialTortasDestacadas ? Promise.resolve(initialTortasDestacadas) : fetchTortasDestacadasData(dominio, siteSlug).catch(() => null),
             initialPorQueElegirnos ? Promise.resolve(initialPorQueElegirnos) : fetchPorQueElegirnosData(dominio, siteSlug).catch(() => null),
+            initialContacto ? Promise.resolve(initialContacto) : fetchContactoData(dominio, siteSlug).catch(() => null),
             initialProductosDestacados?.length > 0
                 ? Promise.resolve({ data: initialProductosDestacados })
                 : fetchProductosDestacados(dominio, siteSlug).catch(() => null),
         ])
-            .then(([inicio, servicios, somos, tortasDestacadas, porQueElegirnos, productosDestacadosRes]) => {
+            .then(([inicio, servicios, somos, tortasDestacadas, porQueElegirnos, contacto, productosDestacadosRes]) => {
                 if (!isMounted) return;
 
                 setData({
@@ -78,6 +81,7 @@ export function useInicioData(
                     somos: somos || initialSomos,
                     tortasDestacadas: tortasDestacadas || initialTortasDestacadas,
                     porQueElegirnos: porQueElegirnos || initialPorQueElegirnos,
+                    contacto: contacto || initialContacto,
                     productosDestacados: productosDestacadosRes?.data || initialProductosDestacados || [],
                 });
             })

@@ -31,34 +31,23 @@
                 if (this.open) {
                     this.currentIcon = $wire.get('{{ $statePath }}') || '';
                     this.search = '';
-                } else {
-                    this.cancel();
                 }
-            },
-            cancel() {
-                this.open = false;
-                this.search = '';
-                this.currentIcon = $wire.get('{{ $statePath }}') || '';
             },
             selectIcon(key) {
-                const oldIcon = $wire.get('{{ $statePath }}') || '';
-                if (key !== oldIcon) {
-                    this.currentIcon = key;
-                    $wire.set('{{ $statePath }}', key);
-                }
+                this.currentIcon = key;
+                $wire.set('{{ $statePath }}', key, false);
                 this.open = false;
+                this.search = '';
             },
             clearIcon() {
-                const oldIcon = $wire.get('{{ $statePath }}') || '';
-                if (oldIcon !== '') {
-                    this.currentIcon = '';
-                    $wire.set('{{ $statePath }}', null);
-                }
+                this.currentIcon = '';
+                $wire.set('{{ $statePath }}', null, false);
                 this.open = false;
+                this.search = '';
             }
         }"
         class="relative inline-block"
-        @click.outside="cancel()"
+        @click.outside="open = false"
     >
         <!-- BOTÓN DE SELECCIÓN -->
         <div class="flex items-center gap-2">
@@ -79,7 +68,7 @@
             <template x-if="currentIcon">
                 <button
                     type="button"
-                    @click="clearIcon()"
+                    @click.prevent.stop="clearIcon()"
                     class="p-2.5 text-gray-400 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-950/40 rounded-xl transition cursor-pointer"
                     title="Quitar ícono"
                 >
@@ -88,7 +77,7 @@
             </template>
         </div>
 
-        <!-- CAJA FLOTANTE ABSOLUTA (SOLO EXISTE EN EL DOM CUANDO OPEN === TRUE) -->
+        <!-- CAJA FLOTANTE ABSOLUTA -->
         <template x-if="open">
             <div
                 x-transition:enter="transition ease-out duration-100"

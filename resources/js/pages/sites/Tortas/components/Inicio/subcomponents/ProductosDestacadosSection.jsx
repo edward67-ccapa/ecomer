@@ -29,8 +29,6 @@ export default function ProductosDestacadosSection({ seccionData, productos }) {
         return <DynamicIcon name={iconName} className={className} style={customStyle} />;
     };
 
-    const whatsappUrl = 'https://wa.me/51999999999';
-
     return (
         <section className="py-16 px-6 bg-white">
             <div className="max-w-7xl mx-auto">

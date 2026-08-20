@@ -26,3 +26,7 @@ export async function fetchProductosDestacados(dominio, siteSlug) {
 export async function fetchPorQueElegirnosData(dominio, siteSlug) {
     return fetchSectionData(dominio, siteSlug, 'elegirnos');
 }
+
+export async function fetchContactoData(dominio, siteSlug) {
+    return fetchSectionData(dominio, siteSlug, 'contacto');
+}

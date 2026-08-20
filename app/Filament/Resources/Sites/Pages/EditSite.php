@@ -69,8 +69,13 @@ class EditSite extends EditRecord
             return;
         }
 
+        $existingRespuestas = Respuesta::where('site_id', $siteId)
+            ->get()
+            ->keyBy('pregunta_id');
+
         $validPreguntaIds = \App\Models\Pregunta::whereIn('id', array_keys($respuestas))->pluck('id')->all();
 
+        $dirtyRespuestas = [];
         foreach ($respuestas as $preguntaId => $item) {
             if (! in_array((int) $preguntaId, $validPreguntaIds, true)) {
                 continue;
@@ -84,10 +89,31 @@ class EditSite extends EditRecord
                 $valor = json_encode($valor);
             }
 
-            Respuesta::updateOrCreate(
-                ['site_id' => $siteId, 'pregunta_id' => $preguntaId],
-                ['valor' => $valor, 'enlace' => $enlace],
-            );
+            $existing = $existingRespuestas->get((int) $preguntaId);
+
+            // Comprobación PATCH: Si no ha cambiado nada, omitir actualización
+            if ($existing && (string) $existing->valor === (string) $valor && (string) $existing->enlace === (string) $enlace) {
+                continue;
+            }
+
+            $dirtyRespuestas[$preguntaId] = [
+                'valor' => $valor,
+                'enlace' => $enlace,
+            ];
         }
+
+        // Si no hay cambios en la pestaña actual ni en ninguna otra, salir ALTOQUE (0ms, 0 queries)
+        if (empty($dirtyRespuestas)) {
+            return;
+        }
+
+        \Illuminate\Support\Facades\DB::transaction(function () use ($dirtyRespuestas, $siteId) {
+            foreach ($dirtyRespuestas as $preguntaId => $item) {
+                Respuesta::updateOrCreate(
+                    ['site_id' => $siteId, 'pregunta_id' => $preguntaId],
+                    ['valor' => $item['valor'], 'enlace' => $item['enlace']],
+                );
+            }
+        });
     }
 }

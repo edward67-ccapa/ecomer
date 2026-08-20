@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { BloqueContenido } from '../../shared/components';
 import { fetchContactosData } from './api';
+import ContactoSection from '../Inicio/subcomponents/ContactoSection';
 
 export default function SectionContactos({ site, dominio, siteSlug, styles }) {
     const [seccionData, setSeccionData] = useState(null);
@@ -28,31 +28,24 @@ export default function SectionContactos({ site, dominio, siteSlug, styles }) {
     }, [dominio, siteSlug]);
 
     if (loading) {
-        return <main className="flex-1 p-12 text-center text-gray-500 font-medium">Cargando datos desde api.js...</main>;
+        return <main className="flex-1 p-12 text-center text-gray-500 font-medium">Cargando datos de contacto...</main>;
     }
 
     if (error) {
         return (
             <main className="flex-1 p-12 text-center text-red-500 font-semibold">
-                Error desde api.js: {error}
+                Error al cargar la sección de contacto: {error}
             </main>
         );
     }
 
     if (!seccionData || !seccionData.contenido) {
-        return <main className="flex-1 p-12 text-center text-gray-400">Sin contenido devuelto por api.js.</main>;
+        return <main className="flex-1 p-12 text-center text-gray-400">Sin contenido en la sección de contacto.</main>;
     }
 
     return (
-        <main className="flex-1 py-16">
-            <div className="mx-auto max-w-7xl px-6">
-                <h1 className="mb-8 text-3xl font-bold">{seccionData.nombre}</h1>
-                <div className="grid gap-6 md:grid-cols-2">
-                    {seccionData.contenido.map((item) => (
-                        <BloqueContenido key={item.label} item={item} styles={styles} />
-                    ))}
-                </div>
-            </div>
+        <main className="flex-1">
+            <ContactoSection seccionData={seccionData} />
         </main>
     );
 }
