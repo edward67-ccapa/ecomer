@@ -99,7 +99,6 @@ export default function HeroSection({ seccionData }) {
                                 return (
                                     <motion.a
                                         key={idx}
-                                        whileHover={{ scale: 1.04 }}
                                         whileTap={{ scale: 0.96 }}
                                         href={btnUrl}
                                         target={btnUrl.startsWith('http') ? '_blank' : '_self'}

@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Plantillas\Schemas;
 
 use App\Models\Plantilla;
 use App\Models\Pregunta;
+use App\Filament\Forms\Components\IconPicker;
+use App\Filament\Forms\Components\LinkPicker;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\MultiSelect;
@@ -78,7 +80,6 @@ class PlantillaForm
 
                                                         Section::make('Estilos globales')
                                                             ->icon('heroicon-o-paint-brush')
-                                                            ->description('Valores por defecto que copiarán los sites creados con esta plantilla.')
                                                             ->schema([
                                                                 Grid::make(2)->schema([
                                                                     ColorPicker::make('estilos.color_primario')
@@ -113,8 +114,7 @@ class PlantillaForm
                                                         MultiSelect::make('tiendas')
                                                             ->label('Tiendas asociadas')
                                                             ->relationship('tiendas', 'nombre')
-                                                            ->searchable()
-                                                            ->preload(),
+                                                            ->searchable(),
                                                     ])
                                                     ->columnSpanFull(),
                                             ]),
@@ -126,6 +126,9 @@ class PlantillaForm
                                                     ->relationship()
                                                     ->label('Secciones de la plantilla')
                                                     ->reorderableWithDragAndDrop()
+                                                    ->collapsible()
+                                                    ->collapsed()
+                                                    ->itemLabel(fn (array $state): ?string => isset($state['nombre']) && filled($state['nombre']) ? "Sección: {$state['nombre']} (" . ($state['slug'] ?? 'sin-slug') . ")" : 'Nueva Sección')
                                                     ->grid(['default' => 1])
                                                     ->schema([
                                                         Grid::make(4)->schema([
@@ -145,6 +148,9 @@ class PlantillaForm
                                                             ->relationship()
                                                             ->label('Preguntas')
                                                             ->reorderableWithDragAndDrop()
+                                                            ->collapsible()
+                                                            ->collapsed()
+                                                            ->itemLabel(fn (array $state): ?string => isset($state['label']) && filled($state['label']) ? "Pregunta: {$state['label']} [" . ($state['tipo'] ?? 'texto') . "]" : 'Nueva Pregunta')
                                                             ->schema([
                                                                 Grid::make(7)->schema([
                                                                     TextInput::make('label')
@@ -208,9 +214,10 @@ class PlantillaForm
                                                                                 ->columnSpan(1),
                                                                         ]),
                                                                     ])
-                                                                    ->itemLabel(fn (array $state): ?string => $state['label'] ?? null)
+                                                                    ->itemLabel(fn (array $state): ?string => isset($state['label']) ? "Campo: {$state['label']}" : null)
                                                                     ->reorderableWithDragAndDrop()
                                                                     ->collapsible()
+                                                                    ->collapsed()
                                                                     ->columns(1),
                                                             ])
                                                             ->columns(1),
@@ -246,10 +253,15 @@ class PlantillaForm
             $fields = [];
 
             foreach ($seccion->preguntas->whereNull('parent_id') as $pregunta) {
-                $fields[] = self::campoRespuesta($pregunta);
+                $campo = self::campoRespuesta($pregunta);
+                if (is_array($campo)) {
+                    array_push($fields, ...$campo);
+                } else {
+                    $fields[] = $campo;
+                }
             }
 
-            if ($fields) {
+            if (! empty($fields)) {
                 $subTabs[] = Tab::make($seccion->nombre)
                     ->icon('heroicon-o-document-text')
                     ->schema($fields)
@@ -268,7 +280,10 @@ class PlantillaForm
         ];
     }
 
-    private static function campoRespuesta(Pregunta $pregunta): Component
+    /**
+     * @return Component|array<int, Component>
+     */
+    private static function campoRespuesta(Pregunta $pregunta): Component|array
     {
         $statePath = "respuestas.{$pregunta->id}.valor";
         $linkPath = "respuestas.{$pregunta->id}.enlace";
@@ -305,13 +320,7 @@ class PlantillaForm
             'color' => ColorPicker::make($statePath)
                 ->helperText('Selecciona un color'),
 
-            'icono' => TextInput::make($statePath)
-                ->prefixIcon('heroicon-o-sparkles')
-                ->placeholder('Ej. FaStar, FaShoppingBag, FaStore, MdPhone, HiHome')
-                ->helperText(new HtmlString(
-                    '<b>Íconos populares:</b> FaStar, FaShoppingBag, FaStore, FaPhone, FaEnvelope, FaUser, FaHeart, FaTruck, MdHome, HiSparkles, FaInstagram, FaWhatsapp.<br>' .
-                    '💡 Copia y pega cualquier ícono desde el catálogo: <a href="https://react-icons.github.io/react-icons/" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 600;">Catálogo react-icons ↗</a>'
-                )),
+            'icono' => IconPicker::make($statePath),
 
             'enlace' => TextInput::make($statePath)
                 ->url()
@@ -324,9 +333,8 @@ class PlantillaForm
                         $children = Pregunta::where('parent_id', $pregunta->id)->orderBy('orden')->get();
                     }
 
-                    return $children->map(function (Pregunta $child) {
+                    return $children->flatMap(function (Pregunta $child) {
                         $childPath = $child->label;
-                        $childTogglePath = "{$child->label}_activar_enlace";
                         $childLinkPath = "{$child->label}_enlace";
 
                         $subField = match ($child->tipo) {
@@ -334,12 +342,7 @@ class PlantillaForm
                             'imagen' => FileUpload::make($childPath)->image()->disk('public')->directory('sites/contenido')->orientImagesFromExif(false)->uploadingMessage('Subiendo imagen...')->deletable(true)->openable()->downloadable(),
                             'galeria' => FileUpload::make($childPath)->image()->multiple()->disk('public')->directory('sites/contenido')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable(),
                             'color' => ColorPicker::make($childPath),
-                            'icono' => TextInput::make($childPath)
-                                ->prefixIcon('heroicon-o-sparkles')
-                                ->placeholder('Ej. FaStar, FaStore, HiHome')
-                                ->helperText(new HtmlString(
-                                    'Populares: <b>FaStar, FaShoppingBag, FaStore, FaPhone, FaUser</b> | <a href="https://react-icons.github.io/react-icons/" target="_blank" style="color: #2563eb; text-decoration: underline; font-weight: 600;">Ver todos ↗</a>'
-                                )),
+                            'icono' => IconPicker::make($childPath),
                             'enlace' => TextInput::make($childPath)->url(),
                             default => TextInput::make($childPath),
                         };
@@ -347,26 +350,14 @@ class PlantillaForm
                         $subField = $subField->label($child->label);
 
                         if ($child->tipo === 'enlace') {
-                            return $subField;
+                            return [$subField];
                         }
 
-                        return Grid::make(1)
-                            ->schema([
-                                $subField,
-
-                                Toggle::make($childTogglePath)
-                                    ->label("🔗 ¿Agregar enlace a '{$child->label}'?")
-                                    ->live(),
-
-                                TextInput::make($childLinkPath)
-                                    ->label("🔗 Enlace para '{$child->label}'")
-                                    ->url()
-                                    ->placeholder('https://ejemplo.com')
-                                    ->helperText("URL opcional asociada a '{$child->label}'")
-                                    ->visible(fn (Get $get): bool => (bool) $get($childTogglePath) || filled($get($childLinkPath))),
-                            ])
-                            ->gap(2);
-                    })->toArray();
+                        return [
+                            $subField,
+                            LinkPicker::make($childLinkPath),
+                        ];
+                    })->all();
                 })
                 ->itemLabel(fn (array $state): ?string => $state['nombre'] ?? $state['titulo'] ?? $state['label'] ?? null)
                 ->maxItems($pregunta->max_items)
@@ -383,24 +374,14 @@ class PlantillaForm
             ->helperText($pregunta->ayuda)
             ->required($pregunta->requerida);
 
-        $togglePath = "respuestas.{$pregunta->id}.activar_enlace";
+        if ($pregunta->tipo === 'enlace' || $pregunta->tipo === 'grupo') {
+            return $field;
+        }
 
-        return Grid::make(1)
-            ->schema([
-                $field,
-
-                Toggle::make($togglePath)
-                    ->label('🔗 ¿Agregar enlace?')
-                    ->live(),
-
-                TextInput::make($linkPath)
-                    ->label('🔗 Enlace (URL)')
-                    ->url()
-                    ->placeholder('https://ejemplo.com')
-                    ->helperText('Asocia una URL a este contenido')
-                    ->visible(fn (Get $get): bool => (bool) $get($togglePath) || filled($get($linkPath))),
-            ])
-            ->gap(3);
+        return [
+            $field,
+            LinkPicker::make($linkPath),
+        ];
     }
 
     public static function tiposPregunta(): array
@@ -431,4 +412,137 @@ class PlantillaForm
             'Plus Jakarta Sans' => 'Plus Jakarta Sans',
         ];
     }
+
+    public static function getIconOptions(): array
+    {
+        return [
+            'Redes Sociales y Contacto' => [
+                'FaWhatsapp' => 'FaWhatsapp (WhatsApp)',
+                'FaInstagram' => 'FaInstagram (Instagram)',
+                'FaFacebook' => 'FaFacebook (Facebook)',
+                'FaTiktok' => 'FaTiktok (TikTok)',
+                'FaYoutube' => 'FaYoutube (YouTube)',
+                'FaXTwitter' => 'FaXTwitter (Twitter / X)',
+                'FaEnvelope' => 'FaEnvelope (Correo / Email)',
+                'FaPhone' => 'FaPhone (Teléfono)',
+                'FaLocationDot' => 'FaLocationDot (Ubicación / Mapa)',
+                'FaGlobe' => 'FaGlobe (Sitio Web / Global)',
+                'FaHouseFlag' => 'FaHouseFlag (Tienda / Sede)',
+                'FaStore' => 'FaStore (Local / Tienda)',
+                'TbBrandWhatsapp' => 'TbBrandWhatsapp (WhatsApp Tabler)',
+                'HiOutlineEnvelope' => 'HiOutlineEnvelope (Correo Heroicons)',
+                'HiOutlinePhone' => 'HiOutlinePhone (Teléfono Heroicons)',
+            ],
+            'Comida, Pastelería y Repostería' => [
+                'HiOutlineCake' => 'HiOutlineCake (Pastel / Torta)',
+                'PiCakeBold' => 'PiCakeBold (Torta Phosphor)',
+                'TbCake' => 'TbCake (Torta Cumpleaños)',
+                'FaCookieBite' => 'FaCookieBite (Galleta)',
+                'FaCookie' => 'FaCookie (Galleta Entera)',
+                'FaIceCream' => 'FaIceCream (Helado)',
+                'FaBreadSlice' => 'FaBreadSlice (Pan)',
+                'FaCoffee' => 'FaCoffee (Café)',
+                'FaMugHot' => 'FaMugHot (Taza Caliente)',
+                'FaUtensils' => 'FaUtensils (Cubiertos / Menú)',
+                'FaBurger' => 'FaBurger (Hamburguesa)',
+                'FaPizzaSlice' => 'FaPizzaSlice (Pizza)',
+                'FaBowlFood' => 'FaBowlFood (Plato de Comida)',
+                'FaAppleWhole' => 'FaAppleWhole (Manzana / Saludable)',
+                'FaWineGlass' => 'FaWineGlass (Copa / Vino)',
+                'TbChefHat' => 'TbChefHat (Gorro de Chef)',
+                'MdOutlineCake' => 'MdOutlineCake (Torta Material)',
+                'MdOutlineFastfood' => 'MdOutlineFastfood (Comida Rápida)',
+            ],
+            'E-commerce, Compras y Ofertas' => [
+                'FaShoppingCart' => 'FaShoppingCart (Carrito de Compras)',
+                'FaShoppingBag' => 'FaShoppingBag (Bolsa de Compras)',
+                'HiOutlineShoppingBag' => 'HiOutlineShoppingBag (Bolsa Heroicons)',
+                'TbShoppingBag' => 'TbShoppingBag (Bolsa Tabler)',
+                'FaTag' => 'FaTag (Etiqueta / Precio)',
+                'FaTags' => 'FaTags (Etiquetas)',
+                'FaCreditCard' => 'FaCreditCard (Tarjeta de Crédito)',
+                'FaMoneyBillWave' => 'FaMoneyBillWave (Dinero / Efectivo)',
+                'FaGift' => 'FaGift (Regalo / Promoción)',
+                'FaReceipt' => 'FaReceipt (Recibo / Factura)',
+                'FaPercent' => 'FaPercent (Descuento %)',
+                'TbDiscount' => 'TbDiscount (Descuento Tabler)',
+                'FaBoxOpen' => 'FaBoxOpen (Caja Abierta)',
+                'FaCoins' => 'FaCoins (Monedas / Puntos)',
+                'PiStorefrontBold' => 'PiStorefrontBold (Fachada Tienda)',
+                'MdOutlinePayments' => 'MdOutlinePayments (Pagos)',
+                'MdOutlineDiscount' => 'MdOutlineDiscount (Descuento Material)',
+                'HiOutlineTag' => 'HiOutlineTag (Etiqueta Heroicons)',
+                'HiOutlineGift' => 'HiOutlineGift (Regalo Heroicons)',
+                'PiHandbagBold' => 'PiHandbagBold (Bolso / Compra)',
+            ],
+            'Envíos, Logística y Horarios' => [
+                'TbTruckDelivery' => 'TbTruckDelivery (Delivery / Envío)',
+                'FaTruck' => 'FaTruck (Camión de Envío)',
+                'FaTruckFast' => 'FaTruckFast (Envío Rápido Express)',
+                'MdOutlineLocalShipping' => 'MdOutlineLocalShipping (Envío Local)',
+                'FaClock' => 'FaClock (Tiempo / Horario)',
+                'FaCalendarDays' => 'FaCalendarDays (Calendario / Fechas)',
+                'FaShieldHalved' => 'FaShieldHalved (Seguridad / Garantía)',
+                'MdOutlineVerified' => 'MdOutlineVerified (Verificado)',
+                'TbRosetteDiscountCheck' => 'TbRosetteDiscountCheck (Garantía Calidad)',
+                'FaBox' => 'FaBox (Paquete)',
+                'TbPackage' => 'TbPackage (Paquete Tabler)',
+                'FaRoute' => 'FaRoute (Ruta / En Tránsito)',
+                'FaMapPin' => 'FaMapPin (Punto Mapa)',
+                'HiOutlineShieldCheck' => 'HiOutlineShieldCheck (Escudo Seguro)',
+                'HiOutlineClock' => 'HiOutlineClock (Horario Heroicons)',
+            ],
+            'Calidad, Badges y Reacciones' => [
+                'PiPaintBrushHouseholdBold' => 'PiPaintBrushHouseholdBold (Diseño / Personalizado)',
+                'FaStar' => 'FaStar (Estrella Rellena)',
+                'FaRegStar' => 'FaRegStar (Estrella Borde)',
+                'FaHeart' => 'FaHeart (Corazón Relleno)',
+                'FaRegHeart' => 'FaRegHeart (Corazón Borde)',
+                'FaAward' => 'FaAward (Premio / Reconocimiento)',
+                'FaMedal' => 'FaMedal (Medalla)',
+                'FaCircleCheck' => 'FaCircleCheck (Check / Correcto)',
+                'FaThumbsUp' => 'FaThumbsUp (Me Gusta / Recomendado)',
+                'FaCrown' => 'FaCrown (Premium / VIP)',
+                'TbSparkles' => 'TbSparkles (Especial / Brillo)',
+                'HiOutlineSparkles' => 'HiOutlineSparkles (Brillo Heroicons)',
+                'FaGem' => 'FaGem (Joya / Calidad)',
+                'FaCertificate' => 'FaCertificate (Certificado)',
+                'FaWrench' => 'FaWrench (Servicio / Soporte)',
+                'FaFire' => 'FaFire (Popular / En Tendencia)',
+            ],
+            'Interfaz y Navegación' => [
+                'FaMagnifyingGlass' => 'FaMagnifyingGlass (Buscar / Lupa)',
+                'FaUser' => 'FaUser (Usuario / Cuenta)',
+                'FaRegUser' => 'FaRegUser (Usuario Borde)',
+                'FaBars' => 'FaBars (Menú Hamburguesa)',
+                'FaXmark' => 'FaXmark (Cerrar / X)',
+                'FaChevronDown' => 'FaChevronDown (Flecha Abajo)',
+                'FaChevronRight' => 'FaChevronRight (Flecha Derecha)',
+                'FaChevronLeft' => 'FaChevronLeft (Flecha Izquierda)',
+                'FaChevronUp' => 'FaChevronUp (Flecha Arriba)',
+                'FaArrowRight' => 'FaArrowRight (Flecha Continuar)',
+                'FaPlus' => 'FaPlus (Agregar / Más)',
+                'FaMinus' => 'FaMinus (Quitar / Menos)',
+                'FaTrash' => 'FaTrash (Eliminar / Basura)',
+                'FaPenToSquare' => 'FaPenToSquare (Editar)',
+                'FaFilter' => 'FaFilter (Filtrar)',
+                'FaShareNodes' => 'FaShareNodes (Compartir)',
+                'FaCircleInfo' => 'FaCircleInfo (Información)',
+                'FaCircleQuestion' => 'FaCircleQuestion (Pregunta / Ayuda)',
+                'FaEye' => 'FaEye (Ver / Previsualizar)',
+                'FaLock' => 'FaLock (Bloqueado / Candado)',
+            ],
+            'Negocios y Soporte' => [
+                'FaChartLine' => 'FaChartLine (Crecimiento / Ventas)',
+                'FaBriefcase' => 'FaBriefcase (Portafolio / Negocios)',
+                'FaBuilding' => 'FaBuilding (Empresa / Edificio)',
+                'FaHandshake' => 'FaHandshake (Trato / Alianza)',
+                'FaUsers' => 'FaUsers (Equipo / Clientes)',
+                'FaBullhorn' => 'FaBullhorn (Anuncios / Novedades)',
+                'FaHeadphones' => 'FaHeadphones (Audífonos / Soporte)',
+                'MdOutlineSupportAgent' => 'MdOutlineSupportAgent (Agente de Soporte)',
+            ]
+        ];
+    }
 }
+

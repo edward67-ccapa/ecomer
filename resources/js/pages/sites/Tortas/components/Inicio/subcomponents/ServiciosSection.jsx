@@ -90,7 +90,6 @@ export default function ServiciosSection({ seccionData, dominio, siteSlug }) {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ duration: 0.5, delay: idx * 0.1 }}
-                                whileHover={{ y: -6 }}
                             >
                                 <Link
                                     href={targetUrl}

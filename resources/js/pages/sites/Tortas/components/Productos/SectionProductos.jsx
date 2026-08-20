@@ -2,8 +2,10 @@ import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DynamicIcon from '@/components/DynamicIcon';
 import { useProductosData } from './hooks/useProductosData';
+import { useCartStore } from '@/stores/useCartStore';
 
 export default function SectionProductos({ dominio, siteSlug, seccion, seccionesData, productos: initialProductos }) {
+    const addItem = useCartStore((state) => state.addItem);
     const { seccionData, productos, loading, error } = useProductosData(
         dominio,
         siteSlug,
@@ -162,7 +164,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
     }
 
     return (
-        <main className="flex-1 py-16 px-4 sm:px-6 bg-gray-50/50">
+        <main className="flex-1 py-16 px-4 sm:px-6 bg-white">
             <div className="max-w-7xl mx-auto">
                 {/* Cabecera */}
                 <div className="text-center max-w-2xl mx-auto mb-10">
@@ -216,9 +218,8 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
                     {/* PANEL IZQUIERDO: Filtros en Acordeón */}
                     <aside
-                        className={`w-full lg:w-72 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm lg:sticky lg:top-24 transition-all duration-300 ${
-                            mostrarFiltrosMovil ? 'block' : 'hidden lg:block'
-                        }`}
+                        className={`w-full lg:w-72 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm lg:sticky lg:top-24 transition-all duration-300 ${mostrarFiltrosMovil ? 'block' : 'hidden lg:block'
+                            }`}
                         style={{ borderRadius: 'var(--radio-bordes)' }}
                     >
                         <div className="flex items-center justify-between pb-4 mb-4 border-b border-gray-100">
@@ -390,15 +391,17 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                                     </span>
                                                 </div>
 
-                                                <a
-                                                    href={`${whatsappUrl}?text=${encodeURIComponent(`Hola, quisiera consultar por la torta ${prod.nombre}`)}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold text-white shadow-md hover:shadow-lg transition-all transform active:scale-95"
-                                                    style={{ backgroundColor: 'var(--color-primario)', borderRadius: 'var(--radio-bordes)' }}
-                                                >
-                                                    Pedir 📲
-                                                </a>
+                                                <div className="flex items-center gap-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => addItem(prod)}
+                                                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-gray-800 bg-gray-100 hover:bg-gray-200 transition shadow-xs cursor-pointer active:scale-95"
+                                                        style={{ borderRadius: 'var(--radio-bordes)', background: 'var(--color-primario)' }}
+                                                        title="Agregar al carrito"
+                                                    >
+                                                        <DynamicIcon name="FaCartShopping" className="h-3.5 w-3.5 text-white" />
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
                                     </motion.div>

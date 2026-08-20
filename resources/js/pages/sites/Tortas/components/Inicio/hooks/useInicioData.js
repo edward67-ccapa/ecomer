@@ -5,6 +5,7 @@ import {
     fetchSomosData,
     fetchTortasDestacadasData,
     fetchProductosDestacados,
+    fetchPorQueElegirnosData,
 } from '../api';
 
 export function useInicioData(
@@ -14,19 +15,34 @@ export function useInicioData(
     seccionesData = null,
     initialProductosDestacados = null
 ) {
-    const isInicioSection = seccionActiva?.slug?.toLowerCase() === 'inicio';
-    const initialInicio = isInicioSection ? seccionActiva : (seccionesData?.['inicio'] || null);
-    const initialServicios = seccionesData?.['servicios'] || null;
-    const initialSomos = seccionesData?.['somos'] || null;
-    const initialTortasDestacadas = seccionesData?.['tortas-destacadas'] || seccionesData?.['tortas_destacadas'] || null;
+    const findSeccion = (slugKey) => {
+        if (!seccionesData) return null;
+        if (seccionesData[slugKey]) return seccionesData[slugKey];
+        const target = slugKey.toLowerCase().replace(/[_ ]/g, '-');
+        for (const key in seccionesData) {
+            const normalized = key.toLowerCase().replace(/[_ ]/g, '-');
+            if (normalized === target || normalized.includes(target) || target.includes(normalized)) {
+                return seccionesData[key];
+            }
+        }
+        return null;
+    };
 
-    const hasAllInitialData = Boolean(initialInicio && initialServicios && initialSomos);
+    const isInicioSection = seccionActiva?.slug?.toLowerCase() === 'inicio';
+    const initialInicio = isInicioSection ? seccionActiva : (findSeccion('inicio') || null);
+    const initialServicios = findSeccion('servicios') || null;
+    const initialSomos = findSeccion('somos') || null;
+    const initialTortasDestacadas = findSeccion('tortas-destacadas') || findSeccion('tortas_destacadas') || null;
+    const initialPorQueElegirnos = findSeccion('elegirnos') || findSeccion('por-que-elegirnos') || findSeccion('por_que_elegirnos') || null;
+
+    const hasAllInitialData = Boolean(initialInicio && initialServicios && initialSomos && initialPorQueElegirnos);
 
     const [data, setData] = useState({
         inicio: initialInicio,
         servicios: initialServicios,
         somos: initialSomos,
         tortasDestacadas: initialTortasDestacadas,
+        porQueElegirnos: initialPorQueElegirnos,
         productosDestacados: initialProductosDestacados || [],
     });
 
@@ -48,11 +64,12 @@ export function useInicioData(
             initialServicios ? Promise.resolve(initialServicios) : fetchServiciosData(dominio, siteSlug).catch(() => null),
             initialSomos ? Promise.resolve(initialSomos) : fetchSomosData(dominio, siteSlug).catch(() => null),
             initialTortasDestacadas ? Promise.resolve(initialTortasDestacadas) : fetchTortasDestacadasData(dominio, siteSlug).catch(() => null),
+            initialPorQueElegirnos ? Promise.resolve(initialPorQueElegirnos) : fetchPorQueElegirnosData(dominio, siteSlug).catch(() => null),
             initialProductosDestacados?.length > 0
                 ? Promise.resolve({ data: initialProductosDestacados })
                 : fetchProductosDestacados(dominio, siteSlug).catch(() => null),
         ])
-            .then(([inicio, servicios, somos, tortasDestacadas, productosDestacadosRes]) => {
+            .then(([inicio, servicios, somos, tortasDestacadas, porQueElegirnos, productosDestacadosRes]) => {
                 if (!isMounted) return;
 
                 setData({
@@ -60,6 +77,7 @@ export function useInicioData(
                     servicios: servicios || initialServicios,
                     somos: somos || initialSomos,
                     tortasDestacadas: tortasDestacadas || initialTortasDestacadas,
+                    porQueElegirnos: porQueElegirnos || initialPorQueElegirnos,
                     productosDestacados: productosDestacadosRes?.data || initialProductosDestacados || [],
                 });
             })

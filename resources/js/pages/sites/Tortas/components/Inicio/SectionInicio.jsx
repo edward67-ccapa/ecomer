@@ -3,9 +3,10 @@ import HeroSection from './subcomponents/HeroSection';
 import ServiciosSection from './subcomponents/ServiciosSection';
 import SomosSection from './subcomponents/SomosSection';
 import ProductosDestacadosSection from './subcomponents/ProductosDestacadosSection';
+import PorQueElegirnosSection from './subcomponents/PorQueElegirnosSection';
 
 export default function SectionInicio({ dominio, siteSlug, seccion, seccionesData, productosDestacados }) {
-    const { inicio, servicios, somos, tortasDestacadas, productosDestacados: productos, loading, error } = useInicioData(
+    const { inicio, servicios, somos, tortasDestacadas, porQueElegirnos, productosDestacados: productos, loading, error } = useInicioData(
         dominio,
         siteSlug,
         seccion,
@@ -38,6 +39,7 @@ export default function SectionInicio({ dominio, siteSlug, seccion, seccionesDat
             <ServiciosSection seccionData={servicios} dominio={dominio} siteSlug={siteSlug} />
             <SomosSection seccionData={somos} />
             <ProductosDestacadosSection seccionData={tortasDestacadas} productos={productos} />
+            <PorQueElegirnosSection seccionData={porQueElegirnos} />
         </main>
     );
 }

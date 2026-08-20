@@ -22,3 +22,7 @@ export async function fetchProductosDestacados(dominio, siteSlug) {
     }
     return apiFetch(`/sites/${dominio}/${siteSlug}/productos/destacados`);
 }
+
+export async function fetchPorQueElegirnosData(dominio, siteSlug) {
+    return fetchSectionData(dominio, siteSlug, 'elegirnos');
+}

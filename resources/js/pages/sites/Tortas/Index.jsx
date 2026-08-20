@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import Header from './shared/Header';
 import Footer from './shared/Footer';
@@ -5,6 +6,7 @@ import SectionInicio from './components/Inicio/SectionInicio';
 import SectionNosotros from './components/Nosotros/SectionNosotros';
 import SectionContactos from './components/Contactos/SectionContactos';
 import SectionProductos from './components/Productos/SectionProductos';
+import { initializeTheme } from '@/hooks/use-appearance';
 
 export default function Tortas({
     site,
@@ -17,6 +19,13 @@ export default function Tortas({
     productosDestacados,
     estilos,
 }) {
+    useEffect(() => {
+        if (typeof document !== 'undefined') {
+            document.documentElement.classList.remove('dark');
+            document.documentElement.style.colorScheme = 'light';
+        }
+    }, []);
+
     const titulosFont = estilos?.tipografia_titulos || 'Montserrat';
     const textoFont = estilos?.tipografia_texto || 'Montserrat';
 

@@ -7,7 +7,11 @@ import { Autoplay, Pagination } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 
+import { useCartStore } from '@/stores/useCartStore';
+
 export default function ProductosDestacadosSection({ seccionData, productos }) {
+    const addItem = useCartStore((state) => state.addItem);
+
     if (!seccionData && (!productos || productos.length === 0)) return null;
 
     const getItem = (label) => seccionData?.contenido?.find((item) => item.label === label);
@@ -149,15 +153,17 @@ export default function ProductosDestacadosSection({ seccionData, productos }) {
                                                 </span>
                                             </div>
 
-                                            <a
-                                                href={`${whatsappUrl}?text=${encodeURIComponent(`Hola, quisiera consultar por la torta ${prod.nombre}`)}`}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold text-white shadow-md hover:shadow-lg transition-all transform active:scale-95"
-                                                style={{ backgroundColor: 'var(--color-primario)', borderRadius: 'var(--radio-bordes)' }}
-                                            >
-                                                Pedir 📲
-                                            </a>
+                                            <div className="flex items-center gap-2">
+                                                <button
+                                                    type="button"
+                                                    onClick={() => addItem(prod)}
+                                                    className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-semibold text-gray-800 bg-gray-100 hover:bg-gray-200 transition shadow-xs cursor-pointer active:scale-95"
+                                                    style={{ borderRadius: 'var(--radio-bordes)' }}
+                                                    title="Agregar al carrito"
+                                                >
+                                                    <DynamicIcon name="FaCartShopping" className="h-4 w-4 text-[var(--color-primario)]" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </div>

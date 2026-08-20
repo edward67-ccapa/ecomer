@@ -74,9 +74,11 @@ class SitePageController extends Controller
             'site' => [
                 'nombre' => $site->nombre,
                 'imagen' => $site->imagen ? asset('storage/'.$site->imagen) : null,
+                'tiene_tienda' => ! empty($tiendaIds),
             ],
             'dominio' => $dominio,
             'siteSlug' => $site->slug,
+            'tieneTienda' => ! empty($tiendaIds),
             'secciones' => $seccionesNav
                 ->map(fn (Seccion $s): array => [
                     'slug' => $s->slug,

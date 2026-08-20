@@ -2,10 +2,17 @@ import { useEffect, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
 import { fetchSectionData } from './apiBase';
+import { useCartStore } from '@/stores/useCartStore';
+import CartOffcanvas from '@/components/CartOffcanvas';
 
-export default function Header({ site, dominio, siteSlug, secciones, seccionActiva }) {
+export default function Header({ site, dominio, siteSlug, secciones, seccionActiva, tieneTienda, productos }) {
     const [navData, setNavData] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
+
+    const openCart = useCartStore((state) => state.openCart);
+    const cartCount = useCartStore((state) => state.getItemCount());
+
+    const hasStore = Boolean(site?.tiene_tienda ?? tieneTienda ?? (productos && productos.length > 0) ?? true);
 
     // --- FETCH NAV DATA ---
     useEffect(() => {
@@ -38,111 +45,127 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
 
     const borderColor = isScrolled
         ? 'border-gray-200/50'
-        : 'border-white/10';
+        : 'border-gray-200/30';
 
-    const linkHover = isScrolled
-        ? 'hover:bg-gray-100'
-        : 'hover:bg-white/10';
+    const linkHover = 'hover:bg-gray-100/80';
 
-    // Color de texto según scroll
-    const textColor = isScrolled ? 'text-gray-800' : 'text-white';
-    const textMuted = isScrolled ? 'text-gray-600' : 'text-white/80';
+    // Color de texto según scroll (siempre oscuro/negro)
+    const textColor = 'text-gray-900';
+    const textMuted = 'text-gray-700';
 
     return (
-        <header
-            suppressHydrationWarning
-            className={`fixed top-0 z-50 w-screen transition-all duration-300 ${headerBg} border-b ${borderColor}`}
-            style={{
-                color: textColor,
-                backgroundColor: isScrolled ? 'rgba(255,255,255,0.95)' : 'transparent',
-            }}
-        >
-            {/* TOP BAR (acciones) */}
-            {accionesNav.length > 0 && (
-                <div
-                    suppressHydrationWarning
-                    className={`border-b ${borderColor} px-6 py-1.5 text-xs transition-all duration-300 ${isScrolled ? 'bg-gray-50/80' : 'bg-black/10'
-                        }`}
-                >
-                    <div className="mx-auto flex max-w-6xl items-center justify-between">
-                        <div className="flex items-center gap-4">
-                            {accionesNav.map((item, idx) => (
-                                <div
-                                    key={idx}
-                                    className={`flex items-center gap-1.5 transition-colors ${textMuted}`}
-                                >
-                                    {item.icon && (
-                                        <DynamicIcon
-                                            name={item.icon}
-                                            className={`h-3.5 w-3.5 ${isScrolled ? 'text-gray-500' : 'text-white/70'
-                                                }`}
-                                        />
-                                    )}
-                                    <span>{item.texto}</span>
-                                </div>
-                            ))}
+        <>
+            <header
+                suppressHydrationWarning
+                className={`fixed top-0 z-50 w-screen transition-all duration-300 ${headerBg} border-b ${borderColor}`}
+                style={{
+                    color: textColor,
+                    backgroundColor: isScrolled ? 'rgba(255,255,255,0.95)' : 'transparent',
+                }}
+            >
+                {/* TOP BAR (acciones) */}
+                {accionesNav.length > 0 && (
+                    <div
+                        suppressHydrationWarning
+                        className={`border-b ${borderColor} px-6 py-1.5 text-xs transition-all duration-300 ${isScrolled ? 'bg-gray-50/80' : 'bg-black/5'
+                            }`}
+                    >
+                        <div className="mx-auto flex max-w-6xl items-center justify-between">
+                            <div className="flex items-center gap-4">
+                                {accionesNav.map((item, idx) => (
+                                    <div
+                                        key={idx}
+                                        className={`flex items-center gap-1.5 transition-colors ${textMuted}`}
+                                    >
+                                        {item.icon && (
+                                            <DynamicIcon
+                                                name={item.icon}
+                                                className="h-3.5 w-3.5 text-gray-600"
+                                            />
+                                        )}
+                                        <span>{item.texto}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* MAIN NAV */}
-            <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-3 transition-all duration-300">
-                {/* LOGO */}
-                <Link
-                    href={`/${dominio}/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}`}
-                    className="flex items-center gap-3"
-                >
-                    {logoNav || site?.imagen ? (
-                        <img
-                            src={logoNav || site?.imagen}
-                            alt={site?.nombre || ''}
-                            className="h-9 w-auto max-h-9 object-contain transition-all duration-300"
-                            style={{
-                                filter: isScrolled ? 'none' : 'brightness(0) invert(1)',
-                            }}
-                        />
-                    ) : (
-                        <span
-                            className={`text-lg font-bold tracking-tight transition-colors ${isScrolled ? 'text-gray-800' : 'text-white'
-                                }`}
-                        >
-                            {site?.nombre}
-                        </span>
-                    )}
-                </Link>
+                {/* MAIN NAV */}
+                <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-3 transition-all duration-300">
+                    {/* LOGO */}
+                    <Link
+                        href={`/${dominio}/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}`}
+                        className="flex items-center gap-3"
+                    >
+                        {logoNav || site?.imagen ? (
+                            <img
+                                src={logoNav || site?.imagen}
+                                alt={site?.nombre || ''}
+                                className="h-9 w-auto max-h-9 object-contain transition-all duration-300"
+                            />
+                        ) : (
+                            <span className="text-lg font-bold tracking-tight text-gray-900">
+                                {site?.nombre}
+                            </span>
+                        )}
+                    </Link>
 
-                {/* NAV LINKS */}
-                <nav className="flex flex-wrap items-center gap-1">
-                    {secciones?.map((seccion) => {
-                        const activa =
-                            seccion.slug?.toLowerCase() === seccionActiva?.slug?.toLowerCase();
+                    {/* NAV LINKS & CART */}
+                    <div className="flex items-center gap-3">
+                        <nav className="flex flex-wrap items-center gap-1">
+                            {secciones?.map((seccion) => {
+                                const activa =
+                                    seccion.slug?.toLowerCase() === seccionActiva?.slug?.toLowerCase();
 
-                        return (
-                            <Link
-                                key={seccion.slug}
-                                href={`/${dominio}/${siteSlug}/${seccion.slug}`}
-                                className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200 ${linkHover} ${activa
-                                        ? 'text-white'
-                                        : isScrolled
-                                            ? 'text-gray-700 hover:text-gray-900'
-                                            : 'text-white/85 hover:text-white'
-                                    }`}
-                                style={
-                                    activa
-                                        ? {
-                                            backgroundColor: 'var(--color-primario)',
-                                            color: '#fff',
+                                return (
+                                    <Link
+                                        key={seccion.slug}
+                                        href={`/${dominio}/${siteSlug}/${seccion.slug}`}
+                                        className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200 ${linkHover} ${activa
+                                            ? 'text-white'
+                                            : 'text-gray-800 hover:text-black'
+                                            }`}
+                                        style={
+                                            activa
+                                                ? {
+                                                    backgroundColor: 'var(--color-primario)',
+                                                    color: '#fff',
+                                                }
+                                                : {}
                                         }
-                                        : {}
-                                }
+                                    >
+                                        {seccion.nombre}
+                                    </Link>
+                                );
+                            })}
+                        </nav>
+
+                        {/* BOTÓN CARRITO SI TIENE TIENDA */}
+                        {hasStore && (
+                            <button
+                                type="button"
+                                onClick={openCart}
+                                className="relative flex items-center justify-center rounded-xl border border-gray-200 bg-white/80 p-2 text-gray-800 shadow-xs hover:bg-gray-100 hover:text-black transition cursor-pointer"
+                                title="Ver Carrito de Compras"
                             >
-                                {seccion.nombre}
-                            </Link>
-                        );
-                    })}
-                </nav>
-            </div>
-        </header>
+                                <DynamicIcon name="FaCartShopping" className="h-5 w-5 text-[var(--color-primario)]" />
+                                {cartCount > 0 && (
+                                    <span
+                                        className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-md"
+                                        style={{ backgroundColor: 'var(--color-primario)' }}
+                                    >
+                                        {cartCount}
+                                    </span>
+                                )}
+                            </button>
+                        )}
+                    </div>
+                </div>
+            </header>
+
+            {/* OFFCANVAS DRAWER DEL CARRITO */}
+            <CartOffcanvas />
+        </>
     );
 }
