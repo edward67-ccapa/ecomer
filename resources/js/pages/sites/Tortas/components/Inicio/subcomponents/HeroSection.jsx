@@ -144,10 +144,9 @@ export default function HeroSection({ seccionData }) {
                                             {item.span}
                                         </span>
                                         <span
-                                            className="text-xs leading-tight"
+                                            className="text-xs leading-tight text-black/80"
                                             style={{
                                                 fontFamily: 'var(--tipografia-texto)',
-                                                color: '#666666',
                                             }}
                                         >
                                             {item.span_sub || item.sub_span}

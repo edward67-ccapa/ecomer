@@ -28,14 +28,21 @@ class PlantillaForm
 {
     public static function configure(Schema $schema): Schema
     {
+        $record = $schema->getRecord();
+        $respuestasSchema = ($record instanceof Plantilla && $record->exists)
+            ? self::respuestasFields($record)
+            : [];
+
         return $schema
             ->components([
                 Tabs::make('PlantillaTabs')
+                    ->persistTabInQueryString(false)
                     ->tabs([
                         Tab::make('Estructura & Preguntas')
                             ->icon('heroicon-o-squares-2x2')
                             ->schema([
                                 Tabs::make('SubTabsEstructura')
+                                    ->persistTabInQueryString(false)
                                     ->tabs([
                                         Tab::make('General & Estilos')
                                             ->icon('heroicon-o-cog')
@@ -222,31 +229,32 @@ class PlantillaForm
                                                             ])
                                                             ->columns(1),
                                                     ]),
-                                            ]),
-                                    ]),
-                            ]),
+                                             ]),
+                                     ]),
+                             ]),
 
                         Tab::make('Respuestas por Defecto')
                             ->icon('heroicon-o-document-text')
                             ->visible(fn (?Plantilla $record): bool => filled($record?->id))
-                            ->schema(function (?Plantilla $record): array {
-                                if (! $record) {
-                                    return [];
-                                }
-
-                                return self::respuestasFields($record);
-                            }),
+                            ->schema($respuestasSchema),
                     ])
                     ->columnSpanFull(),
             ]);
     }
+
+    private static array $respuestasSchemaCache = [];
 
     /**
      * @return array<int, Component>
      */
     public static function respuestasFields(Plantilla $plantilla): array
     {
-        $plantilla->loadMissing(['secciones.preguntas.children']);
+        if (isset(self::$respuestasSchemaCache[$plantilla->id])) {
+            return self::$respuestasSchemaCache[$plantilla->id];
+        }
+
+        $plantilla->unsetRelation('secciones');
+        $plantilla->load(['secciones.preguntas' => fn ($q) => $q->orderBy('orden')->with('children')]);
         $subTabs = [];
 
         foreach ($plantilla->secciones as $seccion) {
@@ -270,11 +278,12 @@ class PlantillaForm
         }
 
         if (empty($subTabs)) {
-            return [];
+            return self::$respuestasSchemaCache[$plantilla->id] = [];
         }
 
-        return [
+        return self::$respuestasSchemaCache[$plantilla->id] = [
             Tabs::make('SubTabsSeccionesRespuestas')
+                ->persistTabInQueryString(false)
                 ->tabs($subTabs)
                 ->columnSpanFull(),
         ];
@@ -333,9 +342,8 @@ class PlantillaForm
                         $children = Pregunta::where('parent_id', $pregunta->id)->orderBy('orden')->get();
                     }
 
-                    return $children->flatMap(function (Pregunta $child) {
+                    return $children->map(function (Pregunta $child) {
                         $childPath = $child->label;
-                        $childLinkPath = "{$child->label}_enlace";
 
                         $subField = match ($child->tipo) {
                             'area' => Textarea::make($childPath)->rows(2),
@@ -347,21 +355,15 @@ class PlantillaForm
                             default => TextInput::make($childPath),
                         };
 
-                        $subField = $subField->label($child->label);
-
-                        if ($child->tipo === 'enlace') {
-                            return [$subField];
-                        }
-
-                        return [
-                            $subField,
-                            LinkPicker::make($childLinkPath),
-                        ];
+                        return $subField->label($child->label);
                     })->all();
                 })
                 ->itemLabel(fn (array $state): ?string => $state['nombre'] ?? $state['titulo'] ?? $state['label'] ?? null)
-                ->maxItems($pregunta->max_items)
-                ->reorderableWithDragAndDrop()
+                ->defaultItems($pregunta->estructura === 'objeto' ? 1 : 0)
+                ->minItems($pregunta->estructura === 'objeto' ? 1 : 0)
+                ->maxItems($pregunta->estructura === 'objeto' ? 1 : $pregunta->max_items)
+                ->deletable($pregunta->estructura === 'array')
+                ->reorderable($pregunta->estructura === 'array')
                 ->collapsible(),
 
             default => TextInput::make($statePath)
@@ -374,7 +376,7 @@ class PlantillaForm
             ->helperText($pregunta->ayuda)
             ->required($pregunta->requerida);
 
-        if ($pregunta->tipo === 'enlace' || $pregunta->tipo === 'grupo') {
+        if ($pregunta->tipo === 'enlace' || ($pregunta->tipo === 'grupo' && $pregunta->estructura === 'array')) {
             return $field;
         }
 

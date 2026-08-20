@@ -20,7 +20,9 @@ class EditSite extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $data['respuestas'] = $this->record->respuestas
+        $this->record->load(['respuestas', 'plantilla.secciones.preguntas.children']);
+
+        $respuestasMap = $this->record->respuestas
             ->mapWithKeys(function (Respuesta $respuesta): array {
                 $valor = $respuesta->valor;
                 if (is_string($valor) && is_array($decoded = json_decode($valor, true))) {
@@ -35,6 +37,21 @@ class EditSite extends EditRecord
                 ];
             })
             ->all();
+
+        if ($this->record->plantilla) {
+            foreach ($this->record->plantilla->secciones as $seccion) {
+                foreach ($seccion->preguntas as $pregunta) {
+                    if (! isset($respuestasMap[$pregunta->id])) {
+                        $respuestasMap[$pregunta->id] = [
+                            'valor' => null,
+                            'enlace' => null,
+                        ];
+                    }
+                }
+            }
+        }
+
+        $data['respuestas'] = $respuestasMap;
 
         return $data;
     }

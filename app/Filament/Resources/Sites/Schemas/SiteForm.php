@@ -30,6 +30,7 @@ class SiteForm
         return $schema
             ->components([
                 Tabs::make('SiteFormTabs')
+                    ->persistTabInQueryString(false)
                     ->tabs([
                         Tab::make('Configuración del Sitio')
                             ->icon('heroicon-o-cog')
@@ -149,6 +150,8 @@ class SiteForm
     /**
      * @return array<int, Component>
      */
+    private static array $respuestasCache = [];
+
     private static function respuestasFields(Get $get): array
     {
         $plantillaId = $get('plantilla_id');
@@ -156,12 +159,16 @@ class SiteForm
             return [];
         }
 
+        if (isset(self::$respuestasCache[$plantillaId])) {
+            return self::$respuestasCache[$plantillaId];
+        }
+
         $plantilla = Plantilla::with('secciones.preguntas.children')->find($plantillaId);
 
         if (! $plantilla) {
-            return [];
+            return self::$respuestasCache[$plantillaId] = [];
         }
 
-        return PlantillaForm::respuestasFields($plantilla);
+        return self::$respuestasCache[$plantillaId] = PlantillaForm::respuestasFields($plantilla);
     }
 }

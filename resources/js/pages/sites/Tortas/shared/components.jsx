@@ -28,11 +28,11 @@ function BloqueContenido({ item, styles }) {
         return (
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {item.valor.map((subItem, index) => {
-                    const nombre = subItem.nombre || subItem.titulo || subItem.label || `Elemento ${index + 1}`;
+                    const nombre = subItem.nombre || subItem.titulo || subItem.texto || subItem.label || `Elemento ${index + 1}`;
                     const cargo = subItem.cargo || subItem.subtitulo || subItem.descripcion || subItem.numero || '';
                     const foto = subItem.foto || subItem.imagen || subItem.portada || '';
-                    const icono = subItem.icono || subItem.icon || '';
-                    const enlace = subItem.enlace || subItem.url || subItem.link || '';
+                    const icono = subItem.icono || subItem.icon || subItem.Icono || '';
+                    const enlace = subItem.enlace || subItem.url || subItem.link || subItem.texto_enlace || subItem.icono_enlace || subItem.Icono_enlace || item.enlace || '';
 
                     const CardTag = enlace ? 'a' : 'div';
                     const linkProps = enlace ? { href: enlace, target: '_blank', rel: 'noreferrer' } : {};
@@ -225,7 +225,19 @@ function BloqueContenido({ item, styles }) {
     return (
         <div>
             {item.tipo === 'texto' ? (
-                <p className="text-lg leading-8 text-gray-800">{item.valor}</p>
+                item.enlace ? (
+                    <a
+                        href={item.enlace}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-lg leading-8 text-gray-800 hover:text-[var(--color-primario)] hover:underline inline-flex items-center gap-1.5"
+                    >
+                        <span>{item.valor}</span>
+                        <span className="text-xs opacity-70">↗</span>
+                    </a>
+                ) : (
+                    <p className="text-lg leading-8 text-gray-800">{item.valor}</p>
+                )
             ) : (
                 <p className="text-lg leading-8 text-gray-600">{item.valor}</p>
             )}

@@ -18,7 +18,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
     useEffect(() => {
         if (dominio && siteSlug) {
             fetchSectionData(dominio, siteSlug, 'nav')
-                .then((res) => setNavData(res.seccionActiva))
+                .then((res) => setNavData(res?.seccionActiva || res))
                 .catch(() => setNavData(null));
         }
     }, [dominio, siteSlug]);
@@ -47,11 +47,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
         ? 'border-gray-200/50'
         : 'border-gray-200/30';
 
-    const linkHover = 'hover:bg-gray-100/80';
+    const linkHover = 'hover:bg-[var(--color-primario)]/60 hover:text-[var(--color-primario)]';
 
     // Color de texto según scroll (siempre oscuro/negro)
     const textColor = 'text-gray-900';
-    const textMuted = 'text-gray-700';
 
     return (
         <>
@@ -60,14 +59,14 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                 className={`fixed top-0 z-50 w-screen transition-all duration-300 ${headerBg} border-b ${borderColor}`}
                 style={{
                     color: textColor,
-                    backgroundColor: isScrolled ? 'rgba(255,255,255,0.95)' : 'transparent',
+                    backgroundColor: isScrolled ? 'rgba(255,255,255,0.65)' : 'transparent',
                 }}
             >
                 {/* TOP BAR (acciones) */}
                 {accionesNav.length > 0 && (
                     <div
                         suppressHydrationWarning
-                        className={`border-b ${borderColor} px-6 py-1.5 text-xs transition-all duration-300 ${isScrolled ? 'bg-gray-50/80' : 'bg-black/5'
+                        className={`border-b ${borderColor} px-6 py-1.5 text-xs transition-all duration-300 bg-[var(--color-primario)]
                             }`}
                     >
                         <div className="mx-auto flex max-w-6xl items-center justify-between">
@@ -75,12 +74,12 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 {accionesNav.map((item, idx) => (
                                     <div
                                         key={idx}
-                                        className={`flex items-center gap-1.5 transition-colors ${textMuted}`}
+                                        className={`flex items-center font-semibold gap-1.5 transition-colors text-white`}
                                     >
                                         {item.icon && (
                                             <DynamicIcon
                                                 name={item.icon}
-                                                className="h-3.5 w-3.5 text-gray-600"
+                                                className="h-3.5 w-3.5"
                                             />
                                         )}
                                         <span>{item.texto}</span>
@@ -102,7 +101,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                             <img
                                 src={logoNav || site?.imagen}
                                 alt={site?.nombre || ''}
-                                className="h-9 w-auto max-h-9 object-contain transition-all duration-300"
+                                className="h-12 w-auto max-h-12 object-contain transition-all duration-300"
                             />
                         ) : (
                             <span className="text-lg font-bold tracking-tight text-gray-900">
@@ -122,9 +121,9 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                     <Link
                                         key={seccion.slug}
                                         href={`/${dominio}/${siteSlug}/${seccion.slug}`}
-                                        className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-200 ${linkHover} ${activa
+                                        className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 ${linkHover} ${activa
                                             ? 'text-white'
-                                            : 'text-gray-800 hover:text-black'
+                                            : 'text-gray-800 hover:text-white'
                                             }`}
                                         style={
                                             activa

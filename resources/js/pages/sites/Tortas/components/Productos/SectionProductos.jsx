@@ -218,7 +218,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                 <div className="flex flex-col lg:flex-row gap-8 items-start">
                     {/* PANEL IZQUIERDO: Filtros en Acordeón */}
                     <aside
-                        className={`w-full lg:w-72 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm lg:sticky lg:top-24 transition-all duration-300 ${mostrarFiltrosMovil ? 'block' : 'hidden lg:block'
+                        className={`w-full lg:w-72 bg-white rounded-2xl p-6 border border-gray-100 shadow-sm lg:sticky lg:top-32 transition-all duration-300 ${mostrarFiltrosMovil ? 'block' : 'hidden lg:block'
                             }`}
                         style={{ borderRadius: 'var(--radio-bordes)' }}
                     >
