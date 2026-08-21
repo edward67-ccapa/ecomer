@@ -5,7 +5,7 @@ import { fetchSectionData } from './apiBase';
 import { useCartStore } from '@/stores/useCartStore';
 import CartOffcanvas from '@/components/CartOffcanvas';
 
-export default function Header({ site, dominio, siteSlug, secciones, seccionActiva, tieneTienda, productos }) {
+export default function Header({ site, dominio, siteSlug, secciones, seccionActiva, tieneTienda, productos, seccionesData }) {
     const [navData, setNavData] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
 
@@ -16,7 +16,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
 
     // --- FETCH NAV DATA ---
     useEffect(() => {
-        if (dominio && siteSlug) {
+        if (dominio) {
             fetchSectionData(dominio, siteSlug, 'nav')
                 .then((res) => setNavData(res?.seccionActiva || res))
                 .catch(() => setNavData(null));
@@ -35,8 +35,9 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
     }, []);
 
     // --- DATA EXTRACTION ---
-    const logoNav = navData?.contenido?.find((c) => c.label === 'logo_nav')?.valor;
-    const accionesNav = navData?.contenido?.find((c) => c.label === 'accion_nav')?.valor || [];
+    const activeNav = navData || seccionesData?.nav;
+    const logoNav = activeNav?.contenido?.find((c) => c.label === 'logo_nav')?.valor;
+    const accionesNav = activeNav?.contenido?.find((c) => c.label === 'accion_nav')?.valor || [];
 
     // --- STYLES BASED ON SCROLL ---
     const headerBg = isScrolled
