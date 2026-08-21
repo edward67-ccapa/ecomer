@@ -9,11 +9,4 @@
     scrollbar-width: thin;
 }
 
-/* Fix text color on primary buttons (e.g. Sign in) */
-.fi-btn-primary,
-.fi-btn-primary .fi-btn-label,
-button[type="submit"] .fi-btn-label,
-.fi-btn {
-    color: #ffffff !important;
-}
 
