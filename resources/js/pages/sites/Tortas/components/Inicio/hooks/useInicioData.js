@@ -53,16 +53,11 @@ export function useInicioData(
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        if (hasAllInitialData && initialContacto) {
-            setLoading(false);
-            return;
-        }
-
         let isMounted = true;
         setLoading(true);
 
         Promise.all([
-            initialInicio ? Promise.resolve(initialInicio) : fetchInicioData(dominio, siteSlug).catch(() => null),
+            fetchInicioData(dominio, siteSlug).catch(() => null),
             initialServicios ? Promise.resolve(initialServicios) : fetchServiciosData(dominio, siteSlug).catch(() => null),
             initialSomos ? Promise.resolve(initialSomos) : fetchSomosData(dominio, siteSlug).catch(() => null),
             initialTortasDestacadas ? Promise.resolve(initialTortasDestacadas) : fetchTortasDestacadasData(dominio, siteSlug).catch(() => null),
