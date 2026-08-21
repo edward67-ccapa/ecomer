@@ -5,6 +5,14 @@
 # php -- END cPanel-generated handler, do not edit
 
 <IfModule mod_rewrite.c>
+    <IfModule mod_negotiation.c>
+        Options -MultiViews -Indexes
+    </IfModule>
+
     RewriteEngine On
-    RewriteRule ^ public/index.php [L]
+
+    # Si el archivo o directorio existe fisicamente, entregarlo directamente (CSS, JS, imagenes)
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    RewriteRule ^ index.php [L]
 </IfModule>
