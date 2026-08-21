@@ -1,7 +1,7 @@
 import Login from './Login'
 
-const Pages = {
+const Auth = {
     Login: Object.assign(Login, Login),
 }
 
-export default Pages
+export default Auth

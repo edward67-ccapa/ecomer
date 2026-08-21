@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../../../../wayfinder'
 /**
-* @see \Filament\Auth\Pages\Login::__invoke
-* @see vendor/filament/filament/src/Auth/Pages/Login.php:7
+* @see \App\Filament\Pages\Auth\Login::__invoke
+* @see app/Filament/Pages/Auth/Login.php:7
 * @route '/admin/login'
 */
 export const login = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -15,8 +15,8 @@ login.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see \Filament\Auth\Pages\Login::__invoke
-* @see vendor/filament/filament/src/Auth/Pages/Login.php:7
+* @see \App\Filament\Pages\Auth\Login::__invoke
+* @see app/Filament/Pages/Auth/Login.php:7
 * @route '/admin/login'
 */
 login.url = (options?: RouteQueryOptions) => {
@@ -24,8 +24,8 @@ login.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see \Filament\Auth\Pages\Login::__invoke
-* @see vendor/filament/filament/src/Auth/Pages/Login.php:7
+* @see \App\Filament\Pages\Auth\Login::__invoke
+* @see app/Filament/Pages/Auth/Login.php:7
 * @route '/admin/login'
 */
 login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,8 +34,8 @@ login.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see \Filament\Auth\Pages\Login::__invoke
-* @see vendor/filament/filament/src/Auth/Pages/Login.php:7
+* @see \App\Filament\Pages\Auth\Login::__invoke
+* @see app/Filament/Pages/Auth/Login.php:7
 * @route '/admin/login'
 */
 login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,8 +44,8 @@ login.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see \Filament\Auth\Pages\Login::__invoke
-* @see vendor/filament/filament/src/Auth/Pages/Login.php:7
+* @see \App\Filament\Pages\Auth\Login::__invoke
+* @see app/Filament/Pages/Auth/Login.php:7
 * @route '/admin/login'
 */
 const loginForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,8 +54,8 @@ const loginForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see \Filament\Auth\Pages\Login::__invoke
-* @see vendor/filament/filament/src/Auth/Pages/Login.php:7
+* @see \App\Filament\Pages\Auth\Login::__invoke
+* @see app/Filament/Pages/Auth/Login.php:7
 * @route '/admin/login'
 */
 loginForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -64,8 +64,8 @@ loginForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 })
 
 /**
-* @see \Filament\Auth\Pages\Login::__invoke
-* @see vendor/filament/filament/src/Auth/Pages/Login.php:7
+* @see \App\Filament\Pages\Auth\Login::__invoke
+* @see app/Filament/Pages/Auth/Login.php:7
 * @route '/admin/login'
 */
 loginForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

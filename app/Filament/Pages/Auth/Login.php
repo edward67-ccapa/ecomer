@@ -9,20 +9,6 @@ use Illuminate\Contracts\Support\Htmlable;
 
 class Login extends BaseLogin
 {
-    public function getHeading(): string|Htmlable|null
-    {
-        return 'Ecomer';
-    }
-
-    public function getTitle(): string|Htmlable
-    {
-        return 'Ecomer';
-    }
-
-    public function getSubheading(): string|Htmlable|null
-    {
-        return 'Entre a su cuenta';
-    }
 
     protected function getEmailFormComponent(): Component
     {
