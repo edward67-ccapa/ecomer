@@ -30,7 +30,7 @@ export default function ProductosDestacadosSection({ seccionData, productos }) {
     };
 
     return (
-        <section className="py-16 px-6 bg-white">
+        <section id="productos" className="scroll-mt-10 py-16 px-6 bg-white">
             <div className="max-w-7xl mx-auto">
                 {/* Cabecera de la Sección */}
                 <div className="text-center max-w-2xl mx-auto mb-12">
@@ -105,6 +105,10 @@ export default function ProductosDestacadosSection({ seccionData, productos }) {
                                             <img
                                                 src={prod.imagen}
                                                 alt={prod.nombre}
+                                                width={432}
+                                                height={432}
+                                                loading="lazy"
+                                                decoding="async"
                                                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                             />
                                         ) : (

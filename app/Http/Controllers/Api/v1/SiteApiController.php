@@ -59,7 +59,9 @@ class SiteApiController extends Controller
             return response()->json(['message' => 'Sección no encontrada'], 404);
         }
 
-        $respuestas = $site->respuestas->keyBy('pregunta_id');
+        $siteRespuestas = $site->respuestas->keyBy('pregunta_id');
+        $plantillaRespuestas = \App\Models\Respuesta::where('plantilla_id', $site->plantilla_id)->get()->keyBy('pregunta_id');
+        $respuestas = $plantillaRespuestas->merge($siteRespuestas);
 
         $contenido = SitePageController::formatearPreguntas($seccion->preguntas, $respuestas);
 

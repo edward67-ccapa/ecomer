@@ -39,12 +39,22 @@ class EditSite extends EditRecord
             ->all();
 
         if ($this->record->plantilla) {
+            $plantillaRespuestasMap = Respuesta::where('plantilla_id', $this->record->plantilla_id)
+                ->get()
+                ->keyBy('pregunta_id');
+
             foreach ($this->record->plantilla->secciones as $seccion) {
                 foreach ($seccion->preguntas as $pregunta) {
                     if (! isset($respuestasMap[$pregunta->id])) {
+                        $pResp = $plantillaRespuestasMap->get($pregunta->id);
+                        $valor = $pResp?->valor;
+                        if (is_string($valor) && is_array($decoded = json_decode($valor, true))) {
+                            $valor = $decoded;
+                        }
+
                         $respuestasMap[$pregunta->id] = [
-                            'valor' => null,
-                            'enlace' => null,
+                            'valor' => $valor,
+                            'enlace' => $pResp?->enlace,
                         ];
                     }
                 }

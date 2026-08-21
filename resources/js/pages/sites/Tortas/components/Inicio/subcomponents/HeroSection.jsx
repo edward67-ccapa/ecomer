@@ -43,7 +43,7 @@ export default function HeroSection({ seccionData }) {
     };
 
     return (
-        <section className="relative min-h-[85vh] overflow-hidden">
+        <section id="inicio" className="scroll-mt-10 relative min-h-[85vh] overflow-hidden">
             {imgHero && (
                 <>
                     <motion.img
@@ -52,6 +52,9 @@ export default function HeroSection({ seccionData }) {
                         transition={{ duration: 0.8 }}
                         src={imgHero}
                         alt="Hero background"
+                        fetchPriority="high"
+                        decoding="async"
+                        loading="eager"
                         className="absolute inset-0 h-full w-full object-cover"
                     />
                     <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/60 to-transparent" />

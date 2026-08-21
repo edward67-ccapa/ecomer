@@ -27,13 +27,13 @@
         <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
             {{ $record->plantilla?->nombre ?? '—' }}
             @if ($record->dominio)
-                · {{ $record->dominio->nombre }}/{{ $record->slug }}
+                · {{ $record->dominio->nombre }}/{{ $record->slug }}/{{ $record->plantilla?->secciones->first()?->slug ?? 'Inicio' }}
             @endif
         </p>
 
         @if ($record->estado === 'publicado' && $record->dominio)
             <a
-                href="/{{ $record->dominio->nombre }}/{{ $record->slug }}"
+                href="/{{ $record->dominio->nombre }}/{{ $record->slug }}/{{ $record->plantilla?->secciones->first()?->slug ?? 'Inicio' }}"
                 target="_blank"
                 class="mt-3 inline-flex w-full items-center justify-center gap-1.5 rounded-lg bg-primary-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-primary-500"
             >

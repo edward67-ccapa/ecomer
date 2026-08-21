@@ -15,13 +15,13 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class SitePageController extends Controller
 {
-    public function redirectToFirst(string $dominio, string $site): RedirectResponse
+    public function redirectToFirst(string $dominio, string $siteSlug): RedirectResponse
     {
-        $siteModel = $this->findSite($dominio, $site);
+        $siteModel = $this->findSite($dominio, $siteSlug);
         $primeraSeccion = $siteModel->plantilla->secciones->where('activa', true)->first();
         $seccionSlug = $primeraSeccion ? $primeraSeccion->slug : 'inicio';
 
-        return Redirect::to("/{$dominio}/{$siteModel->slug}/{$seccionSlug}");
+        return Redirect::to("/{$dominio}/{$siteSlug}/{$seccionSlug}");
     }
 
     public function show(string $dominio, string $siteSlug, string $seccionSlug): Response
@@ -37,7 +37,9 @@ class SitePageController extends Controller
 
         abort_unless($seccion instanceof Seccion, 404);
 
-        $respuestas = $site->respuestas->keyBy('pregunta_id');
+        $siteRespuestas = $site->respuestas->keyBy('pregunta_id');
+        $plantillaRespuestas = \App\Models\Respuesta::where('plantilla_id', $site->plantilla_id)->get()->keyBy('pregunta_id');
+        $respuestas = $plantillaRespuestas->merge($siteRespuestas);
 
         // Pre-cargar el contenido de TODAS las secciones (activas e inanimadas/ocultas del nav) para renderizado instantáneo
         $seccionesData = [];
@@ -97,12 +99,12 @@ class SitePageController extends Controller
         ]);
     }
 
-    private function findSite(string $dominio, string $site): Site
+    private function findSite(string $dominio, string $siteSlug): Site
     {
         return Site::query()
             ->with(['plantilla.secciones.preguntas', 'dominio', 'respuestas'])
             ->where('estado', 'publicado')
-            ->where('slug', $site)
+            ->where('slug', $siteSlug)
             ->whereHas('dominio', fn ($query) => $query->where('nombre', $dominio))
             ->firstOrFail();
     }

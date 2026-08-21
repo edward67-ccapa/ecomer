@@ -56,7 +56,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
         <>
             <header
                 suppressHydrationWarning
-                className={`fixed top-0 z-50 w-screen transition-all duration-300 ${headerBg} border-b ${borderColor}`}
+                className={`fixed top-0 z-50 w-full max-w-full transition-all duration-300 ${headerBg} border-b ${borderColor}`}
                 style={{
                     color: textColor,
                     backgroundColor: isScrolled ? 'rgba(255,255,255,0.65)' : 'transparent',
@@ -101,6 +101,9 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                             <img
                                 src={logoNav || site?.imagen}
                                 alt={site?.nombre || ''}
+                                width={180}
+                                height={48}
+                                decoding="async"
                                 className="h-12 w-auto max-h-12 object-contain transition-all duration-300"
                             />
                         ) : (
@@ -114,28 +117,44 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                     <div suppressHydrationWarning className="flex items-center gap-3">
                         <nav className="flex flex-wrap items-center gap-1">
                             {secciones?.map((seccion) => {
-                                const activa =
-                                    seccion.slug?.toLowerCase() === seccionActiva?.slug?.toLowerCase();
+                                const slugLower = seccion.slug?.toLowerCase() || '';
+                                const anchorId = slugLower === 'contactos' ? 'contacto' : slugLower;
+                                const isInicioPage = !seccionActiva || seccionActiva.slug?.toLowerCase() === 'inicio';
+
+                                // Páginas que tienen componente/archivo propio independiente
+                                const PAGE_SECTIONS = ['inicio', 'productos'];
+                                const hasStandalonePage = PAGE_SECTIONS.includes(slugLower);
+                                const activa = slugLower === seccionActiva?.slug?.toLowerCase();
+
+                                const linkClasses = `rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 ${linkHover} ${activa ? 'text-white' : 'text-gray-800 hover:text-white'}`;
+                                const activeStyle = activa ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {};
+
+                                if (hasStandalonePage) {
+                                    return (
+                                        <Link
+                                            key={seccion.slug}
+                                            href={`/${dominio}/${siteSlug}/${seccion.slug}`}
+                                            className={linkClasses}
+                                            style={activeStyle}
+                                        >
+                                            {seccion.nombre}
+                                        </Link>
+                                    );
+                                }
+
+                                // Si es una sección sin archivo propio (ej: Contacto), usa el ancla #contacto y scroll suave CSS
+                                const mainPageSlug = secciones?.[0]?.slug || 'inicio';
+                                const anchorHref = isInicioPage ? `#${anchorId}` : `/${dominio}/${siteSlug}/${mainPageSlug}#${anchorId}`;
 
                                 return (
-                                    <Link
+                                    <a
                                         key={seccion.slug}
-                                        href={`/${dominio}/${siteSlug}/${seccion.slug}`}
-                                        className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 ${linkHover} ${activa
-                                            ? 'text-white'
-                                            : 'text-gray-800 hover:text-white'
-                                            }`}
-                                        style={
-                                            activa
-                                                ? {
-                                                    backgroundColor: 'var(--color-primario)',
-                                                    color: '#fff',
-                                                }
-                                                : {}
-                                        }
+                                        href={anchorHref}
+                                        className={linkClasses}
+                                        style={activeStyle}
                                     >
                                         {seccion.nombre}
-                                    </Link>
+                                    </a>
                                 );
                             })}
                         </nav>

@@ -1,7 +1,7 @@
 import { apiFetch, fetchSectionData } from '../../shared/apiBase';
 
 export async function fetchInicioData(dominio, siteSlug) {
-    return fetchSectionData(dominio, siteSlug, 'inicio');
+    return fetchSectionData(dominio, siteSlug, 'Inicio');
 }
 
 export async function fetchServiciosData(dominio, siteSlug) {
@@ -9,7 +9,7 @@ export async function fetchServiciosData(dominio, siteSlug) {
 }
 
 export async function fetchSomosData(dominio, siteSlug) {
-    return fetchSectionData(dominio, siteSlug, 'somos');
+    return fetchSectionData(dominio, siteSlug, 'nosotros');
 }
 
 export async function fetchTortasDestacadasData(dominio, siteSlug) {

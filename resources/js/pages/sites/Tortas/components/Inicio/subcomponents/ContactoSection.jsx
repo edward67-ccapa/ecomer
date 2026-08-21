@@ -57,7 +57,7 @@ export default function ContactoSection({ seccionData }) {
     const handleEnviarWhatsApp = (e) => {
         e.preventDefault();
 
-        let mensaje = `¡Hola! Quisiera realizar una consulta.\n`;
+        let mensaje = `¡Hola!\n`;
         if (nombre) mensaje += `*Nombre:* ${nombre}\n`;
         if (numero) mensaje += `*Teléfono / WhatsApp:* ${numero}\n`;
         if (fecha) mensaje += `*Fecha del evento:* ${fecha}\n`;
@@ -75,7 +75,7 @@ export default function ContactoSection({ seccionData }) {
     };
 
     return (
-        <section id="contacto" className="py-16 sm:py-24 bg-white relative overflow-hidden">
+        <section id="contacto" className="scroll-mt-10 py-16 sm:py-24 bg-white relative overflow-hidden">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-10 items-start">
 
@@ -237,6 +237,10 @@ export default function ContactoSection({ seccionData }) {
                                 <img
                                     src={imagenUrl}
                                     alt={titulo || 'Contacto'}
+                                    width={400}
+                                    height={384}
+                                    loading="lazy"
+                                    decoding="async"
                                     className="w-full h-full object-cover"
                                 />
                                 <div className="absolute inset-0" />

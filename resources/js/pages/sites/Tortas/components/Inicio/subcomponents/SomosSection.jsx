@@ -19,7 +19,7 @@ export default function SomosSection({ seccionData }) {
     };
 
     return (
-        <section className="py-16 px-6" style={{ backgroundColor: 'var(--color-secundario)' }}>
+        <section id="nosotros" className="scroll-mt-10 py-16 px-6" style={{ backgroundColor: 'var(--color-secundario)' }}>
             <div className="max-w-7xl mx-auto">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
                     {/* Columna 1 - Texto */}
@@ -134,7 +134,11 @@ export default function SomosSection({ seccionData }) {
                             <img
                                 src={imagenSomos}
                                 alt={tituloSomos || "Sobre nosotros"}
-                                className="w-full max-w-md rounded-xl object-cover shadow-lg"
+                                width={493}
+                                height={329}
+                                loading="lazy"
+                                decoding="async"
+                                className="w-full max-w-md rounded-xl object-cover shadow-lg aspect-[3/2]"
                                 style={{ borderRadius: 'var(--radio-bordes)' }}
                             />
                         )}

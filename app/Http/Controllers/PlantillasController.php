@@ -56,6 +56,16 @@ class PlantillasController extends Controller
 
         $contenido = SitePageController::formatearPreguntas($seccionModel->preguntas, $respuestas);
 
+        $seccionesData = [];
+        foreach ($plantilla->secciones as $s) {
+            $key = strtolower(str_replace(['_', ' '], '-', $s->slug));
+            $seccionesData[$key] = [
+                'slug' => $s->slug,
+                'nombre' => $s->nombre,
+                'contenido' => SitePageController::formatearPreguntas($s->preguntas, $respuestas),
+            ];
+        }
+
         return Inertia::render(SitePageController::paginaPlantilla($plantilla), [
             'site' => [
                 'nombre' => $plantilla->nombre,
@@ -74,6 +84,7 @@ class PlantillasController extends Controller
                 'nombre' => $seccionModel->nombre,
                 'contenido' => $contenido,
             ],
+            'seccionesData' => $seccionesData,
             'estilos' => $plantilla->estilos,
         ]);
     }

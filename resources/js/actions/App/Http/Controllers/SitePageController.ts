@@ -2,28 +2,28 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 /**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:27
-* @route '/{dominio}/{site}/{seccion}'
+* @route '/{dominio}/{siteSlug}/{seccion}'
 */
-export const show = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { dominio: string | number, siteSlug: string | number, seccion: string | number } | [dominio: string | number, siteSlug: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
 
 show.definition = {
     methods: ["get","head"],
-    url: '/{dominio}/{site}/{seccion}',
+    url: '/{dominio}/{siteSlug}/{seccion}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:27
-* @route '/{dominio}/{site}/{seccion}'
+* @route '/{dominio}/{siteSlug}/{seccion}'
 */
-show.url = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions) => {
+show.url = (args: { dominio: string | number, siteSlug: string | number, seccion: string | number } | [dominio: string | number, siteSlug: string | number, seccion: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
             dominio: args[0],
-            site: args[1],
+            siteSlug: args[1],
             seccion: args[2],
         }
     }
@@ -32,13 +32,13 @@ show.url = (args: { dominio: string | number, site: string | number, seccion: st
 
     const parsedArgs = {
         dominio: args.dominio,
-        site: args.site,
+        siteSlug: args.siteSlug,
         seccion: args.seccion,
     }
 
     return show.definition.url
             .replace('{dominio}', parsedArgs.dominio.toString())
-            .replace('{site}', parsedArgs.site.toString())
+            .replace('{siteSlug}', parsedArgs.siteSlug.toString())
             .replace('{seccion}', parsedArgs.seccion.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
@@ -46,9 +46,9 @@ show.url = (args: { dominio: string | number, site: string | number, seccion: st
 /**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:27
-* @route '/{dominio}/{site}/{seccion}'
+* @route '/{dominio}/{siteSlug}/{seccion}'
 */
-show.get = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { dominio: string | number, siteSlug: string | number, seccion: string | number } | [dominio: string | number, siteSlug: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -56,9 +56,9 @@ show.get = (args: { dominio: string | number, site: string | number, seccion: st
 /**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:27
-* @route '/{dominio}/{site}/{seccion}'
+* @route '/{dominio}/{siteSlug}/{seccion}'
 */
-show.head = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { dominio: string | number, siteSlug: string | number, seccion: string | number } | [dominio: string | number, siteSlug: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -66,9 +66,9 @@ show.head = (args: { dominio: string | number, site: string | number, seccion: s
 /**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:27
-* @route '/{dominio}/{site}/{seccion}'
+* @route '/{dominio}/{siteSlug}/{seccion}'
 */
-const showForm = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+const showForm = (args: { dominio: string | number, siteSlug: string | number, seccion: string | number } | [dominio: string | number, siteSlug: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, options),
     method: 'get',
 })
@@ -76,9 +76,9 @@ const showForm = (args: { dominio: string | number, site: string | number, secci
 /**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:27
-* @route '/{dominio}/{site}/{seccion}'
+* @route '/{dominio}/{siteSlug}/{seccion}'
 */
-showForm.get = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+showForm.get = (args: { dominio: string | number, siteSlug: string | number, seccion: string | number } | [dominio: string | number, siteSlug: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, options),
     method: 'get',
 })
@@ -86,9 +86,9 @@ showForm.get = (args: { dominio: string | number, site: string | number, seccion
 /**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:27
-* @route '/{dominio}/{site}/{seccion}'
+* @route '/{dominio}/{siteSlug}/{seccion}'
 */
-showForm.head = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+showForm.head = (args: { dominio: string | number, siteSlug: string | number, seccion: string | number } | [dominio: string | number, siteSlug: string | number, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
@@ -103,28 +103,28 @@ show.form = showForm
 /**
 * @see \App\Http\Controllers\SitePageController::redirectToFirst
 * @see app/Http/Controllers/SitePageController.php:18
-* @route '/{dominio}/{site}'
+* @route '/{dominio}/{siteSlug}'
 */
-export const redirectToFirst = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const redirectToFirst = (args: { dominio: string | number, siteSlug: string | number } | [dominio: string | number, siteSlug: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: redirectToFirst.url(args, options),
     method: 'get',
 })
 
 redirectToFirst.definition = {
     methods: ["get","head"],
-    url: '/{dominio}/{site}',
+    url: '/{dominio}/{siteSlug}',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \App\Http\Controllers\SitePageController::redirectToFirst
 * @see app/Http/Controllers/SitePageController.php:18
-* @route '/{dominio}/{site}'
+* @route '/{dominio}/{siteSlug}'
 */
-redirectToFirst.url = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions) => {
+redirectToFirst.url = (args: { dominio: string | number, siteSlug: string | number } | [dominio: string | number, siteSlug: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
             dominio: args[0],
-            site: args[1],
+            siteSlug: args[1],
         }
     }
 
@@ -132,21 +132,21 @@ redirectToFirst.url = (args: { dominio: string | number, site: string | number }
 
     const parsedArgs = {
         dominio: args.dominio,
-        site: args.site,
+        siteSlug: args.siteSlug,
     }
 
     return redirectToFirst.definition.url
             .replace('{dominio}', parsedArgs.dominio.toString())
-            .replace('{site}', parsedArgs.site.toString())
+            .replace('{siteSlug}', parsedArgs.siteSlug.toString())
             .replace(/\/+$/, '') + queryParams(options)
 }
 
 /**
 * @see \App\Http\Controllers\SitePageController::redirectToFirst
 * @see app/Http/Controllers/SitePageController.php:18
-* @route '/{dominio}/{site}'
+* @route '/{dominio}/{siteSlug}'
 */
-redirectToFirst.get = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+redirectToFirst.get = (args: { dominio: string | number, siteSlug: string | number } | [dominio: string | number, siteSlug: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: redirectToFirst.url(args, options),
     method: 'get',
 })
@@ -154,9 +154,9 @@ redirectToFirst.get = (args: { dominio: string | number, site: string | number }
 /**
 * @see \App\Http\Controllers\SitePageController::redirectToFirst
 * @see app/Http/Controllers/SitePageController.php:18
-* @route '/{dominio}/{site}'
+* @route '/{dominio}/{siteSlug}'
 */
-redirectToFirst.head = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+redirectToFirst.head = (args: { dominio: string | number, siteSlug: string | number } | [dominio: string | number, siteSlug: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: redirectToFirst.url(args, options),
     method: 'head',
 })
@@ -164,9 +164,9 @@ redirectToFirst.head = (args: { dominio: string | number, site: string | number 
 /**
 * @see \App\Http\Controllers\SitePageController::redirectToFirst
 * @see app/Http/Controllers/SitePageController.php:18
-* @route '/{dominio}/{site}'
+* @route '/{dominio}/{siteSlug}'
 */
-const redirectToFirstForm = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+const redirectToFirstForm = (args: { dominio: string | number, siteSlug: string | number } | [dominio: string | number, siteSlug: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: redirectToFirst.url(args, options),
     method: 'get',
 })
@@ -174,9 +174,9 @@ const redirectToFirstForm = (args: { dominio: string | number, site: string | nu
 /**
 * @see \App\Http\Controllers\SitePageController::redirectToFirst
 * @see app/Http/Controllers/SitePageController.php:18
-* @route '/{dominio}/{site}'
+* @route '/{dominio}/{siteSlug}'
 */
-redirectToFirstForm.get = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+redirectToFirstForm.get = (args: { dominio: string | number, siteSlug: string | number } | [dominio: string | number, siteSlug: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: redirectToFirst.url(args, options),
     method: 'get',
 })
@@ -184,9 +184,9 @@ redirectToFirstForm.get = (args: { dominio: string | number, site: string | numb
 /**
 * @see \App\Http\Controllers\SitePageController::redirectToFirst
 * @see app/Http/Controllers/SitePageController.php:18
-* @route '/{dominio}/{site}'
+* @route '/{dominio}/{siteSlug}'
 */
-redirectToFirstForm.head = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+redirectToFirstForm.head = (args: { dominio: string | number, siteSlug: string | number } | [dominio: string | number, siteSlug: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: redirectToFirst.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',

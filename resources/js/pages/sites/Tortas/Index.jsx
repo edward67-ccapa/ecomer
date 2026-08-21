@@ -2,11 +2,9 @@ import { useEffect } from 'react';
 import { Head } from '@inertiajs/react';
 import Header from './shared/Header';
 import Footer from './shared/Footer';
+import FloatingWhatsApp from './shared/FloatingWhatsApp';
 import SectionInicio from './components/Inicio/SectionInicio';
-import SectionNosotros from './components/Nosotros/SectionNosotros';
-import SectionContactos from './components/Contactos/SectionContactos';
 import SectionProductos from './components/Productos/SectionProductos';
-import { initializeTheme } from '@/hooks/use-appearance';
 
 export default function Tortas({
     site,
@@ -46,8 +44,6 @@ export default function Tortas({
 
     const sectionMap = {
         inicio: SectionInicio,
-        nosotros: SectionNosotros,
-        contactos: SectionContactos,
         productos: SectionProductos,
     };
 
@@ -56,6 +52,8 @@ export default function Tortas({
     return (
         <>
             <Head title={`${site.nombre} — ${seccionActiva?.nombre || 'Inicio'}`}>
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
                 {fontQuery && (
                     <link
                         rel="stylesheet"
@@ -66,7 +64,7 @@ export default function Tortas({
 
             <div
                 suppressHydrationWarning
-                className="flex min-h-screen flex-col bg-white text-gray-900"
+                className="flex min-h-screen w-full max-w-full flex-col bg-white text-gray-900 relative overflow-x-hidden"
                 style={{
                     ...styles,
                     fontFamily: `var(--tipografia-texto)`,
@@ -78,6 +76,7 @@ export default function Tortas({
                     siteSlug={siteSlug}
                     secciones={secciones}
                     seccionActiva={seccionActiva}
+                    seccionesData={seccionesData}
                 />
 
                 <ActiveComponent
@@ -91,7 +90,16 @@ export default function Tortas({
                     styles={styles}
                 />
 
-                <Footer site={site} dominio={dominio} siteSlug={siteSlug} />
+                <Footer
+                    site={site}
+                    dominio={dominio}
+                    siteSlug={siteSlug}
+                    secciones={secciones}
+                    seccionActiva={seccionActiva}
+                    seccionesData={seccionesData}
+                />
+
+                <FloatingWhatsApp site={site} dominio={dominio} siteSlug={siteSlug} seccionesData={seccionesData} />
             </div>
         </>
     );

@@ -48,21 +48,25 @@ class CreateSite extends CreateRecord
 
     protected function afterCreate(): void
     {
-        // Copiar respuestas de plantilla si existe
+        // Copiar todas las respuestas por defecto de la plantilla
         $plantillaId = $this->form->getState()['plantilla_id'] ?? null;
         if ($plantillaId) {
             $plantillaRespuestas = Respuesta::where('plantilla_id', $plantillaId)->get();
             foreach ($plantillaRespuestas as $respuesta) {
-                Respuesta::create([
-                    'site_id' => $this->record->id,
-                    'pregunta_id' => $respuesta->pregunta_id,
-                    'valor' => $respuesta->valor,
-                    'enlace' => $respuesta->enlace,
-                ]);
+                Respuesta::updateOrCreate(
+                    [
+                        'site_id' => $this->record->id,
+                        'pregunta_id' => $respuesta->pregunta_id,
+                    ],
+                    [
+                        'valor' => $respuesta->valor,
+                        'enlace' => $respuesta->enlace,
+                    ]
+                );
             }
         }
 
-        // Guardar respuestas del formulario (sobrescriben las de plantilla si existen)
+        // Guardar las respuestas personalizadas ingresadas en el formulario
         $this->guardarRespuestas($this->record->id);
     }
 
@@ -83,6 +87,17 @@ class CreateSite extends CreateRecord
 
             $valor = $item['valor'] ?? null;
             $enlace = $item['enlace'] ?? null;
+
+            // Evitar que respuestas nulas o vacías del formulario borren la respuesta cargada por la plantilla
+            $isEmptyValue = $valor === null || $valor === '' || $valor === [] || $valor === '[]' || $valor === '""';
+            $isEmptyEnlace = $enlace === null || $enlace === '';
+
+            if ($isEmptyValue && $isEmptyEnlace) {
+                $existente = Respuesta::where('site_id', $siteId)->where('pregunta_id', $preguntaId)->first();
+                if ($existente && ! empty($existente->valor)) {
+                    continue;
+                }
+            }
 
             // Si es array, convertir a JSON
             if (is_array($valor)) {
