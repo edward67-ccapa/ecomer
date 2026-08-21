@@ -4,7 +4,11 @@ use App\Http\Controllers\PlantillasController;
 use App\Http\Controllers\SitePageController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia('/', 'welcome')->name('welcome');
+Route::get('/', function () {
+    $site = \App\Models\Site::where('estado', 'publicado')->with('dominio')->first();
+    $dominio = $site?->dominio?->nombre ?? 'TortasLucha';
+    return redirect()->to("/{$dominio}/Inicio");
+})->name('welcome');
 
 Route::get('/plantillas', [PlantillasController::class, 'index'])->name('plantillas.index');
 

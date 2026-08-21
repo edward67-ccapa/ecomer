@@ -112,7 +112,13 @@ class RoleResource extends Resource
                     ->badge()
                     ->label(__('filament-shield::filament-shield.column.permissions'))
                     ->counts('permissions')
-                    ->color('primary'),
+                    ->formatStateUsing(function (mixed $state, $record): string {
+                        if ($record->name === 'super_admin') {
+                            return 'Acceso Total';
+                        }
+                        return (string) $state;
+                    })
+                    ->color(fn ($record): string => $record->name === 'super_admin' ? 'success' : 'primary'),
                 TextColumn::make('updated_at')
                     ->label(__('filament-shield::filament-shield.column.updated_at'))
                     ->dateTime(),
