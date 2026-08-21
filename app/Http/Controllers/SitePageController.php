@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Plantilla;
 use App\Models\Pregunta;
+use App\Models\Producto;
 use App\Models\Seccion;
 use App\Models\Site;
 use Illuminate\Support\Facades\Redirect;
@@ -15,20 +16,39 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class SitePageController extends Controller
 {
-    public function redirectToFirst(string $dominio, string $siteSlug): RedirectResponse
+    public function redirectToFirst(string $param1, ?string $param2 = null): RedirectResponse
     {
-        $siteModel = $this->findSite($dominio, $siteSlug);
-        $primeraSeccion = $siteModel->plantilla->secciones->where('activa', true)->first();
-        $seccionSlug = $primeraSeccion ? $primeraSeccion->slug : 'inicio';
+        $dominio = $param1;
+        $siteSlug = $param2;
 
-        return Redirect::to("/{$dominio}/{$siteSlug}/{$seccionSlug}");
+        $siteModel = $this->findSite($dominio, $siteSlug);
+        $primeraSeccion = $siteModel->plantilla->secciones
+            ->where('activa', true)
+            ->reject(fn ($s) => strtolower($s->slug) === 'nav')
+            ->first();
+
+        $seccionSlug = $primeraSeccion ? $primeraSeccion->slug : 'Inicio';
+
+        return Redirect::to("/{$dominio}/{$seccionSlug}");
     }
 
-    public function show(string $dominio, string $siteSlug, string $seccionSlug): Response
+    public function show(string $param1, string $param2, ?string $param3 = null): Response
     {
+        if ($param3 !== null) {
+            $dominio = $param1;
+            $siteSlug = $param2;
+            $seccionSlug = $param3;
+        } else {
+            $dominio = $param1;
+            $siteSlug = null;
+            $seccionSlug = $param2;
+        }
+
         $site = $this->findSite($dominio, $siteSlug);
 
-        $seccionesNav = $site->plantilla->secciones->where('activa', true);
+        $seccionesNav = $site->plantilla->secciones
+            ->where('activa', true)
+            ->reject(fn ($s) => strtolower($s->slug) === 'nav');
 
         $targetSlug = strtolower(str_replace(['_', ' '], '-', $seccionSlug));
         $seccion = $site->plantilla->secciones->first(function ($s) use ($targetSlug) {
@@ -52,31 +72,29 @@ class SitePageController extends Controller
             ];
         }
 
-        // Pre-cargar productos (catálogo completo y destacados) únicamente de las tiendas asociadas al sitio
         $tiendaIds = $site->tiendas->pluck('id')->all();
 
-        $productos = [];
-        $productosDestacados = [];
+        $productosQuery = \App\Models\Producto::with(['categoria', 'subcategoria', 'variantes', 'tiendas.moneda'])
+            ->where('activo', true);
 
         if (! empty($tiendaIds)) {
-            $baseQuery = \App\Models\Producto::with(['categoria', 'subcategoria', 'variantes', 'tiendas.moneda'])
-                ->where('activo', true)
-                ->whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds));
-
-            $allProds = (clone $baseQuery)->orderBy('orden')->orderBy('nombre')->get();
-            $destProds = (clone $baseQuery)->where('destacado', true)->orderBy('orden')->orderBy('nombre')->get();
-
-            $productos = \App\Http\Resources\v1\ProductoResource::collection($allProds)->resolve();
-            $productosDestacados = \App\Http\Resources\v1\ProductoResource::collection($destProds)->resolve();
+            $productosQuery->whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds));
+        } else {
+            $productosQuery->whereRaw('1 = 0');
         }
+
+        $productos = $productosQuery->orderBy('orden')->orderBy('nombre')->get();
+        $productosDestacados = $productos->where('destacado', true)->values();
 
         $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
 
         return Inertia::render(self::paginaPlantilla($site->plantilla), [
             'site' => [
+                'id' => $site->id,
                 'nombre' => $site->nombre,
+                'slug' => $site->slug,
                 'imagen' => $site->imagen ? asset('storage/'.$site->imagen) : null,
-                'tiene_tienda' => ! empty($tiendaIds),
+                'plantilla_id' => $site->plantilla_id,
             ],
             'dominio' => $dominio,
             'siteSlug' => $site->slug,
@@ -93,20 +111,30 @@ class SitePageController extends Controller
                 'contenido' => self::formatearPreguntas($seccion->preguntas, $respuestas),
             ],
             'seccionesData' => $seccionesData,
-            'productos' => $productos,
-            'productosDestacados' => $productosDestacados,
+            'productos' => \App\Http\Resources\v1\ProductoResource::collection($productos)->resolve(),
+            'productosDestacados' => \App\Http\Resources\v1\ProductoResource::collection($productosDestacados)->resolve(),
             'estilos' => $estilos,
         ]);
     }
 
-    private function findSite(string $dominio, string $siteSlug): Site
+    private function findSite(string $dominioOrSlug, ?string $siteSlug = null): Site
     {
-        return Site::query()
+        $query = Site::query()
             ->with(['plantilla.secciones.preguntas', 'dominio', 'respuestas'])
-            ->where('estado', 'publicado')
-            ->where('slug', $siteSlug)
-            ->whereHas('dominio', fn ($query) => $query->where('nombre', $dominio))
-            ->firstOrFail();
+            ->where('estado', 'publicado');
+
+        if ($siteSlug) {
+            $query->where('slug', $siteSlug)
+                ->whereHas('dominio', fn ($q) => $q->whereRaw('LOWER(nombre) = ?', [strtolower($dominioOrSlug)]));
+        } else {
+            $query->where(function ($q) use ($dominioOrSlug) {
+                $q->where('slug', $dominioOrSlug)
+                  ->orWhereRaw('LOWER(slug) = ?', [strtolower($dominioOrSlug)])
+                  ->orWhereHas('dominio', fn ($d) => $d->whereRaw('LOWER(nombre) = ?', [strtolower($dominioOrSlug)]));
+            });
+        }
+
+        return $query->firstOrFail();
     }
 
     public static function paginaPlantilla(Plantilla|string $plantillaOrTipo): string

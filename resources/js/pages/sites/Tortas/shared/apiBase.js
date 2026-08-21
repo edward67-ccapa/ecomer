@@ -41,5 +41,6 @@ export async function fetchSectionData(dominio, siteSlug, seccionSlug) {
         return apiFetch(endpoint);
     }
 
-    return apiFetch(`/sites/${dominio}/${siteSlug}/${seccionSlug}`);
+    const identifier = dominio || siteSlug;
+    return apiFetch(`/sites/${identifier}/${seccionSlug}`);
 }

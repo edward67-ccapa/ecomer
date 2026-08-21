@@ -94,7 +94,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                 <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-3 transition-all duration-300">
                     {/* LOGO */}
                     <Link
-                        href={`/${dominio}/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}`}
+                        href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}` : `/${dominio}/${secciones?.[0]?.slug || 'inicio'}`}
                         className="flex items-center gap-3"
                     >
                         {logoNav || site?.imagen ? (
@@ -133,7 +133,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                     return (
                                         <Link
                                             key={seccion.slug}
-                                            href={`/${dominio}/${siteSlug}/${seccion.slug}`}
+                                            href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`}
                                             className={linkClasses}
                                             style={activeStyle}
                                         >
@@ -144,7 +144,9 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
 
                                 // Si es una sección sin archivo propio (ej: Contacto), usa el ancla #contacto y scroll suave CSS
                                 const mainPageSlug = secciones?.[0]?.slug || 'inicio';
-                                const anchorHref = isInicioPage ? `#${anchorId}` : `/${dominio}/${siteSlug}/${mainPageSlug}#${anchorId}`;
+                                const anchorHref = isInicioPage
+                                    ? `#${anchorId}`
+                                    : (dominio === 'plantillas' ? `/plantillas/${siteSlug}/${mainPageSlug}#${anchorId}` : `/${dominio}/${mainPageSlug}#${anchorId}`);
 
                                 return (
                                     <a

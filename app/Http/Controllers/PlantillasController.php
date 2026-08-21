@@ -38,17 +38,23 @@ class PlantillasController extends Controller
     {
         $plantilla->load(['secciones.preguntas', 'respuestas']);
 
-        $secciones = $plantilla->secciones->where('activa', true);
+        $seccionesNav = $plantilla->secciones->where('activa', true);
 
-        $seccionModel = $secciones
-            ->when(filled($seccion), fn ($items) => $items->where('slug', $seccion))
+        $seccionModel = $plantilla->secciones
+            ->when(filled($seccion), function ($items) use ($seccion) {
+                $target = strtolower(str_replace(['_', ' '], '-', $seccion));
+                return $items->filter(fn ($s) => strtolower(str_replace(['_', ' '], '-', $s->slug)) === $target);
+            })
             ->first();
 
         if (filled($seccion) && ! $seccionModel) {
             abort(404);
         }
 
-        $seccionModel ??= $secciones->first();
+        $seccionModel ??= $plantilla->secciones
+            ->where('activa', true)
+            ->reject(fn ($s) => strtolower($s->slug) === 'nav')
+            ->first() ?? $seccionesNav->first();
 
         abort_unless($seccionModel instanceof Seccion, 404);
 
@@ -73,7 +79,8 @@ class PlantillasController extends Controller
             ],
             'dominio' => 'plantillas',
             'siteSlug' => $plantilla->slug,
-            'secciones' => $secciones
+            'secciones' => $seccionesNav
+                ->reject(fn (Seccion $s) => strtolower($s->slug) === 'nav')
                 ->map(fn (Seccion $s): array => [
                     'slug' => $s->slug,
                     'nombre' => $s->nombre,

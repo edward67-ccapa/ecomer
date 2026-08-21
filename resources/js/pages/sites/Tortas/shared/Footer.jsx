@@ -102,7 +102,7 @@ export default function Footer({ site, dominio, siteSlug, secciones, seccionActi
                                         return (
                                             <li key={seccion.slug}>
                                                 <Link
-                                                    href={`/${dominio}/${siteSlug}/${seccion.slug}`}
+                                                    href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`}
                                                     className="transition-colors hover:text-[var(--color-primario)] font-medium text-gray-700 hover:underline"
                                                 >
                                                     {seccion.nombre}
@@ -113,7 +113,7 @@ export default function Footer({ site, dominio, siteSlug, secciones, seccionActi
 
                                     const anchorHref = isInicioPage
                                         ? `#${anchorId}`
-                                        : `/${dominio}/${siteSlug}/${mainPageSlug}#${anchorId}`;
+                                        : (dominio === 'plantillas' ? `/plantillas/${siteSlug}/${mainPageSlug}#${anchorId}` : `/${dominio}/${mainPageSlug}#${anchorId}`);
 
                                     return (
                                         <li key={seccion.slug}>

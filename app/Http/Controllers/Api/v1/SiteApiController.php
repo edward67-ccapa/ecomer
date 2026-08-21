@@ -22,16 +22,34 @@ class SiteApiController extends Controller
         return SiteResource::collection($sites);
     }
 
-    public function showSite(string $dominio, string $siteSlug): JsonResponse
+    private function findSite(string $dominioOrSlug, ?string $siteSlug = null): Site
     {
-        $site = Site::query()
-            ->with(['plantilla.secciones', 'dominio', 'tienda.monedas', 'monedas'])
-            ->where('estado', 'publicado')
-            ->where('slug', $siteSlug)
-            ->whereHas('dominio', fn ($query) => $query->where('nombre', $dominio))
-            ->firstOrFail();
+        $query = Site::query()
+            ->with(['plantilla.secciones.preguntas', 'dominio', 'respuestas', 'tiendas.moneda'])
+            ->where('estado', 'publicado');
 
-        $primeraSeccion = $site->plantilla->secciones->where('activa', true)->first();
+        if ($siteSlug) {
+            $query->where('slug', $siteSlug)
+                ->whereHas('dominio', fn ($q) => $q->whereRaw('LOWER(nombre) = ?', [strtolower($dominioOrSlug)]));
+        } else {
+            $query->where(function ($q) use ($dominioOrSlug) {
+                $q->where('slug', $dominioOrSlug)
+                  ->orWhereRaw('LOWER(slug) = ?', [strtolower($dominioOrSlug)])
+                  ->orWhereHas('dominio', fn ($d) => $d->whereRaw('LOWER(nombre) = ?', [strtolower($dominioOrSlug)]));
+            });
+        }
+
+        return $query->firstOrFail();
+    }
+
+    public function showSite(string $param1, ?string $param2 = null): JsonResponse
+    {
+        $site = $this->findSite($param1, $param2);
+
+        $primeraSeccion = $site->plantilla->secciones
+            ->where('activa', true)
+            ->reject(fn ($s) => strtolower($s->slug) === 'nav')
+            ->first();
 
         return response()->json([
             'site' => new SiteResource($site),
@@ -39,21 +57,28 @@ class SiteApiController extends Controller
         ]);
     }
 
-    public function showSection(string $dominio, string $siteSlug, string $seccionSlug): JsonResponse
+    public function showSection(string $param1, string $param2, ?string $param3 = null): JsonResponse
     {
-        $site = Site::query()
-            ->with(['plantilla.secciones.preguntas', 'dominio', 'respuestas'])
-            ->where('estado', 'publicado')
-            ->where('slug', $siteSlug)
-            ->whereHas('dominio', fn ($query) => $query->where('nombre', $dominio))
-            ->firstOrFail();
+        if ($param3 !== null) {
+            $dominio = $param1;
+            $siteSlug = $param2;
+            $seccionSlug = $param3;
+        } else {
+            $dominio = $param1;
+            $siteSlug = null;
+            $seccionSlug = $param2;
+        }
 
-        $secciones = $site->plantilla->secciones;
+        $site = $this->findSite($dominio, $siteSlug);
+
+        $secciones = $site->plantilla->secciones
+            ->where('activa', true)
+            ->reject(fn ($s) => strtolower($s->slug) === 'nav');
 
         $seccion = $secciones->first(function ($s) use ($seccionSlug) {
             $normalize = fn ($str) => strtolower(str_replace(['_', ' '], '-', $str));
             return $normalize($s->slug) === $normalize($seccionSlug);
-        });
+        }) ?? $secciones->first();
 
         if (! $seccion instanceof Seccion) {
             return response()->json(['message' => 'Sección no encontrada'], 404);

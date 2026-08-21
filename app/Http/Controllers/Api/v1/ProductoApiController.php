@@ -92,12 +92,28 @@ class ProductoApiController extends Controller
         return ProductoResource::collection($productos);
     }
 
-    public function indexBySite(string $dominio, string $siteSlug): AnonymousResourceCollection
+    private function findSite(string $dominioOrSlug, ?string $siteSlug = null): Site
     {
-        $site = Site::with('tiendas')
-            ->where('slug', $siteSlug)
-            ->whereHas('dominio', fn ($q) => $q->where('nombre', $dominio))
-            ->firstOrFail();
+        $query = Site::with('tiendas')
+            ->where('estado', 'publicado');
+
+        if ($siteSlug) {
+            $query->where('slug', $siteSlug)
+                ->whereHas('dominio', fn ($q) => $q->whereRaw('LOWER(nombre) = ?', [strtolower($dominioOrSlug)]));
+        } else {
+            $query->where(function ($q) use ($dominioOrSlug) {
+                $q->where('slug', $dominioOrSlug)
+                  ->orWhereRaw('LOWER(slug) = ?', [strtolower($dominioOrSlug)])
+                  ->orWhereHas('dominio', fn ($d) => $d->whereRaw('LOWER(nombre) = ?', [strtolower($dominioOrSlug)]));
+            });
+        }
+
+        return $query->firstOrFail();
+    }
+
+    public function indexBySite(string $param1, ?string $param2 = null): AnonymousResourceCollection
+    {
+        $site = $this->findSite($param1, $param2);
 
         $tiendaIds = $site->tiendas->pluck('id')->all();
 
@@ -115,12 +131,9 @@ class ProductoApiController extends Controller
         return ProductoResource::collection($productos);
     }
 
-    public function destacadosBySite(string $dominio, string $siteSlug): AnonymousResourceCollection
+    public function destacadosBySite(string $param1, ?string $param2 = null): AnonymousResourceCollection
     {
-        $site = Site::with('tiendas')
-            ->where('slug', $siteSlug)
-            ->whereHas('dominio', fn ($q) => $q->where('nombre', $dominio))
-            ->firstOrFail();
+        $site = $this->findSite($param1, $param2);
 
         $tiendaIds = $site->tiendas->pluck('id')->all();
 
