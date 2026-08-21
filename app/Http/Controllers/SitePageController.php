@@ -37,9 +37,9 @@ class SitePageController extends Controller
 
         abort_unless($seccion instanceof Seccion, 404);
 
-        $siteRespuestas = $site->respuestas->keyBy('pregunta_id');
-        $plantillaRespuestas = \App\Models\Respuesta::where('plantilla_id', $site->plantilla_id)->get()->keyBy('pregunta_id');
-        $respuestas = $plantillaRespuestas->merge($siteRespuestas);
+        $siteRespuestas = $site->respuestas->keyBy('pregunta_id')->all();
+        $plantillaRespuestas = \App\Models\Respuesta::where('plantilla_id', $site->plantilla_id)->get()->keyBy('pregunta_id')->all();
+        $respuestas = $siteRespuestas + $plantillaRespuestas;
 
         // Pre-cargar el contenido de TODAS las secciones (activas e inanimadas/ocultas del nav) para renderizado instantáneo
         $seccionesData = [];
