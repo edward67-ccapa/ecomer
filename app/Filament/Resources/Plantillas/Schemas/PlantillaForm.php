@@ -249,9 +249,7 @@ class PlantillaForm
      */
     public static function respuestasFields(Plantilla $plantilla): array
     {
-        if (isset(self::$respuestasSchemaCache[$plantilla->id])) {
-            return self::$respuestasSchemaCache[$plantilla->id];
-        }
+        self::$respuestasSchemaCache = [];
 
         $plantilla->unsetRelation('secciones');
         $plantilla->load(['secciones.preguntas' => fn ($q) => $q->orderBy('orden')->with('children')]);
@@ -336,13 +334,16 @@ class PlantillaForm
                 ->placeholder('https://ejemplo.com'),
 
             'grupo' => Repeater::make($statePath)
+                ->columnSpanFull()
                 ->schema(function () use ($pregunta) {
                     $children = $pregunta->children;
                     if ($children->isEmpty() && isset($pregunta->id)) {
                         $children = Pregunta::where('parent_id', $pregunta->id)->orderBy('orden')->get();
                     }
 
-                    return $children->map(function (Pregunta $child) {
+                    $hasEnlaceChild = $children->contains(fn ($c) => $c->label === 'enlace' || $c->tipo === 'enlace');
+
+                    $schemaFields = $children->map(function (Pregunta $child) {
                         $childPath = $child->label;
 
                         $subField = match ($child->tipo) {
@@ -351,12 +352,20 @@ class PlantillaForm
                             'galeria' => FileUpload::make($childPath)->image()->multiple()->disk('public')->directory('sites/contenido')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable(),
                             'color' => ColorPicker::make($childPath),
                             'icono' => IconPicker::make($childPath),
-                            'enlace' => TextInput::make($childPath)->url(),
+                            'enlace' => TextInput::make($childPath)->placeholder('https://ejemplo.com o /Productos'),
                             default => TextInput::make($childPath),
                         };
 
                         return $subField->label($child->label);
                     })->all();
+
+                    if (! $hasEnlaceChild) {
+                        $schemaFields[] = TextInput::make('enlace')
+                            ->label('Enlace (URL)')
+                            ->placeholder('https://ejemplo.com o /Productos');
+                    }
+
+                    return $schemaFields;
                 })
                 ->itemLabel(fn (array $state): ?string => $state['nombre'] ?? $state['titulo'] ?? $state['label'] ?? null)
                 ->defaultItems($pregunta->estructura === 'objeto' ? 1 : 0)
@@ -376,7 +385,7 @@ class PlantillaForm
             ->helperText($pregunta->ayuda)
             ->required($pregunta->requerida);
 
-        if ($pregunta->tipo === 'enlace' || ($pregunta->tipo === 'grupo' && $pregunta->estructura === 'array')) {
+        if ($pregunta->tipo === 'enlace') {
             return $field;
         }
 

@@ -2,7 +2,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 /**
 * @see \Livewire\Mechanisms\FrontendAssets\FrontendAssets::returnJavaScriptAsFile
 * @see vendor/livewire/livewire/src/Mechanisms/FrontendAssets/FrontendAssets.php:81
-* @route '/livewire-2d932d37/livewire.js'
+* @route '/livewire-2d932d37/livewire.min.js'
 */
 export const returnJavaScriptAsFile = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: returnJavaScriptAsFile.url(options),
@@ -11,13 +11,13 @@ export const returnJavaScriptAsFile = (options?: RouteQueryOptions): RouteDefini
 
 returnJavaScriptAsFile.definition = {
     methods: ["get","head"],
-    url: '/livewire-2d932d37/livewire.js',
+    url: '/livewire-2d932d37/livewire.min.js',
 } satisfies RouteDefinition<["get","head"]>
 
 /**
 * @see \Livewire\Mechanisms\FrontendAssets\FrontendAssets::returnJavaScriptAsFile
 * @see vendor/livewire/livewire/src/Mechanisms/FrontendAssets/FrontendAssets.php:81
-* @route '/livewire-2d932d37/livewire.js'
+* @route '/livewire-2d932d37/livewire.min.js'
 */
 returnJavaScriptAsFile.url = (options?: RouteQueryOptions) => {
     return returnJavaScriptAsFile.definition.url + queryParams(options)
@@ -26,7 +26,7 @@ returnJavaScriptAsFile.url = (options?: RouteQueryOptions) => {
 /**
 * @see \Livewire\Mechanisms\FrontendAssets\FrontendAssets::returnJavaScriptAsFile
 * @see vendor/livewire/livewire/src/Mechanisms/FrontendAssets/FrontendAssets.php:81
-* @route '/livewire-2d932d37/livewire.js'
+* @route '/livewire-2d932d37/livewire.min.js'
 */
 returnJavaScriptAsFile.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: returnJavaScriptAsFile.url(options),
@@ -36,7 +36,7 @@ returnJavaScriptAsFile.get = (options?: RouteQueryOptions): RouteDefinition<'get
 /**
 * @see \Livewire\Mechanisms\FrontendAssets\FrontendAssets::returnJavaScriptAsFile
 * @see vendor/livewire/livewire/src/Mechanisms/FrontendAssets/FrontendAssets.php:81
-* @route '/livewire-2d932d37/livewire.js'
+* @route '/livewire-2d932d37/livewire.min.js'
 */
 returnJavaScriptAsFile.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: returnJavaScriptAsFile.url(options),
@@ -46,7 +46,7 @@ returnJavaScriptAsFile.head = (options?: RouteQueryOptions): RouteDefinition<'he
 /**
 * @see \Livewire\Mechanisms\FrontendAssets\FrontendAssets::returnJavaScriptAsFile
 * @see vendor/livewire/livewire/src/Mechanisms/FrontendAssets/FrontendAssets.php:81
-* @route '/livewire-2d932d37/livewire.js'
+* @route '/livewire-2d932d37/livewire.min.js'
 */
 const returnJavaScriptAsFileForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: returnJavaScriptAsFile.url(options),
@@ -56,7 +56,7 @@ const returnJavaScriptAsFileForm = (options?: RouteQueryOptions): RouteFormDefin
 /**
 * @see \Livewire\Mechanisms\FrontendAssets\FrontendAssets::returnJavaScriptAsFile
 * @see vendor/livewire/livewire/src/Mechanisms/FrontendAssets/FrontendAssets.php:81
-* @route '/livewire-2d932d37/livewire.js'
+* @route '/livewire-2d932d37/livewire.min.js'
 */
 returnJavaScriptAsFileForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: returnJavaScriptAsFile.url(options),
@@ -66,7 +66,7 @@ returnJavaScriptAsFileForm.get = (options?: RouteQueryOptions): RouteFormDefinit
 /**
 * @see \Livewire\Mechanisms\FrontendAssets\FrontendAssets::returnJavaScriptAsFile
 * @see vendor/livewire/livewire/src/Mechanisms/FrontendAssets/FrontendAssets.php:81
-* @route '/livewire-2d932d37/livewire.js'
+* @route '/livewire-2d932d37/livewire.min.js'
 */
 returnJavaScriptAsFileForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: returnJavaScriptAsFile.url({

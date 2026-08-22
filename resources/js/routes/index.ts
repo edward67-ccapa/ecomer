@@ -1,6 +1,6 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition } from './../wayfinder'
 /**
-* @see routes/web.php:7
+* @see [serialized-closure]:2
 * @route '/'
 */
 export const welcome = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -14,7 +14,7 @@ welcome.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
-* @see routes/web.php:7
+* @see [serialized-closure]:2
 * @route '/'
 */
 welcome.url = (options?: RouteQueryOptions) => {
@@ -22,7 +22,7 @@ welcome.url = (options?: RouteQueryOptions) => {
 }
 
 /**
-* @see routes/web.php:7
+* @see [serialized-closure]:2
 * @route '/'
 */
 welcome.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -31,7 +31,7 @@ welcome.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 
 /**
-* @see routes/web.php:7
+* @see [serialized-closure]:2
 * @route '/'
 */
 welcome.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -40,7 +40,7 @@ welcome.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 })
 
 /**
-* @see routes/web.php:7
+* @see [serialized-closure]:2
 * @route '/'
 */
 const welcomeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -49,7 +49,7 @@ const welcomeForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> =>
 })
 
 /**
-* @see routes/web.php:7
+* @see [serialized-closure]:2
 * @route '/'
 */
 welcomeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -58,7 +58,7 @@ welcomeForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
 })
 
 /**
-* @see routes/web.php:7
+* @see [serialized-closure]:2
 * @route '/'
 */
 welcomeForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({

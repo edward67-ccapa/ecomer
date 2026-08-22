@@ -76,26 +76,19 @@ export default function ServiciosSection({ seccionData, dominio, siteSlug }) {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
                     {servicios.map((servicio, idx) => {
-                        const getValidLink = (url) => {
-                            if (!url || typeof url !== 'string') return null;
-                            const trimmed = url.trim();
-                            if (trimmed === '' || trimmed === '#') return null;
-                            return trimmed;
-                        };
+                        const rawLink = servicio.enlace || `Productos?categoria=${encodeURIComponent(servicio.titulo || '')}`;
 
-                        const customEnlace = getValidLink(servicio.enlace) || getValidLink(servicio.titulo_enlace) || getValidLink(servicio.url);
-                        const categoriaParam = encodeURIComponent(servicio.titulo || '');
-
-                        let targetUrl = customEnlace;
-                        if (!targetUrl) {
+                        let targetUrl = rawLink;
+                        if (!rawLink.startsWith('http://') && !rawLink.startsWith('https://')) {
+                            const relPath = rawLink.replace(/^\/+/, '');
                             if (dominio === 'plantillas') {
-                                targetUrl = `/plantillas/${siteSlug}/Productos?categoria=${categoriaParam}`;
+                                targetUrl = `/plantillas/${siteSlug}/${relPath}`;
                             } else if (dominio && siteSlug && siteSlug !== dominio) {
-                                targetUrl = `/${dominio}/${siteSlug}/Productos?categoria=${categoriaParam}`;
+                                targetUrl = `/${dominio}/${siteSlug}/${relPath}`;
                             } else if (dominio) {
-                                targetUrl = `/${dominio}/Productos?categoria=${categoriaParam}`;
+                                targetUrl = `/${dominio}/${relPath}`;
                             } else {
-                                targetUrl = `/Productos?categoria=${categoriaParam}`;
+                                targetUrl = `/${relPath}`;
                             }
                         }
 
