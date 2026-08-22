@@ -76,12 +76,24 @@ export default function ServiciosSection({ seccionData, dominio, siteSlug }) {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
                     {servicios.map((servicio, idx) => {
-                        const customEnlace = servicio.enlace || servicio.titulo_enlace || servicio.url;
-                        const targetUrl = customEnlace || (
-                            (dominio && siteSlug)
-                                ? `/${dominio}/${siteSlug}/Productos?categoria=${encodeURIComponent(servicio.titulo)}`
-                                : `#`
-                        );
+                        const customEnlace = (servicio.enlace && servicio.enlace !== '#')
+                            ? servicio.enlace
+                            : (servicio.titulo_enlace || servicio.url);
+
+                        const categoriaParam = encodeURIComponent(servicio.titulo || '');
+
+                        let targetUrl = customEnlace;
+                        if (!targetUrl) {
+                            if (dominio === 'plantillas') {
+                                targetUrl = `/plantillas/${siteSlug}/Productos?categoria=${categoriaParam}`;
+                            } else if (dominio && siteSlug) {
+                                targetUrl = `/${dominio}/${siteSlug}/Productos?categoria=${categoriaParam}`;
+                            } else if (dominio) {
+                                targetUrl = `/${dominio}/Productos?categoria=${categoriaParam}`;
+                            } else {
+                                targetUrl = `/Productos?categoria=${categoriaParam}`;
+                            }
+                        }
 
                         return (
                             <motion.div
