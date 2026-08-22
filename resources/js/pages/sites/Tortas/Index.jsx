@@ -47,7 +47,9 @@ export default function Tortas({
         productos: SectionProductos,
     };
 
-    const ActiveComponent = sectionMap[seccionActiva?.slug?.toLowerCase()] || SectionInicio;
+    const slugLower = seccionActiva?.slug?.toLowerCase() || '';
+    const ActiveComponent = sectionMap[slugLower] 
+        || (slugLower.includes('producto') ? SectionProductos : SectionInicio);
 
     return (
         <>

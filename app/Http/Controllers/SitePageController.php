@@ -52,7 +52,9 @@ class SitePageController extends Controller
 
         $targetSlug = strtolower(str_replace(['_', ' '], '-', $seccionSlug));
         $seccion = $site->plantilla->secciones->first(function ($s) use ($targetSlug) {
-            return strtolower(str_replace(['_', ' '], '-', $s->slug)) === $targetSlug;
+            $sSlug = strtolower(str_replace(['_', ' '], '-', $s->slug));
+            $sNombre = strtolower(str_replace(['_', ' '], '-', $s->nombre));
+            return $sSlug === $targetSlug || $sNombre === $targetSlug || str_contains($sSlug, $targetSlug) || str_contains($targetSlug, $sSlug);
         }) ?? $seccionesNav->first();
 
         abort_unless($seccion instanceof Seccion, 404);
