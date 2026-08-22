@@ -76,17 +76,21 @@ export default function ServiciosSection({ seccionData, dominio, siteSlug }) {
 
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
                     {servicios.map((servicio, idx) => {
-                        const customEnlace = (servicio.enlace && servicio.enlace !== '#')
-                            ? servicio.enlace
-                            : (servicio.titulo_enlace || servicio.url);
+                        const getValidLink = (url) => {
+                            if (!url || typeof url !== 'string') return null;
+                            const trimmed = url.trim();
+                            if (trimmed === '' || trimmed === '#') return null;
+                            return trimmed;
+                        };
 
+                        const customEnlace = getValidLink(servicio.enlace) || getValidLink(servicio.titulo_enlace) || getValidLink(servicio.url);
                         const categoriaParam = encodeURIComponent(servicio.titulo || '');
 
                         let targetUrl = customEnlace;
                         if (!targetUrl) {
                             if (dominio === 'plantillas') {
                                 targetUrl = `/plantillas/${siteSlug}/Productos?categoria=${categoriaParam}`;
-                            } else if (dominio && siteSlug) {
+                            } else if (dominio && siteSlug && siteSlug !== dominio) {
                                 targetUrl = `/${dominio}/${siteSlug}/Productos?categoria=${categoriaParam}`;
                             } else if (dominio) {
                                 targetUrl = `/${dominio}/Productos?categoria=${categoriaParam}`;

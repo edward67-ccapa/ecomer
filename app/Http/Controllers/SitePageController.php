@@ -97,7 +97,7 @@ class SitePageController extends Controller
                 'plantilla_id' => $site->plantilla_id,
             ],
             'dominio' => $dominio,
-            'siteSlug' => $site->slug,
+            'siteSlug' => $siteSlug,
             'tieneTienda' => ! empty($tiendaIds),
             'secciones' => $seccionesNav
                 ->map(fn (Seccion $s): array => [

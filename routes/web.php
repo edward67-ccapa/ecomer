@@ -16,5 +16,7 @@ Route::get('/plantillas/{plantilla:slug}/{seccion?}', [PlantillasController::cla
     ->where('seccion', '[a-zA-Z0-9\-]+')
     ->name('plantillas.preview');
 
+Route::get('/{param1}/{param2}/{param3}', [SitePageController::class, 'show'])->name('sitios.show3');
 Route::get('/{dominio}/{seccion}', [SitePageController::class, 'show'])->name('sitios.show');
 Route::get('/{dominio}', [SitePageController::class, 'redirectToFirst'])->name('sitios.home');
+
