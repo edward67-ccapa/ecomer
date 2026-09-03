@@ -43,8 +43,7 @@ class SubcategoriaForm
                             ->rows(3)
                             ->columnSpanFull(),
                         FileUpload::make('imagen')
-                            ->image()
-                            ->directory('subcategorias')
+                            ->webp5Mb('subcategorias')
                             ->columnSpanFull(),
                     ]),
             ]);

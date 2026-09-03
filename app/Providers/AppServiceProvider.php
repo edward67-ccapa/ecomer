@@ -22,5 +22,26 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         \Illuminate\Support\Facades\View::share('errors', new \Illuminate\Support\ViewErrorBag);
+
+        \Filament\Forms\Components\FileUpload::macro('webp5Mb', function (?string $directory = null, ?string $disk = null) {
+            /** @var \Filament\Forms\Components\FileUpload $this */
+            $component = $this
+                ->image()
+                ->maxSize(5120); // 5MB max limit
+
+            if ($directory) {
+                $component->directory($directory);
+            }
+            if ($disk) {
+                $component->disk($disk);
+            }
+
+            return $component->saveUploadedFileUsing(function (\Livewire\Features\SupportFileUploads\TemporaryUploadedFile $file, \Filament\Forms\Components\FileUpload $comp) {
+                $dir = $comp->getDirectory() ?? 'uploads';
+                $diskName = $comp->getDiskName() ?? 'public';
+
+                return \App\Services\ImageUploadService::processAndSave($file, $dir, $diskName);
+            });
+        });
     }
 }

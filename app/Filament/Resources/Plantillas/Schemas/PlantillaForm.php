@@ -74,9 +74,7 @@ class PlantillaForm
                                                                 Textarea::make('descripcion')
                                                                     ->rows(2),
                                                                 FileUpload::make('imagen')
-                                                                    ->image()
-                                                                    ->disk('public')
-                                                                    ->directory('plantillas')
+                                                                    ->webp5Mb('plantillas', 'public')
                                                                     ->orientImagesFromExif(false)
                                                                     ->uploadingMessage('Subiendo imagen...')
                                                                     ->deletable(true)
@@ -304,27 +302,23 @@ class PlantillaForm
                 ->placeholder('Escribe el contenido aquí...'),
 
             'imagen' => FileUpload::make($statePath)
-                ->image()
-                ->disk('public')
-                ->directory('sites/contenido')
+                ->webp5Mb('sites/contenido', 'public')
                 ->orientImagesFromExif(false)
                 ->uploadingMessage('Subiendo imagen...')
                 ->deletable(true)
                 ->openable()
                 ->downloadable()
-                ->helperText('Formatos: JPG, PNG, WebP'),
+                ->helperText('Máximo 5MB. Se convertirá automáticamente a WebP.'),
 
             'galeria' => FileUpload::make($statePath)
-                ->image()
                 ->multiple()
-                ->disk('public')
-                ->directory('sites/contenido')
+                ->webp5Mb('sites/contenido', 'public')
                 ->orientImagesFromExif(false)
                 ->uploadingMessage('Subiendo imágenes...')
                 ->deletable(true)
                 ->openable()
                 ->downloadable()
-                ->helperText('Puedes subir múltiples imágenes'),
+                ->helperText('Puedes subir múltiples imágenes (Máximo 5MB cada una, formato WebP)'),
 
             'color' => ColorPicker::make($statePath)
                 ->helperText('Selecciona un color'),
@@ -347,8 +341,8 @@ class PlantillaForm
 
                         $subField = match ($child->tipo) {
                             'area' => Textarea::make($childPath)->rows(2),
-                            'imagen' => FileUpload::make($childPath)->image()->disk('public')->directory('sites/contenido')->orientImagesFromExif(false)->uploadingMessage('Subiendo imagen...')->deletable(true)->openable()->downloadable(),
-                            'galeria' => FileUpload::make($childPath)->image()->multiple()->disk('public')->directory('sites/contenido')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable(),
+                            'imagen' => FileUpload::make($childPath)->webp5Mb('sites/contenido', 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imagen...')->deletable(true)->openable()->downloadable(),
+                            'galeria' => FileUpload::make($childPath)->multiple()->webp5Mb('sites/contenido', 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable(),
                             'color' => ColorPicker::make($childPath),
                             'icono' => IconPicker::make($childPath),
                             'enlace' => TextInput::make($childPath)->url(),

@@ -95,9 +95,7 @@ class SiteForm
                                                 ->maxLength(255),
                                             FileUpload::make('imagen')
                                                 ->label('Logo / imagen')
-                                                ->image()
-                                                ->disk('public')
-                                                ->directory('sites')
+                                                ->webp5Mb('sites', 'public')
                                                 ->orientImagesFromExif(false)
                                                 ->uploadingMessage('Subiendo imagen...')
                                                 ->deletable(true)

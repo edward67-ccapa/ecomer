@@ -48,8 +48,7 @@ class CategoriaForm
                                 Textarea::make('descripcion')
                                     ->rows(3),
                                 FileUpload::make('imagen')
-                                    ->image()
-                                    ->directory('categorias'),
+                                    ->webp5Mb('categorias'),
                             ])
                             ->columnSpanFull(),
                     ]),

@@ -268,8 +268,7 @@ class ProductoForm
                                 ]),
                                 Grid::make(2)->schema([
                                     FileUpload::make('imagen')
-                                        ->image()
-                                        ->directory('variantes'),
+                                        ->webp5Mb('variantes'),
                                     Toggle::make('activa')
                                         ->default(true),
                                 ]),
@@ -284,14 +283,12 @@ class ProductoForm
                     ->schema([
                         FileUpload::make('imagen')
                             ->label('Imagen principal')
-                            ->image()
-                            ->directory('productos')
+                            ->webp5Mb('productos')
                             ->columnSpan(2),
                         FileUpload::make('imagenes')
                             ->label('Galería')
                             ->multiple()
-                            ->image()
-                            ->directory('productos')
+                            ->webp5Mb('productos')
                             ->columnSpanFull(),
                     ])
                     ->columns(4)
