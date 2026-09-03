@@ -66,7 +66,7 @@ class EditPlantilla extends EditRecord
 
     private function guardarRespuestas(): void
     {
-        $respuestas = $this->form->getState()['respuestas'] ?? [];
+        $respuestas = $this->data['respuestas'] ?? $this->form->getRawState()['respuestas'] ?? [];
 
         if (empty($respuestas)) {
             return;

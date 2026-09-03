@@ -11,8 +11,7 @@
 
     RewriteEngine On
 
-    # Si el archivo o directorio existe fisicamente, entregarlo directamente (CSS, JS, imagenes)
-    RewriteCond %{REQUEST_FILENAME} !-f
-    RewriteCond %{REQUEST_FILENAME} !-d
-    RewriteRule ^ index.php [L]
+    # Redirigir todas las peticiones a la carpeta public/ manteniendo peticiones GET/POST
+    RewriteCond %{REQUEST_URI} !^/public/
+    RewriteRule ^(.*)$ public/$1 [L]
 </IfModule>

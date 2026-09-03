@@ -326,7 +326,6 @@ class PlantillaForm
             'icono' => IconPicker::make($statePath),
 
             'enlace' => TextInput::make($statePath)
-                ->url()
                 ->placeholder('https://ejemplo.com'),
 
             'grupo' => Repeater::make($statePath)
@@ -345,7 +344,7 @@ class PlantillaForm
                             'galeria' => FileUpload::make($childPath)->multiple()->webp5Mb('sites/contenido', 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable(),
                             'color' => ColorPicker::make($childPath),
                             'icono' => IconPicker::make($childPath),
-                            'enlace' => TextInput::make($childPath)->url(),
+                            'enlace' => TextInput::make($childPath)->placeholder('https://ejemplo.com'),
                             default => TextInput::make($childPath),
                         };
 

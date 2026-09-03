@@ -73,7 +73,7 @@ class EditSite extends EditRecord
 
     private function guardarRespuestas(int $siteId): void
     {
-        $respuestas = $this->form->getState()['respuestas'] ?? [];
+        $respuestas = $this->data['respuestas'] ?? $this->form->getRawState()['respuestas'] ?? [];
 
         if (empty($respuestas)) {
             return;

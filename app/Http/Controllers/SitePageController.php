@@ -211,7 +211,12 @@ class SitePageController extends Controller
         if ($tipo === 'grupo' && is_array($valor)) {
             $childrenMap = ($children && $children->isNotEmpty()) ? $children->keyBy('label') : collect();
 
-            return array_map(function ($item) use ($childrenMap) {
+            // Si viene con claves asociativas (ej. UUIDs de Filament), convertir a lista indexada [0, 1, ...]
+            if (! empty($valor) && ! array_is_list($valor)) {
+                $valor = array_values($valor);
+            }
+
+            return array_values(array_map(function ($item) use ($childrenMap) {
                 if (! is_array($item)) {
                     return $item;
                 }
@@ -246,7 +251,7 @@ class SitePageController extends Controller
                 }
 
                 return $formattedItem;
-            }, $valor);
+            }, $valor));
         }
 
         if ($tipo === 'imagen' || $tipo === 'galeria') {
@@ -266,7 +271,7 @@ class SitePageController extends Controller
             };
 
             return is_array($valor)
-                ? array_map($formatUrl, $valor)
+                ? array_values(array_map($formatUrl, $valor))
                 : $formatUrl((string) $valor);
         }
 
