@@ -33,6 +33,14 @@ Route::get('/storage/{path}', function (string $path) {
     }
 
     if (! $targetFile) {
+        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+        if (in_array($extension, ['png', 'jpg', 'jpeg', 'webp', 'svg', 'gif'])) {
+            $placeholderSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="400" height="300" fill="#F3F4F6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9CA3AF" font-family="sans-serif" font-size="16">Imagen no encontrada</text></svg>';
+            return response($placeholderSvg, 200, [
+                'Content-Type' => 'image/svg+xml',
+                'Cache-Control' => 'no-cache',
+            ]);
+        }
         abort(404);
     }
 
