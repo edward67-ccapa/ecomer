@@ -277,7 +277,12 @@ class SitePageController extends Controller
                     return $ruta;
                 }
 
-                return Storage::disk('public')->url(ltrim($ruta, '/'));
+                $cleanPath = ltrim($ruta, '/');
+                if (request()->hasHeader('Host')) {
+                    return request()->schemeAndHttpHost() . '/storage/' . $cleanPath;
+                }
+
+                return Storage::disk('public')->url($cleanPath);
             };
 
             return is_array($valor)
