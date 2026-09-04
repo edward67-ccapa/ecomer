@@ -1,26 +1,10 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Link } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
-import { fetchSectionData } from './apiBase';
 
 export default function Footer({ site, dominio, siteSlug, secciones, seccionActiva, seccionesData }) {
-    const [navData, setNavData] = useState(null);
-    const [contactoData, setContactoData] = useState(null);
-
-    useEffect(() => {
-        if (dominio && siteSlug) {
-            fetchSectionData(dominio, siteSlug, 'nav')
-                .then((res) => setNavData(res?.seccionActiva || res))
-                .catch(() => setNavData(null));
-
-            fetchSectionData(dominio, siteSlug, 'contacto')
-                .then((res) => setContactoData(res?.seccionActiva || res))
-                .catch(() => setContactoData(null));
-        }
-    }, [dominio, siteSlug]);
-
-    const activeNav = navData || seccionesData?.nav || seccionesData?.['nav'] || null;
-    const activeContacto = contactoData || seccionesData?.contacto || seccionesData?.['contacto'] || null;
+    const activeNav = seccionesData?.nav || seccionesData?.['nav'] || null;
+    const activeContacto = seccionesData?.contacto || seccionesData?.['contacto'] || null;
 
     const logoNav = activeNav?.contenido?.find((c) => c.label === 'logo_nav')?.valor;
     const mensajeFooter = activeNav?.contenido?.find((c) => c.label === 'mensaje_footer')?.valor
@@ -34,10 +18,10 @@ export default function Footer({ site, dominio, siteSlug, secciones, seccionActi
     // Extraer redes o datos de contacto si existen en la API
     const redes = activeContacto?.contenido?.find((c) => c.label === 'redes')?.valor || [];
 
-    const direccion = contactoData?.contenido?.find((c) => c.label === 'direccion')?.valor?.[0]?.texto
+    const direccion = activeContacto?.contenido?.find((c) => c.label === 'direccion')?.valor?.[0]?.texto
         || 'Av. Gran Chimú N°680, San Juan de Lurigancho';
 
-    const rawWa = waNavTexto || contactoData?.contenido?.find((c) => c.label === 'whatsap' || c.label === 'whatsapp')?.enlace || '916628409';
+    const rawWa = waNavTexto || activeContacto?.contenido?.find((c) => c.label === 'whatsap' || c.label === 'whatsapp')?.enlace || '916628409';
     const whatsappNum = rawWa.startsWith('http')
         ? rawWa
         : `https://wa.me/${rawWa.replace(/\D/g, '').length === 9 ? '51' + rawWa.replace(/\D/g, '') : rawWa.replace(/\D/g, '')}`;

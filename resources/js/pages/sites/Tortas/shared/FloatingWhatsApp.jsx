@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import DynamicIcon from '@/components/DynamicIcon';
-import { fetchSectionData } from './apiBase';
 
 export default function FloatingWhatsApp({ site, dominio, siteSlug, seccionesData }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -33,20 +32,7 @@ export default function FloatingWhatsApp({ site, dominio, siteSlug, seccionesDat
         if (initialNav || initialContacto) {
             updateUrlFromData(initialNav, initialContacto);
         }
-
-        if (dominio && siteSlug) {
-            Promise.allSettled([
-                fetchSectionData(dominio, siteSlug, 'nav'),
-                fetchSectionData(dominio, siteSlug, 'contacto'),
-            ]).then(([navRes, contactosRes]) => {
-                const nav = navRes.status === 'fulfilled' ? (navRes.value?.seccionActiva || navRes.value) : null;
-                const contactos = contactosRes.status === 'fulfilled' ? (contactosRes.value?.seccionActiva || contactosRes.value) : null;
-                if (nav || contactos) {
-                    updateUrlFromData(nav || initialNav, contactos || initialContacto);
-                }
-            });
-        }
-    }, [dominio, siteSlug, seccionesData]);
+    }, [seccionesData]);
 
     const handleEnviar = (e) => {
         e.preventDefault();

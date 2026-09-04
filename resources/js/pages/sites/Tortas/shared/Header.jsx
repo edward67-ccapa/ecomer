@@ -1,27 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
-import { fetchSectionData } from './apiBase';
 import { useCartStore } from '@/stores/useCartStore';
 import CartOffcanvas from '@/components/CartOffcanvas';
 
 export default function Header({ site, dominio, siteSlug, secciones, seccionActiva, tieneTienda, productos, seccionesData }) {
-    const [navData, setNavData] = useState(null);
     const [isScrolled, setIsScrolled] = useState(false);
-
-    const openCart = useCartStore((state) => state.openCart);
-    const cartCount = useCartStore((state) => state.getItemCount());
-
-    const hasStore = Boolean(site?.tiene_tienda ?? tieneTienda ?? (productos && productos.length > 0) ?? true);
-
-    // --- FETCH NAV DATA ---
-    useEffect(() => {
-        if (dominio) {
-            fetchSectionData(dominio, siteSlug, 'nav')
-                .then((res) => setNavData(res?.seccionActiva || res))
-                .catch(() => setNavData(null));
-        }
-    }, [dominio, siteSlug]);
 
     // --- SCROLL DETECTION ---
     useEffect(() => {
@@ -34,8 +18,12 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
         return () => window.removeEventListener('scroll', handleScroll);
     }, []);
 
+    const openCart = useCartStore((state) => state.openCart);
+    const cartCount = useCartStore((state) => state.getItemCount());
+    const hasStore = Boolean(site?.tiene_tienda ?? tieneTienda ?? (productos && productos.length > 0) ?? true);
+
     // --- DATA EXTRACTION ---
-    const activeNav = navData || seccionesData?.nav;
+    const activeNav = seccionesData?.nav || seccionesData?.['nav'] || null;
     const logoNav = activeNav?.contenido?.find((c) => c.label === 'logo_nav')?.valor;
     const accionesNav = activeNav?.contenido?.find((c) => c.label === 'accion_nav')?.valor || [];
 
