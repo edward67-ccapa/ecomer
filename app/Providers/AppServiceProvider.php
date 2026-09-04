@@ -27,7 +27,7 @@ class AppServiceProvider extends ServiceProvider
             /** @var \Filament\Forms\Components\FileUpload $this */
             $component = $this
                 ->image()
-                ->maxSize(5120); // 5MB max limit
+                ->maxSize(15360); // 15MB max limit (15360 KB)
 
             if ($directory !== null) {
                 $component->directory($directory);

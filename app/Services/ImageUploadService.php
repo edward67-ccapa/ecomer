@@ -19,33 +19,21 @@ class ImageUploadService
         $realPath = self::getAbsoluteFilePath($file);
 
         if ($realPath && file_exists($realPath)) {
-            try {
-                $tmpWebp = sys_get_temp_dir() . '/' . Str::random(40) . '.webp';
+            $tmpWebp = sys_get_temp_dir() . '/' . Str::random(40) . '.webp';
 
-                WebPConvert::convert($realPath, $tmpWebp, [
-                    'quality' => 82,
-                    'max-quality' => 85,
-                ]);
+            if (self::convertToWebp($realPath, $tmpWebp, 82)) {
+                $filename = Str::random(40) . '.webp';
+                $destinationPath = $directory . '/' . $filename;
+                $contents = file_get_contents($tmpWebp);
 
-                if (file_exists($tmpWebp) && filesize($tmpWebp) > 0) {
-                    $filename = Str::random(40) . '.webp';
-                    $destinationPath = $directory . '/' . $filename;
-                    $contents = file_get_contents($tmpWebp);
+                Storage::disk($disk)->put($destinationPath, $contents);
 
-                    Storage::disk($disk)->put($destinationPath, $contents);
+                // Dual save: sync directly to public_path('storage/...') for servers without working symlinks (cPanel)
+                self::syncToPublicPath($destinationPath, $contents);
 
-                    // Dual save: sync directly to public_path('storage/...') for servers without working symlinks (cPanel)
-                    self::syncToPublicPath($destinationPath, $contents);
+                @unlink($tmpWebp);
 
-                    @unlink($tmpWebp);
-
-                    return $destinationPath;
-                }
-            } catch (\Throwable $e) {
-                Log::warning('WebP image conversion via WebPConvert failed.', [
-                    'error' => $e->getMessage(),
-                    'file' => $file->getClientOriginalName(),
-                ]);
+                return $destinationPath;
             }
         }
 
@@ -110,5 +98,62 @@ class ImageUploadService
         }
 
         return null;
+    }
+
+    /**
+     * Attempt WebP conversion using WebPConvert, Imagick, or GD.
+     */
+    private static function convertToWebp(string $sourcePath, string $targetPath, int $quality = 82): bool
+    {
+        // 1. Try WebPConvert library
+        try {
+            WebPConvert::convert($sourcePath, $targetPath, [
+                'quality' => $quality,
+                'max-quality' => min(100, $quality + 5),
+            ]);
+            if (file_exists($targetPath) && filesize($targetPath) > 0) {
+                return true;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('WebPConvert failed: ' . $e->getMessage());
+        }
+
+        // 2. Try Imagick extension if available
+        if (class_exists('\Imagick')) {
+            try {
+                $im = new \Imagick($sourcePath);
+                $im->setImageFormat('webp');
+                $im->setImageCompressionQuality($quality);
+                $im->writeImage($targetPath);
+                $im->clear();
+                $im->destroy();
+                if (file_exists($targetPath) && filesize($targetPath) > 0) {
+                    return true;
+                }
+            } catch (\Throwable $e) {
+                Log::warning('Imagick WebP conversion failed: ' . $e->getMessage());
+            }
+        }
+
+        // 3. Try native GD extension if functions exist
+        if (function_exists('imagewebp') && function_exists('imagecreatefromstring')) {
+            try {
+                $data = file_get_contents($sourcePath);
+                $im = @imagecreatefromstring($data);
+                if ($im !== false) {
+                    imagealphablending($im, false);
+                    imagesavealpha($im, true);
+                    $success = @imagewebp($im, $targetPath, $quality);
+                    imagedestroy($im);
+                    if ($success && file_exists($targetPath) && filesize($targetPath) > 0) {
+                        return true;
+                    }
+                }
+            } catch (\Throwable $e) {
+                Log::warning('GD WebP conversion failed: ' . $e->getMessage());
+            }
+        }
+
+        return false;
     }
 }

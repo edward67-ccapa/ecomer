@@ -322,8 +322,7 @@ class PlantillaForm
                 ->uploadingMessage('Subiendo imagen...')
                 ->deletable(true)
                 ->openable()
-                ->downloadable()
-                ->helperText('Máximo 5MB. Se convertirá automáticamente a WebP.'),
+                ->helperText('Máximo 15MB. Se convertirá automáticamente a WebP.'),
 
             'galeria' => FileUpload::make($statePath)
                 ->multiple()
@@ -333,7 +332,7 @@ class PlantillaForm
                 ->deletable(true)
                 ->openable()
                 ->downloadable()
-                ->helperText('Puedes subir múltiples imágenes (Máximo 5MB cada una, formato WebP)'),
+                ->helperText('Puedes subir múltiples imágenes (Máximo 15MB cada una, formato WebP)'),
 
             'color' => ColorPicker::make($statePath)
                 ->helperText('Selecciona un color'),
