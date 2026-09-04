@@ -116,4 +116,17 @@ class PublicPagesTest extends TestCase
     {
         $this->get('/admin/login')->assertOk();
     }
+
+    public function test_storage_fallback_route(): void
+    {
+        \Illuminate\Support\Facades\Storage::disk('public')->put('sites/test-demo/imagen-test.png', 'test-content');
+
+        // Acceso directo a la nueva ruta ordenada
+        $this->get('/storage/sites/test-demo/imagen-test.png')->assertOk();
+
+        // Acceso con ruta antigua no ordenada (búsqueda por nombre de archivo)
+        $this->get('/storage/sites/contenido/imagen-test.png')->assertOk();
+
+        \Illuminate\Support\Facades\Storage::disk('public')->delete('sites/test-demo/imagen-test.png');
+    }
 }
