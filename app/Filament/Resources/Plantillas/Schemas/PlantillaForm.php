@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Plantillas\Schemas;
 
 use App\Models\Plantilla;
 use App\Models\Pregunta;
+use App\Models\Site;
 use App\Filament\Forms\Components\IconPicker;
 use App\Filament\Forms\Components\LinkPicker;
 use Filament\Forms\Components\ColorPicker;
@@ -22,7 +23,9 @@ use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Str;
 
 class PlantillaForm
 {
@@ -74,7 +77,7 @@ class PlantillaForm
                                                                 Textarea::make('descripcion')
                                                                     ->rows(2),
                                                                 FileUpload::make('imagen')
-                                                                    ->webp5Mb('plantillas', 'public')
+                                                                    ->webp5Mb(fn (Get $get, ?Model $record) => 'plantillas/' . (Str::slug($get('slug') ?? $record?->slug) ?: 'general'), 'public')
                                                                     ->orientImagesFromExif(false)
                                                                     ->uploadingMessage('Subiendo imagen...')
                                                                     ->deletable(true)
@@ -295,6 +298,18 @@ class PlantillaForm
         $statePath = "respuestas.{$pregunta->id}.valor";
         $linkPath = "respuestas.{$pregunta->id}.enlace";
 
+        $contentDirectory = function (Get $get, ?Model $record) {
+            $rawSlug = $get('slug') ?? $record?->slug;
+            $slug = $rawSlug ? Str::slug($rawSlug) : null;
+
+            if ($record instanceof Site || $get('plantilla_id') !== null) {
+                $folder = $slug ?: ($record?->id ? "site-{$record->id}" : 'general');
+                return "sites/{$folder}/contenido";
+            }
+            $folder = $slug ?: ($record?->id ? "plantilla-{$record->id}" : 'general');
+            return "plantillas/{$folder}/contenido";
+        };
+
         // Construir el campo principal
         $field = match ($pregunta->tipo) {
             'area' => Textarea::make($statePath)
@@ -302,7 +317,7 @@ class PlantillaForm
                 ->placeholder('Escribe el contenido aquí...'),
 
             'imagen' => FileUpload::make($statePath)
-                ->webp5Mb('sites/contenido', 'public')
+                ->webp5Mb($contentDirectory, 'public')
                 ->orientImagesFromExif(false)
                 ->uploadingMessage('Subiendo imagen...')
                 ->deletable(true)
@@ -312,7 +327,7 @@ class PlantillaForm
 
             'galeria' => FileUpload::make($statePath)
                 ->multiple()
-                ->webp5Mb('sites/contenido', 'public')
+                ->webp5Mb($contentDirectory, 'public')
                 ->orientImagesFromExif(false)
                 ->uploadingMessage('Subiendo imágenes...')
                 ->deletable(true)
@@ -329,19 +344,19 @@ class PlantillaForm
                 ->placeholder('https://ejemplo.com'),
 
             'grupo' => Repeater::make($statePath)
-                ->schema(function () use ($pregunta) {
+                ->schema(function () use ($pregunta, $contentDirectory) {
                     $children = $pregunta->children;
                     if ($children->isEmpty() && isset($pregunta->id)) {
                         $children = Pregunta::where('parent_id', $pregunta->id)->orderBy('orden')->get();
                     }
 
-                    return $children->map(function (Pregunta $child) {
+                    return $children->map(function (Pregunta $child) use ($contentDirectory) {
                         $childPath = $child->label;
 
                         $subField = match ($child->tipo) {
                             'area' => Textarea::make($childPath)->rows(2),
-                            'imagen' => FileUpload::make($childPath)->webp5Mb('sites/contenido', 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imagen...')->deletable(true)->openable()->downloadable(),
-                            'galeria' => FileUpload::make($childPath)->multiple()->webp5Mb('sites/contenido', 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable(),
+                            'imagen' => FileUpload::make($childPath)->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imagen...')->deletable(true)->openable()->downloadable(),
+                            'galeria' => FileUpload::make($childPath)->multiple()->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable(),
                             'color' => ColorPicker::make($childPath),
                             'icono' => IconPicker::make($childPath),
                             'enlace' => TextInput::make($childPath)->placeholder('https://ejemplo.com'),

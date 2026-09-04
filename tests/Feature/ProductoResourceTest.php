@@ -54,8 +54,14 @@ class ProductoResourceTest extends TestCase
             'slug' => 'mi-tienda',
         ]);
 
+        $tienda = \App\Models\Tienda::create([
+            'nombre' => 'Tienda Test',
+            'slug' => 'tienda-test',
+        ]);
+
         $zapatilla = Categoria::create([
             'site_id' => $site->id,
+            'tienda_id' => $tienda->id,
             'nombre' => 'Zapatilla',
             'slug' => 'zapatilla',
         ]);
@@ -79,6 +85,7 @@ class ProductoResourceTest extends TestCase
         Livewire::test(CreateProducto::class)
             ->fillForm([
                 'site_id' => $site->id,
+                'tiendas' => [$tienda->id],
                 'categoria_id' => $zapatilla->id,
                 'subcategoria_id' => $nike->id,
                 'nombre' => 'Zapatilla Running',

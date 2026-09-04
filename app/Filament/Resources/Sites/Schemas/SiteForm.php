@@ -95,7 +95,7 @@ class SiteForm
                                                 ->maxLength(255),
                                             FileUpload::make('imagen')
                                                 ->label('Logo / imagen')
-                                                ->webp5Mb('sites', 'public')
+                                                ->webp5Mb(fn (Get $get, ?\Illuminate\Database\Eloquent\Model $record) => 'sites/' . (Str::slug($get('slug') ?? $record?->slug) ?: 'general'), 'public')
                                                 ->orientImagesFromExif(false)
                                                 ->uploadingMessage('Subiendo imagen...')
                                                 ->deletable(true)

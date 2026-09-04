@@ -29,16 +29,26 @@ class SitePageController extends Controller
 
         $seccionSlug = $primeraSeccion ? $primeraSeccion->slug : 'Inicio';
 
-        return Redirect::to("/{$dominio}/{$seccionSlug}");
+        return $siteSlug
+            ? Redirect::to("/{$dominio}/{$siteSlug}/{$seccionSlug}")
+            : Redirect::to("/{$dominio}/{$seccionSlug}");
     }
 
-    public function show(string $param1, string $param2, ?string $param3 = null): Response
+    public function show(string $param1, string $param2, ?string $param3 = null): Response|RedirectResponse
     {
         if ($param3 !== null) {
             $dominio = $param1;
             $siteSlug = $param2;
             $seccionSlug = $param3;
         } else {
+            $siteBySlug = Site::where('slug', $param2)
+                ->whereHas('dominio', fn ($q) => $q->where('nombre', $param1))
+                ->first();
+
+            if ($siteBySlug) {
+                return $this->redirectToFirst($param1, $param2);
+            }
+
             $dominio = $param1;
             $siteSlug = null;
             $seccionSlug = $param2;

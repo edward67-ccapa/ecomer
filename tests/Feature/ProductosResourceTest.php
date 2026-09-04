@@ -43,6 +43,11 @@ class ProductosResourceTest extends TestCase
             'nombre' => 'creadorDePaginas',
         ]);
 
+        $this->tienda = \App\Models\Tienda::create([
+            'nombre' => 'Tienda Test',
+            'slug' => 'tienda-test',
+        ]);
+
         $this->site = Site::create([
             'user_id' => $this->user->id,
             'dominio_id' => $dominio->id,
@@ -64,6 +69,7 @@ class ProductosResourceTest extends TestCase
         Livewire::test(CreateCategoria::class)
             ->fillForm([
                 'site_id' => $this->site->id,
+                'tienda_id' => $this->tienda->id,
                 'nombre' => 'Ropa',
                 'slug' => 'ropa',
                 'activa' => true,
@@ -94,6 +100,7 @@ class ProductosResourceTest extends TestCase
     {
         $categoria = Categoria::create([
             'site_id' => $this->site->id,
+            'tienda_id' => $this->tienda->id,
             'nombre' => 'Ropa',
             'slug' => 'ropa',
         ]);
@@ -101,6 +108,7 @@ class ProductosResourceTest extends TestCase
         Livewire::test(CreateProducto::class)
             ->fillForm([
                 'site_id' => $this->site->id,
+                'tiendas' => [$this->tienda->id],
                 'categoria_id' => $categoria->id,
                 'nombre' => 'Camisa blanca',
                 'slug' => 'camisa-blanca',

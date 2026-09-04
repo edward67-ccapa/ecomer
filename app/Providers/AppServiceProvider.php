@@ -23,13 +23,13 @@ class AppServiceProvider extends ServiceProvider
     {
         \Illuminate\Support\Facades\View::share('errors', new \Illuminate\Support\ViewErrorBag);
 
-        \Filament\Forms\Components\FileUpload::macro('webp5Mb', function (?string $directory = null, ?string $disk = null) {
+        \Filament\Forms\Components\FileUpload::macro('webp5Mb', function (string|\Closure|null $directory = null, ?string $disk = null) {
             /** @var \Filament\Forms\Components\FileUpload $this */
             $component = $this
                 ->image()
                 ->maxSize(5120); // 5MB max limit
 
-            if ($directory) {
+            if ($directory !== null) {
                 $component->directory($directory);
             }
             if ($disk) {

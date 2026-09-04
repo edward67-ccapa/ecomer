@@ -5,40 +5,39 @@ namespace App\Services;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
-use Intervention\Image\Drivers\Gd\Driver as GdDriver;
-use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
-use Intervention\Image\ImageManager;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
+use WebPConvert\WebPConvert;
 
 class ImageUploadService
 {
     /**
-     * Process an uploaded file, limit size and convert to WebP format if supported.
+     * Process an uploaded file, limit size and convert to WebP format.
      */
     public static function processAndSave(TemporaryUploadedFile $file, string $directory = 'uploads', string $disk = 'public'): string
     {
         $directory = trim($directory, '/');
+        $realPath = self::getAbsoluteFilePath($file);
 
-        // Check if GD or Imagick PHP extensions are available for WebP conversion
-        if (extension_loaded('gd') || extension_loaded('imagick')) {
+        if ($realPath && file_exists($realPath)) {
             try {
-                $driver = extension_loaded('gd') ? new GdDriver() : new ImagickDriver();
-                $manager = new ImageManager($driver);
+                $tmpWebp = sys_get_temp_dir() . '/' . Str::random(40) . '.webp';
 
-                $realPath = $file->getRealPath();
-                if ($realPath && file_exists($realPath)) {
-                    $image = $manager->read($realPath);
-                    $encoded = $image->toWebp(82);
+                WebPConvert::convert($realPath, $tmpWebp, [
+                    'quality' => 82,
+                    'max-quality' => 85,
+                ]);
 
+                if (file_exists($tmpWebp) && filesize($tmpWebp) > 0) {
                     $filename = Str::random(40) . '.webp';
                     $destinationPath = $directory . '/' . $filename;
 
-                    Storage::disk($disk)->put($destinationPath, (string) $encoded);
+                    Storage::disk($disk)->put($destinationPath, file_get_contents($tmpWebp));
+                    @unlink($tmpWebp);
 
                     return $destinationPath;
                 }
             } catch (\Throwable $e) {
-                Log::warning('WebP image conversion failed, storing original file.', [
+                Log::warning('WebP image conversion via WebPConvert failed.', [
                     'error' => $e->getMessage(),
                     'file' => $file->getClientOriginalName(),
                 ]);
@@ -47,5 +46,34 @@ class ImageUploadService
 
         // Fallback: store the file with its original format
         return $file->store($directory, $disk);
+    }
+
+    /**
+     * Resolve absolute file path on disk for TemporaryUploadedFile.
+     */
+    private static function getAbsoluteFilePath(TemporaryUploadedFile $file): ?string
+    {
+        $candidates = [
+            $file->getRealPath(),
+            $file->path(),
+            $file->getPathname(),
+        ];
+
+        try {
+            $fileDisk = $file->getDisk();
+            if ($fileDisk && $file->getRealPath()) {
+                $candidates[] = Storage::disk($fileDisk)->path($file->getRealPath());
+            }
+        } catch (\Throwable $e) {
+            // Ignore if disk path cannot be resolved
+        }
+
+        foreach ($candidates as $candidate) {
+            if ($candidate && is_string($candidate) && file_exists($candidate) && is_file($candidate)) {
+                return $candidate;
+            }
+        }
+
+        return null;
     }
 }
