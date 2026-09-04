@@ -48,6 +48,14 @@ class FilamentResourceRenderTest extends TestCase
         Livewire::test(CreatePlantilla::class)->assertOk();
     }
 
+    public function test_create_site_with_plantilla_id_param_renders(): void
+    {
+        $plantilla = Plantilla::create(['nombre' => 'Test', 'slug' => 'test-plantilla', 'tipo' => 'ecommerce']);
+        Livewire::withQueryParams(['plantilla_id' => $plantilla->id])
+            ->test(CreateSite::class)
+            ->assertOk();
+    }
+
     public function test_subcategoria_color_talla_pages_render(): void
     {
         Livewire::test(ListSubcategorias::class)->assertOk();

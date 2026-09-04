@@ -46,6 +46,15 @@ class CreateSite extends CreateRecord
         }
     }
 
+    protected function getCancelFormAction(): \Filament\Actions\Action
+    {
+        $url = $this->previousUrl ?? static::getResource()::getUrl('index');
+
+        return parent::getCancelFormAction()
+            ->url($url)
+            ->alpineClickHandler('window.location.href = ' . \Illuminate\Support\Js::from($url));
+    }
+
     protected function afterCreate(): void
     {
         // Copiar todas las respuestas por defecto de la plantilla

@@ -148,8 +148,6 @@ class SiteForm
     /**
      * @return array<int, Component>
      */
-    private static array $respuestasCache = [];
-
     private static function respuestasFields(Get $get): array
     {
         $plantillaId = $get('plantilla_id');
@@ -157,16 +155,12 @@ class SiteForm
             return [];
         }
 
-        if (isset(self::$respuestasCache[$plantillaId])) {
-            return self::$respuestasCache[$plantillaId];
-        }
-
         $plantilla = Plantilla::with('secciones.preguntas.children')->find($plantillaId);
 
         if (! $plantilla) {
-            return self::$respuestasCache[$plantillaId] = [];
+            return [];
         }
 
-        return self::$respuestasCache[$plantillaId] = PlantillaForm::respuestasFields($plantilla);
+        return PlantillaForm::respuestasFields($plantilla);
     }
 }

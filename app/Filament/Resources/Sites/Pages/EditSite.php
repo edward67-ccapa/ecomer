@@ -18,6 +18,15 @@ class EditSite extends EditRecord
         ];
     }
 
+    protected function getCancelFormAction(): \Filament\Actions\Action
+    {
+        $url = $this->previousUrl ?? static::getResource()::getUrl('index');
+
+        return parent::getCancelFormAction()
+            ->url($url)
+            ->alpineClickHandler('window.location.href = ' . \Illuminate\Support\Js::from($url));
+    }
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $this->record->load(['respuestas', 'plantilla.secciones.preguntas.children']);

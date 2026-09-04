@@ -243,25 +243,24 @@ class PlantillaForm
             ]);
     }
 
-    private static array $respuestasSchemaCache = [];
-
     /**
      * @return array<int, Component>
      */
     public static function respuestasFields(Plantilla $plantilla): array
     {
-        if (isset(self::$respuestasSchemaCache[$plantilla->id])) {
-            return self::$respuestasSchemaCache[$plantilla->id];
+        if (! $plantilla->relationLoaded('secciones')) {
+            $plantilla->load(['secciones.preguntas' => fn ($q) => $q->orderBy('orden')->with('children')]);
         }
 
-        $plantilla->unsetRelation('secciones');
-        $plantilla->load(['secciones.preguntas' => fn ($q) => $q->orderBy('orden')->with('children')]);
+        $secciones = $plantilla->secciones->sortBy('orden');
         $subTabs = [];
 
-        foreach ($plantilla->secciones as $seccion) {
+        foreach ($secciones as $seccion) {
             $fields = [];
 
-            foreach ($seccion->preguntas->whereNull('parent_id') as $pregunta) {
+            $preguntas = $seccion->preguntas->whereNull('parent_id')->sortBy('orden');
+
+            foreach ($preguntas as $pregunta) {
                 $campo = self::campoRespuesta($pregunta);
                 if (is_array($campo)) {
                     array_push($fields, ...$campo);
@@ -279,10 +278,10 @@ class PlantillaForm
         }
 
         if (empty($subTabs)) {
-            return self::$respuestasSchemaCache[$plantilla->id] = [];
+            return [];
         }
 
-        return self::$respuestasSchemaCache[$plantilla->id] = [
+        return [
             Tabs::make('SubTabsSeccionesRespuestas')
                 ->persistTabInQueryString(false)
                 ->tabs($subTabs)
