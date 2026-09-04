@@ -274,6 +274,12 @@ class SitePageController extends Controller
                     return $ruta;
                 }
                 if (str_starts_with($ruta, 'http://') || str_starts_with($ruta, 'https://')) {
+                    if (str_contains($ruta, '127.0.0.1') || str_contains($ruta, 'localhost')) {
+                        $cleanPath = preg_replace('/^https?:\/\/[^\/]+\/(storage\/)?/', '', $ruta);
+                        if (request()->hasHeader('Host')) {
+                            return request()->schemeAndHttpHost() . '/storage/' . ltrim($cleanPath, '/');
+                        }
+                    }
                     return $ruta;
                 }
 
