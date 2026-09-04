@@ -4,14 +4,17 @@ import DynamicIcon from '@/components/DynamicIcon';
 export default function SomosSection({ seccionData }) {
     if (!seccionData) return null;
 
-    const getValor = (label) => seccionData?.contenido?.find((item) => item.label === label)?.valor;
+    const getValor = (label) =>
+        seccionData?.contenido?.find(
+            (item) => item.label?.toLowerCase()?.trim() === label?.toLowerCase()?.trim()
+        )?.valor;
 
-    const subTituloSomos = getValor('sub_titulo') || '';
-    const tituloSomos = getValor('titulo') || '';
-    const iconoSomos = getValor('icono') || '';
-    const descripcionSomos = getValor('descripcion') || '';
-    const etiquetasSomos = getValor('etiqueta') || [];
-    const rawImagen = getValor('imagen');
+    const subTituloSomos = getValor('sub_titulo') || getValor('subtitulo') || getValor('sub_título') || '';
+    const tituloSomos = getValor('titulo') || getValor('título') || '';
+    const iconoSomos = getValor('icono') || getValor('icon') || '';
+    const descripcionSomos = getValor('descripcion') || getValor('descripción') || getValor('description') || '';
+    const etiquetasSomos = getValor('etiqueta') || getValor('etiquetas') || [];
+    const rawImagen = getValor('imagen') || getValor('img') || getValor('image');
     const imagenSomos = Array.isArray(rawImagen) ? rawImagen[0] : (rawImagen || '');
 
     const renderIcon = (iconName, className = 'h-8 w-8', customStyle = null) => {
