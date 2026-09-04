@@ -32,12 +32,12 @@ export function useInicioData(
     const isInicioSection = seccionActiva?.slug?.toLowerCase() === 'inicio';
     const initialInicio = isInicioSection ? seccionActiva : (findSeccion('inicio') || null);
     const initialServicios = findSeccion('servicios') || null;
-    const initialSomos = findSeccion('somos') || null;
+    const initialSomos = findSeccion('nosotros') || findSeccion('somos') || null;
     const initialTortasDestacadas = findSeccion('tortas-destacadas') || findSeccion('tortas_destacadas') || null;
     const initialPorQueElegirnos = findSeccion('elegirnos') || findSeccion('por-que-elegirnos') || findSeccion('por_que_elegirnos') || null;
     const initialContacto = findSeccion('contacto') || null;
 
-    const hasAllInitialData = Boolean(initialInicio && initialServicios && initialSomos && initialPorQueElegirnos);
+    const hasInitialData = Boolean(seccionesData);
 
     const [data, setData] = useState({
         inicio: initialInicio,
@@ -49,10 +49,15 @@ export function useInicioData(
         productosDestacados: initialProductosDestacados || [],
     });
 
-    const [loading, setLoading] = useState(!hasAllInitialData);
+    const [loading, setLoading] = useState(!hasInitialData);
     const [error, setError] = useState(null);
 
     useEffect(() => {
+        if (hasInitialData) {
+            setLoading(false);
+            return;
+        }
+
         let isMounted = true;
         setLoading(true);
 
@@ -91,7 +96,7 @@ export function useInicioData(
         return () => {
             isMounted = false;
         };
-    }, [dominio, siteSlug]);
+    }, [dominio, siteSlug, hasInitialData]);
 
     return { ...data, loading, error };
 }
