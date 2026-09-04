@@ -10,8 +10,8 @@ export default function SomosSection({ seccionData }) {
     const tituloSomos = getValor('titulo') || '';
     const iconoSomos = getValor('icono') || '';
     const descripcionSomos = getValor('descripcion') || '';
-    const etiquetasSomos = getValor('etiqueta') || [];
-    const imagenSomos = getValor('imagen') || '';
+    const rawImagenSomos = getValor('imagen');
+    const imagenSomos = Array.isArray(rawImagenSomos) ? rawImagenSomos[0] : (rawImagenSomos || '');
 
     const renderIcon = (iconName, className = 'h-8 w-8', customStyle = null) => {
         if (!iconName) return null;
