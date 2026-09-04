@@ -73,8 +73,13 @@ class SiteApiController extends Controller
 
         $targetSlug = strtolower(str_replace(['_', ' '], '-', $seccionSlug));
         $seccion = $site->plantilla->secciones->first(function ($s) use ($targetSlug) {
-            return strtolower(str_replace(['_', ' '], '-', $s->slug)) === $targetSlug;
-        }) ?? $site->plantilla->secciones->reject(fn ($s) => strtolower($s->slug) === 'nav')->first();
+            $sSlug = strtolower(str_replace(['_', ' '], '-', $s->slug));
+            $sNombre = strtolower(str_replace(['_', ' '], '-', $s->nombre));
+            return $sSlug === $targetSlug
+                || $sNombre === $targetSlug
+                || str_contains($sSlug, $targetSlug)
+                || str_contains($targetSlug, $sSlug);
+        }) ?? $site->plantilla->secciones->first();
 
         if (! $seccion instanceof Seccion) {
             return response()->json(['message' => 'Sección no encontrada'], 404);
