@@ -113,7 +113,7 @@ export default function ServiciosSection({ seccionData, dominio, siteSlug }) {
                                     style={{ borderRadius: 'var(--radio-bordes)' }}
                                 >
                                     {servicio.imagen && (
-                                        <div className="w-20 h-20 mb-4 rounded-full overflow-hidden flex items-center justify-center bg-gray-50 group-hover:scale-105 transition-transform duration-300">
+                                        <div className="w-20 h-20 mb-4 flex items-center justify-center">
                                             <img
                                                 src={servicio.imagen}
                                                 alt={servicio.titulo || 'Servicio'}
