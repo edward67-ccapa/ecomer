@@ -4,7 +4,7 @@ import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFo
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:62
 * @route '/api/v1/plantillas/{plantilla}/productos'
 */
-export const indexByPlantilla = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const indexByPlantilla = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: indexByPlantilla.url(args, options),
     method: 'get',
 })
@@ -19,7 +19,7 @@ indexByPlantilla.definition = {
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:62
 * @route '/api/v1/plantillas/{plantilla}/productos'
 */
-indexByPlantilla.url = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions) => {
+indexByPlantilla.url = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { plantilla: args }
     }
@@ -52,7 +52,7 @@ indexByPlantilla.url = (args: { plantilla: string | number | { slug: string | nu
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:62
 * @route '/api/v1/plantillas/{plantilla}/productos'
 */
-indexByPlantilla.get = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+indexByPlantilla.get = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: indexByPlantilla.url(args, options),
     method: 'get',
 })
@@ -62,7 +62,7 @@ indexByPlantilla.get = (args: { plantilla: string | number | { slug: string | nu
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:62
 * @route '/api/v1/plantillas/{plantilla}/productos'
 */
-indexByPlantilla.head = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+indexByPlantilla.head = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: indexByPlantilla.url(args, options),
     method: 'head',
 })
@@ -72,7 +72,7 @@ indexByPlantilla.head = (args: { plantilla: string | number | { slug: string | n
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:62
 * @route '/api/v1/plantillas/{plantilla}/productos'
 */
-const indexByPlantillaForm = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+const indexByPlantillaForm = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: indexByPlantilla.url(args, options),
     method: 'get',
 })
@@ -82,7 +82,7 @@ const indexByPlantillaForm = (args: { plantilla: string | number | { slug: strin
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:62
 * @route '/api/v1/plantillas/{plantilla}/productos'
 */
-indexByPlantillaForm.get = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+indexByPlantillaForm.get = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: indexByPlantilla.url(args, options),
     method: 'get',
 })
@@ -92,7 +92,7 @@ indexByPlantillaForm.get = (args: { plantilla: string | number | { slug: string 
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:62
 * @route '/api/v1/plantillas/{plantilla}/productos'
 */
-indexByPlantillaForm.head = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+indexByPlantillaForm.head = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: indexByPlantilla.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
@@ -109,7 +109,7 @@ indexByPlantilla.form = indexByPlantillaForm
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:78
 * @route '/api/v1/plantillas/{plantilla}/productos/destacados'
 */
-export const destacadosByPlantilla = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const destacadosByPlantilla = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: destacadosByPlantilla.url(args, options),
     method: 'get',
 })
@@ -124,7 +124,7 @@ destacadosByPlantilla.definition = {
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:78
 * @route '/api/v1/plantillas/{plantilla}/productos/destacados'
 */
-destacadosByPlantilla.url = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions) => {
+destacadosByPlantilla.url = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { plantilla: args }
     }
@@ -157,7 +157,7 @@ destacadosByPlantilla.url = (args: { plantilla: string | number | { slug: string
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:78
 * @route '/api/v1/plantillas/{plantilla}/productos/destacados'
 */
-destacadosByPlantilla.get = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+destacadosByPlantilla.get = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: destacadosByPlantilla.url(args, options),
     method: 'get',
 })
@@ -167,7 +167,7 @@ destacadosByPlantilla.get = (args: { plantilla: string | number | { slug: string
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:78
 * @route '/api/v1/plantillas/{plantilla}/productos/destacados'
 */
-destacadosByPlantilla.head = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+destacadosByPlantilla.head = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: destacadosByPlantilla.url(args, options),
     method: 'head',
 })
@@ -177,7 +177,7 @@ destacadosByPlantilla.head = (args: { plantilla: string | number | { slug: strin
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:78
 * @route '/api/v1/plantillas/{plantilla}/productos/destacados'
 */
-const destacadosByPlantillaForm = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+const destacadosByPlantillaForm = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: destacadosByPlantilla.url(args, options),
     method: 'get',
 })
@@ -187,7 +187,7 @@ const destacadosByPlantillaForm = (args: { plantilla: string | number | { slug: 
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:78
 * @route '/api/v1/plantillas/{plantilla}/productos/destacados'
 */
-destacadosByPlantillaForm.get = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+destacadosByPlantillaForm.get = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: destacadosByPlantilla.url(args, options),
     method: 'get',
 })
@@ -197,7 +197,7 @@ destacadosByPlantillaForm.get = (args: { plantilla: string | number | { slug: st
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:78
 * @route '/api/v1/plantillas/{plantilla}/productos/destacados'
 */
-destacadosByPlantillaForm.head = (args: { plantilla: string | number | { slug: string | number } } | [plantilla: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+destacadosByPlantillaForm.head = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: destacadosByPlantilla.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
@@ -788,7 +788,7 @@ destacados.form = destacadosForm
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:155
 * @route '/api/v1/productos/{producto}'
 */
-export const show = (args: { producto: string | number | { slug: string | number } } | [producto: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const show = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -803,7 +803,7 @@ show.definition = {
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:155
 * @route '/api/v1/productos/{producto}'
 */
-show.url = (args: { producto: string | number | { slug: string | number } } | [producto: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions) => {
+show.url = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { producto: args }
     }
@@ -836,7 +836,7 @@ show.url = (args: { producto: string | number | { slug: string | number } } | [p
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:155
 * @route '/api/v1/productos/{producto}'
 */
-show.get = (args: { producto: string | number | { slug: string | number } } | [producto: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+show.get = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: show.url(args, options),
     method: 'get',
 })
@@ -846,7 +846,7 @@ show.get = (args: { producto: string | number | { slug: string | number } } | [p
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:155
 * @route '/api/v1/productos/{producto}'
 */
-show.head = (args: { producto: string | number | { slug: string | number } } | [producto: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+show.head = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: show.url(args, options),
     method: 'head',
 })
@@ -856,7 +856,7 @@ show.head = (args: { producto: string | number | { slug: string | number } } | [
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:155
 * @route '/api/v1/productos/{producto}'
 */
-const showForm = (args: { producto: string | number | { slug: string | number } } | [producto: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+const showForm = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, options),
     method: 'get',
 })
@@ -866,7 +866,7 @@ const showForm = (args: { producto: string | number | { slug: string | number } 
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:155
 * @route '/api/v1/productos/{producto}'
 */
-showForm.get = (args: { producto: string | number | { slug: string | number } } | [producto: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+showForm.get = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, options),
     method: 'get',
 })
@@ -876,7 +876,7 @@ showForm.get = (args: { producto: string | number | { slug: string | number } } 
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:155
 * @route '/api/v1/productos/{producto}'
 */
-showForm.head = (args: { producto: string | number | { slug: string | number } } | [producto: string | number | { slug: string | number } ] | string | number | { slug: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+showForm.head = (args: { producto: string | { slug: string } } | [producto: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: show.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
@@ -893,7 +893,7 @@ show.form = showForm
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:39
 * @route '/api/v1/tiendas/{tienda}'
 */
-export const showTienda = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const showTienda = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: showTienda.url(args, options),
     method: 'get',
 })
@@ -908,7 +908,7 @@ showTienda.definition = {
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:39
 * @route '/api/v1/tiendas/{tienda}'
 */
-showTienda.url = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+showTienda.url = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { tienda: args }
     }
@@ -941,7 +941,7 @@ showTienda.url = (args: { tienda: string | number | { id: string | number } } | 
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:39
 * @route '/api/v1/tiendas/{tienda}'
 */
-showTienda.get = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+showTienda.get = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: showTienda.url(args, options),
     method: 'get',
 })
@@ -951,7 +951,7 @@ showTienda.get = (args: { tienda: string | number | { id: string | number } } | 
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:39
 * @route '/api/v1/tiendas/{tienda}'
 */
-showTienda.head = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+showTienda.head = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: showTienda.url(args, options),
     method: 'head',
 })
@@ -961,7 +961,7 @@ showTienda.head = (args: { tienda: string | number | { id: string | number } } |
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:39
 * @route '/api/v1/tiendas/{tienda}'
 */
-const showTiendaForm = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+const showTiendaForm = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: showTienda.url(args, options),
     method: 'get',
 })
@@ -971,7 +971,7 @@ const showTiendaForm = (args: { tienda: string | number | { id: string | number 
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:39
 * @route '/api/v1/tiendas/{tienda}'
 */
-showTiendaForm.get = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+showTiendaForm.get = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: showTienda.url(args, options),
     method: 'get',
 })
@@ -981,7 +981,7 @@ showTiendaForm.get = (args: { tienda: string | number | { id: string | number } 
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:39
 * @route '/api/v1/tiendas/{tienda}'
 */
-showTiendaForm.head = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+showTiendaForm.head = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: showTienda.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
@@ -998,7 +998,7 @@ showTienda.form = showTiendaForm
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:50
 * @route '/api/v1/tiendas/{tienda}/productos'
 */
-export const indexByTienda = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+export const indexByTienda = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: indexByTienda.url(args, options),
     method: 'get',
 })
@@ -1013,7 +1013,7 @@ indexByTienda.definition = {
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:50
 * @route '/api/v1/tiendas/{tienda}/productos'
 */
-indexByTienda.url = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions) => {
+indexByTienda.url = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { tienda: args }
     }
@@ -1046,7 +1046,7 @@ indexByTienda.url = (args: { tienda: string | number | { id: string | number } }
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:50
 * @route '/api/v1/tiendas/{tienda}/productos'
 */
-indexByTienda.get = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+indexByTienda.get = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: indexByTienda.url(args, options),
     method: 'get',
 })
@@ -1056,7 +1056,7 @@ indexByTienda.get = (args: { tienda: string | number | { id: string | number } }
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:50
 * @route '/api/v1/tiendas/{tienda}/productos'
 */
-indexByTienda.head = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+indexByTienda.head = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: indexByTienda.url(args, options),
     method: 'head',
 })
@@ -1066,7 +1066,7 @@ indexByTienda.head = (args: { tienda: string | number | { id: string | number } 
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:50
 * @route '/api/v1/tiendas/{tienda}/productos'
 */
-const indexByTiendaForm = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+const indexByTiendaForm = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: indexByTienda.url(args, options),
     method: 'get',
 })
@@ -1076,7 +1076,7 @@ const indexByTiendaForm = (args: { tienda: string | number | { id: string | numb
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:50
 * @route '/api/v1/tiendas/{tienda}/productos'
 */
-indexByTiendaForm.get = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+indexByTiendaForm.get = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: indexByTienda.url(args, options),
     method: 'get',
 })
@@ -1086,7 +1086,7 @@ indexByTiendaForm.get = (args: { tienda: string | number | { id: string | number
 * @see app/Http/Controllers/Api/v1/ProductoApiController.php:50
 * @route '/api/v1/tiendas/{tienda}/productos'
 */
-indexByTiendaForm.head = (args: { tienda: string | number | { id: string | number } } | [tienda: string | number | { id: string | number } ] | string | number | { id: string | number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+indexByTiendaForm.head = (args: { tienda: number | { id: number } } | [tienda: number | { id: number } ] | number | { id: number }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
     action: indexByTienda.url(args, {
         [options?.mergeQuery ? 'mergeQuery' : 'query']: {
             _method: 'HEAD',
