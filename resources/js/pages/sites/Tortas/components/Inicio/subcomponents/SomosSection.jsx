@@ -134,18 +134,30 @@ export default function SomosSection({ seccionData }) {
                         transition={{ duration: 0.7, delay: 0.2 }}
                         className="flex justify-center lg:justify-end"
                     >
-                        {imagenSomos && (
-                            <img
-                                src={imagenSomos}
-                                alt={tituloSomos || "Sobre nosotros"}
-                                width={493}
-                                height={329}
-                                loading="lazy"
-                                decoding="async"
-                                className="w-full max-w-md rounded-xl object-cover shadow-lg aspect-[3/2]"
-                                style={{ borderRadius: 'var(--radio-bordes)' }}
-                            />
-                        )}
+                        {/* Columna 2 - Imagen */}
+                        <motion.div
+                            initial={{ opacity: 0, x: 30 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ duration: 0.7, delay: 0.2 }}
+                            className="flex justify-center lg:justify-end"
+                        >
+                            {imagenSomos && (
+                                <img
+                                    src={imagenSomos}
+                                    alt={tituloSomos || "Sobre nosotros"}
+                                    width={493}
+                                    height={500}
+                                    loading="lazy"
+                                    decoding="async"
+                                    className="w-full max-w-md rounded-xl object-cover"
+                                    style={{
+                                        borderRadius: 'var(--radio-bordes)',
+                                        height: 'auto',
+                                    }}
+                                />
+                            )}
+                        </motion.div>
                     </motion.div>
                 </div>
             </div>

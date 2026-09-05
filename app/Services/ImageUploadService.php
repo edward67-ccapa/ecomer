@@ -16,40 +16,69 @@ class ImageUploadService
     public static function processAndSave(TemporaryUploadedFile $file, string $directory = 'uploads', string $disk = 'public'): string
     {
         $directory = trim($directory, '/');
-        $realPath = self::getAbsoluteFilePath($file);
 
-        if ($realPath && file_exists($realPath)) {
-            $tmpWebp = sys_get_temp_dir() . '/' . Str::random(40) . '.webp';
+        try {
+            $realPath = self::getAbsoluteFilePath($file);
 
-            if (self::convertToWebp($realPath, $tmpWebp, 82)) {
-                $filename = Str::random(40) . '.webp';
-                $destinationPath = $directory . '/' . $filename;
-                $contents = file_get_contents($tmpWebp);
+            if ($realPath && file_exists($realPath) && is_file($realPath) && filesize($realPath) > 0) {
+                $tmpWebp = sys_get_temp_dir() . '/' . Str::random(40) . '.webp';
 
-                Storage::disk($disk)->put($destinationPath, $contents);
+                if (self::convertToWebp($realPath, $tmpWebp, 82)) {
+                    if (file_exists($tmpWebp) && is_file($tmpWebp) && filesize($tmpWebp) > 0) {
+                        $contents = @file_get_contents($tmpWebp);
+                        if (is_string($contents) && strlen($contents) > 0) {
+                            $filename = Str::random(40) . '.webp';
+                            $destinationPath = $directory . '/' . $filename;
 
-                // Dual save: sync directly to public_path('storage/...') for servers without working symlinks (cPanel)
-                self::syncToPublicPath($destinationPath, $contents);
+                            Storage::disk($disk)->put($destinationPath, $contents);
 
-                @unlink($tmpWebp);
+                            // Dual save: sync directly to public_path('storage/...') for servers without working symlinks (cPanel)
+                            self::syncToPublicPath($destinationPath, $contents);
 
-                return $destinationPath;
+                            @unlink($tmpWebp);
+
+                            return $destinationPath;
+                        }
+                    }
+                }
             }
+        } catch (\Throwable $e) {
+            Log::warning('ImageUploadService WebP processing exception: ' . $e->getMessage());
         }
 
         // Fallback: store the file with its original format
-        $storedPath = $file->store($directory, $disk);
-
+        $storedPath = null;
         try {
-            $sourcePath = Storage::disk($disk)->path($storedPath);
-            if (file_exists($sourcePath)) {
-                self::syncToPublicPath($storedPath, file_get_contents($sourcePath));
-            }
+            $storedPath = Storage::disk($disk)->putFile($directory, $file);
         } catch (\Throwable $e) {
-            // Ignore error if disk path cannot be read
+            Log::error('ImageUploadService putFile fallback failed: ' . $e->getMessage());
         }
 
-        return $storedPath;
+        if (! $storedPath) {
+            try {
+                $storedPath = $file->store($directory, $disk);
+            } catch (\Throwable $e) {
+                Log::error('ImageUploadService file->store fallback failed: ' . $e->getMessage());
+            }
+        }
+
+        if ($storedPath) {
+            try {
+                $sourcePath = Storage::disk($disk)->path($storedPath);
+                if (file_exists($sourcePath) && is_file($sourcePath)) {
+                    $contents = @file_get_contents($sourcePath);
+                    if (is_string($contents) && strlen($contents) > 0) {
+                        self::syncToPublicPath($storedPath, $contents);
+                    }
+                }
+            } catch (\Throwable $e) {
+                // Ignore error if disk path cannot be read
+            }
+
+            return $storedPath;
+        }
+
+        return '';
     }
 
     /**
@@ -105,53 +134,59 @@ class ImageUploadService
      */
     private static function convertToWebp(string $sourcePath, string $targetPath, int $quality = 82): bool
     {
-        // 1. Try WebPConvert library
         try {
-            WebPConvert::convert($sourcePath, $targetPath, [
-                'quality' => $quality,
-                'max-quality' => min(100, $quality + 5),
-            ]);
-            if (file_exists($targetPath) && filesize($targetPath) > 0) {
-                return true;
-            }
-        } catch (\Throwable $e) {
-            Log::warning('WebPConvert failed: ' . $e->getMessage());
-        }
-
-        // 2. Try Imagick extension if available
-        if (class_exists('\Imagick')) {
+            // 1. Try WebPConvert library
             try {
-                $im = new \Imagick($sourcePath);
-                $im->setImageFormat('webp');
-                $im->setImageCompressionQuality($quality);
-                $im->writeImage($targetPath);
-                $im->clear();
-                $im->destroy();
+                WebPConvert::convert($sourcePath, $targetPath, [
+                    'quality' => $quality,
+                    'max-quality' => min(100, $quality + 5),
+                ]);
                 if (file_exists($targetPath) && filesize($targetPath) > 0) {
                     return true;
                 }
             } catch (\Throwable $e) {
-                Log::warning('Imagick WebP conversion failed: ' . $e->getMessage());
+                Log::warning('WebPConvert failed: ' . $e->getMessage());
             }
-        }
 
-        // 3. Try native GD extension if functions exist
-        if (function_exists('imagewebp') && function_exists('imagecreatefromstring')) {
-            try {
-                $data = file_get_contents($sourcePath);
-                $im = @imagecreatefromstring($data);
-                if ($im !== false) {
-                    imagealphablending($im, false);
-                    imagesavealpha($im, true);
-                    $success = @imagewebp($im, $targetPath, $quality);
-                    imagedestroy($im);
-                    if ($success && file_exists($targetPath) && filesize($targetPath) > 0) {
+            // 2. Try Imagick extension if available
+            if (class_exists('\Imagick')) {
+                try {
+                    $im = new \Imagick($sourcePath);
+                    $im->setImageFormat('webp');
+                    $im->setImageCompressionQuality($quality);
+                    $im->writeImage($targetPath);
+                    $im->clear();
+                    $im->destroy();
+                    if (file_exists($targetPath) && filesize($targetPath) > 0) {
                         return true;
                     }
+                } catch (\Throwable $e) {
+                    Log::warning('Imagick WebP conversion failed: ' . $e->getMessage());
                 }
-            } catch (\Throwable $e) {
-                Log::warning('GD WebP conversion failed: ' . $e->getMessage());
             }
+
+            // 3. Try native GD extension if available and loaded
+            if (extension_loaded('gd') && function_exists('imagewebp') && function_exists('imagecreatefromstring')) {
+                try {
+                    $data = @file_get_contents($sourcePath);
+                    if ($data !== false) {
+                        $im = @imagecreatefromstring($data);
+                        if ($im !== false) {
+                            imagealphablending($im, false);
+                            imagesavealpha($im, true);
+                            $success = @imagewebp($im, $targetPath, $quality);
+                            imagedestroy($im);
+                            if ($success && file_exists($targetPath) && filesize($targetPath) > 0) {
+                                return true;
+                            }
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('GD WebP conversion failed: ' . $e->getMessage());
+                }
+            }
+        } catch (\Throwable $e) {
+            Log::warning('convertToWebp top-level exception: ' . $e->getMessage());
         }
 
         return false;

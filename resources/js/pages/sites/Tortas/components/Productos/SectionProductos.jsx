@@ -164,7 +164,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
     }
 
     return (
-        <main className="flex-1 py-16 px-4 sm:px-6 bg-white">
+        <main className="flex-1 pb-16 pt-40 px-4 sm:px-6 bg-white">
             <div className="max-w-7xl mx-auto">
                 {/* Cabecera */}
                 <div className="text-center max-w-2xl mx-auto mb-10">
