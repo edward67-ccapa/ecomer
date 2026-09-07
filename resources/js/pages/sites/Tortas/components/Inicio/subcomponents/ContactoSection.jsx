@@ -228,17 +228,17 @@ export default function ContactoSection({ seccionData }) {
                     </div>
 
                     {/* COLUMNA 3: IMAGEN DE CONTACTO */}
-                    <div className="flex items-center justify-center">
+                    <div className="hidden lg:block absolute right-0 top-0 w-1/3 h-full overflow-hidden pointer-events-none">
                         {imagenUrl ? (
                             <div
-                                className="relative w-full max-w-md h-80 sm:h-96 group"
+                                className="w-full h-full"
                                 style={{ borderRadius: 'var(--radio-bordes)' }}
                             >
                                 <img
-                                    src={imagenUrl}
+                                    src={"https://imgs.search.brave.com/FKzq6vg-FEFi22csfvGovU_wfEIrDbY6bAahcYO-BnA/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTE3/ODUxNTI1L2VzL2Zv/dG8vd2VkZGluZy1j/YWtlLWFuZC1ib2tl/aC5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9akVvdVdrcDNF/U2Z2c1FXeGV1MUts/RXNXcktTMVUzTXBL/UmtaODFNTl9aND0"}
                                     alt={titulo || 'Contacto'}
-                                    width={400}
-                                    height={384}
+                                    width={600}
+                                    height={600}
                                     loading="lazy"
                                     decoding="async"
                                     className="w-full h-full object-cover"
@@ -247,7 +247,7 @@ export default function ContactoSection({ seccionData }) {
                             </div>
                         ) : (
                             <div
-                                className="w-full max-w-md h-80 bg-rose-100/50 border border-dashed border-rose-300 flex items-center justify-center text-rose-400 text-sm"
+                                className="w-full h-full bg-rose-100/50 border border-dashed border-rose-300 flex items-center justify-center text-rose-400 text-sm"
                                 style={{ borderRadius: 'var(--radio-bordes)' }}
                             >
                                 Imagen no disponible

@@ -100,6 +100,36 @@ class SitePageController extends Controller
 
         $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
 
+        // Serializar servicios del sitio para el frontend
+        $serviciosSitio = $site->servicios
+            ->where('activo', true)
+            ->map(fn (\App\Models\Servicios $grupo) => [
+                'id'       => $grupo->id,
+                'nombre'   => $grupo->nombre,
+                'activo'   => $grupo->activo,
+                'servicios' => $grupo->servicios
+                    ->where('activo', true)
+                    ->values()
+                    ->map(fn (\App\Models\Servicio $s) => [
+                        'id'               => $s->id,
+                        'titulo'           => $s->titulo,
+                        'subtitulo'        => $s->subtitulo,
+                        'descripcion'      => $s->descripcion,
+                        'descripcioncorta' => $s->descripcioncorta,
+                        'lista'            => $s->lista_array,
+                        'icono'            => $s->icono,
+                        'imagen'           => $s->imagen
+                            ? asset('storage/'.$s->imagen)
+                            : null,
+                        'boton'            => $s->boton,
+                        'url'              => $s->url,
+                        'orden'            => $s->orden,
+                    ])
+                    ->toArray(),
+            ])
+            ->values()
+            ->toArray();
+
         return Inertia::render(self::paginaPlantilla($site->plantilla), [
             'site' => [
                 'id' => $site->id,
@@ -126,13 +156,14 @@ class SitePageController extends Controller
             'productos' => \App\Http\Resources\v1\ProductoResource::collection($productos)->resolve(),
             'productosDestacados' => \App\Http\Resources\v1\ProductoResource::collection($productosDestacados)->resolve(),
             'estilos' => $estilos,
+            'serviciosSitio' => $serviciosSitio,
         ]);
     }
 
     private function findSite(string $dominioOrSlug, ?string $siteSlug = null): Site
     {
         $query = Site::query()
-            ->with(['plantilla.secciones.preguntas', 'dominio', 'respuestas'])
+            ->with(['plantilla.secciones.preguntas', 'dominio', 'respuestas', 'servicios.servicios'])
             ->where('estado', 'publicado');
 
         if ($siteSlug) {

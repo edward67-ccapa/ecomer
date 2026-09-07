@@ -16,6 +16,7 @@ export default function Tortas({
     productos,
     productosDestacados,
     estilos,
+    serviciosSitio = [],
 }) {
     useEffect(() => {
         if (typeof document !== 'undefined') {
@@ -89,6 +90,7 @@ export default function Tortas({
                     seccionesData={seccionesData}
                     productos={productos}
                     productosDestacados={productosDestacados}
+                    serviciosSitio={serviciosSitio}
                     styles={styles}
                 />
 

@@ -1,13 +1,14 @@
 import { useInicioData } from './hooks/useInicioData';
 import HeroSection from './subcomponents/HeroSection';
+import CategoriasSection from './subcomponents/CategoriasSection';
 import ServiciosSection from './subcomponents/ServiciosSection';
 import SomosSection from './subcomponents/SomosSection';
 import ProductosDestacadosSection from './subcomponents/ProductosDestacadosSection';
 import PorQueElegirnosSection from './subcomponents/PorQueElegirnosSection';
 import ContactoSection from './subcomponents/ContactoSection';
 
-export default function SectionInicio({ dominio, siteSlug, seccion, seccionesData, productosDestacados }) {
-    const { inicio, servicios, somos, tortasDestacadas, porQueElegirnos, contacto, productosDestacados: productos, loading, error } = useInicioData(
+export default function SectionInicio({ dominio, siteSlug, seccion, seccionesData, productosDestacados, serviciosSitio = [] }) {
+    const { inicio, categorias, servicios, somos, tortasDestacadas, porQueElegirnos, contacto, productosDestacados: productos, loading, error } = useInicioData(
         dominio,
         siteSlug,
         seccion,
@@ -37,7 +38,13 @@ export default function SectionInicio({ dominio, siteSlug, seccion, seccionesDat
     return (
         <main className="flex-1">
             <HeroSection seccionData={inicio} />
-            <ServiciosSection seccionData={servicios} dominio={dominio} siteSlug={siteSlug} />
+            <CategoriasSection seccionData={categorias} dominio={dominio} siteSlug={siteSlug} />
+            <ServiciosSection
+                seccionData={servicios}
+                serviciosSitio={serviciosSitio}
+                dominio={dominio}
+                siteSlug={siteSlug}
+            />
             <SomosSection seccionData={somos} />
             <ProductosDestacadosSection seccionData={tortasDestacadas} productos={productos} />
             <PorQueElegirnosSection seccionData={porQueElegirnos} />

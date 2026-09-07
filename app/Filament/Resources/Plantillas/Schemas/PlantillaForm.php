@@ -118,11 +118,24 @@ class PlantillaForm
 
                                                 Section::make('Tiendas')
                                                     ->icon('heroicon-o-shopping-bag')
+                                                    ->collapsible()
                                                     ->schema([
                                                         MultiSelect::make('tiendas')
                                                             ->label('Tiendas asociadas')
                                                             ->relationship('tiendas', 'nombre')
                                                             ->searchable(),
+                                                    ])
+                                                    ->columnSpanFull(),
+
+                                                Section::make('Servicios')
+                                                    ->icon('heroicon-o-wrench-screwdriver')
+                                                    ->collapsible()
+                                                    ->schema([
+                                                        MultiSelect::make('servicios')
+                                                            ->label('Servicios asociados')
+                                                            ->relationship('servicios', 'nombre')
+                                                            ->searchable()
+                                                            ->preload(),
                                                     ])
                                                     ->columnSpanFull(),
                                             ]),
