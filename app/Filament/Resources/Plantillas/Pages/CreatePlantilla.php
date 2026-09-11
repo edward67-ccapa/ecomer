@@ -20,10 +20,10 @@ class CreatePlantilla extends CreateRecord
 
         if (! File::isDirectory($pathDestino)) {
             $basePath = match ($plantilla->tipo) {
-                'ecommerce' => resource_path('js/pages/sites/Ecomer1'),
+                'ecommerce' => resource_path('js/pages/sites/Tortas'),
                 'landing_page' => resource_path('js/pages/sites/Corporativa'),
                 'anuncio' => resource_path('js/pages/sites/Anuncio'),
-                default => resource_path('js/pages/sites/Ecomer1'),
+                default => resource_path('js/pages/sites/Tortas'),
             };
 
             if (File::isDirectory($basePath)) {

@@ -180,7 +180,7 @@ export default function Index({
                 >
                     <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-4">
                         <Link
-                            href={`/${dominio}/${siteSlug}/${secciones[0].slug}`}
+                            href={`/${dominio}/${siteSlug}/${secciones?.[0]?.slug ?? ''}`}
                             className="flex items-center gap-3"
                         >
                             {site.imagen && (

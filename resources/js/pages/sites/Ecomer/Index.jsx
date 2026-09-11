@@ -7,7 +7,7 @@ import SectionInicio from './components/Inicio/SectionInicio';
 import SectionProductos from './components/Productos/SectionProductos';
 import SectionServicios from './components/Servicios/SectionServicios';
 
-export default function Tortas({
+export default function Ecomer({
     site,
     dominio,
     siteSlug,

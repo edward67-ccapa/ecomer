@@ -217,14 +217,21 @@ class PlantillaForm
                                                                             Select::make('tipo')
                                                                                 ->options(self::tiposPregunta())
                                                                                 ->required()
+                                                                                ->live(onBlur: true)
                                                                                 ->default('texto'),
                                                                             Select::make('estructura')
                                                                                 ->options([
                                                                                     'objeto' => 'Objeto',
-                                                                                    'array' => 'Array',
+                                                                                    'array'  => 'Array',
                                                                                 ])
                                                                                 ->default('objeto')
+                                                                                ->live(onBlur: true)
                                                                                 ->required(),
+                                                                            TextInput::make('max_items')
+                                                                                ->numeric()
+                                                                                ->label('Límite')
+                                                                                ->placeholder('Infinito')
+                                                                                ->visible(fn (Get $get): bool => $get('estructura') === 'array'),
                                                                             TextInput::make('orden')
                                                                                 ->numeric()
                                                                                 ->default(0),
@@ -234,6 +241,51 @@ class PlantillaForm
                                                                                 ->placeholder('Texto de ayuda')
                                                                                 ->columnSpan(1),
                                                                         ]),
+
+                                                                        // ── Sub-campos cuando el hijo es también tipo grupo ──
+                                                                        Repeater::make('children')
+                                                                            ->relationship()
+                                                                            ->label('Sub-campos del grupo hijo')
+                                                                            ->visible(fn (Get $get): bool => $get('tipo') === 'grupo')
+                                                                            ->schema([
+                                                                                Grid::make(6)->schema([
+                                                                                    TextInput::make('label')
+                                                                                        ->required()
+                                                                                        ->maxLength(255),
+                                                                                    Select::make('tipo')
+                                                                                        ->options(self::tiposPregunta())
+                                                                                        ->required()
+                                                                                        ->live(onBlur: true)
+                                                                                        ->default('texto'),
+                                                                                    Select::make('estructura')
+                                                                                        ->options([
+                                                                                            'objeto' => 'Objeto',
+                                                                                            'array'  => 'Array',
+                                                                                        ])
+                                                                                        ->default('objeto')
+                                                                                        ->live(onBlur: true)
+                                                                                        ->required(),
+                                                                                    TextInput::make('max_items')
+                                                                                        ->numeric()
+                                                                                        ->label('Límite')
+                                                                                        ->placeholder('Infinito')
+                                                                                        ->visible(fn (Get $get): bool => $get('estructura') === 'array'),
+                                                                                    TextInput::make('orden')
+                                                                                        ->numeric()
+                                                                                        ->default(0),
+                                                                                    Toggle::make('requerida')
+                                                                                        ->default(false),
+                                                                                    TextInput::make('ayuda')
+                                                                                        ->placeholder('Texto de ayuda')
+                                                                                        ->columnSpan(1),
+                                                                                ]),
+                                                                            ])
+                                                                            ->itemLabel(fn (array $state): ?string => isset($state['label']) ? "Sub-campo: {$state['label']}" : null)
+                                                                            ->reorderableWithDragAndDrop()
+                                                                            ->collapsible()
+                                                                            ->collapsed()
+                                                                            ->addActionLabel('+ Agregar sub-campo')
+                                                                            ->columns(1),
                                                                     ])
                                                                     ->itemLabel(fn (array $state): ?string => isset($state['label']) ? "Campo: {$state['label']}" : null)
                                                                     ->reorderableWithDragAndDrop()
@@ -328,13 +380,25 @@ class PlantillaForm
                 ->rows(3)
                 ->placeholder('Escribe el contenido aquí...'),
 
-            'imagen' => FileUpload::make($statePath)
-                ->webp5Mb($contentDirectory, 'public')
-                ->orientImagesFromExif(false)
-                ->uploadingMessage('Subiendo imagen...')
-                ->deletable(true)
-                ->openable()
-                ->helperText('Máximo 2MB. Se convertirá automáticamente a WebP.'),
+            // imagen con estructura array → FileUpload múltiple con límite
+            'imagen' => $pregunta->estructura === 'array'
+                ? FileUpload::make($statePath)
+                    ->multiple()
+                    ->maxFiles($pregunta->max_items ?? null)
+                    ->webp5Mb($contentDirectory, 'public')
+                    ->orientImagesFromExif(false)
+                    ->uploadingMessage('Subiendo imágenes...')
+                    ->deletable(true)
+                    ->openable()
+                    ->downloadable()
+                    ->helperText('Puedes subir múltiples imágenes' . ($pregunta->max_items ? " (máx. {$pregunta->max_items})" : '') . '. Formato WebP, máx. 2 MB c/u.')
+                : FileUpload::make($statePath)
+                    ->webp5Mb($contentDirectory, 'public')
+                    ->orientImagesFromExif(false)
+                    ->uploadingMessage('Subiendo imagen...')
+                    ->deletable(true)
+                    ->openable()
+                    ->helperText('Máximo 2MB. Se convertirá automáticamente a WebP.'),
 
             'galeria' => FileUpload::make($statePath)
                 ->multiple()
@@ -364,17 +428,58 @@ class PlantillaForm
                     return $children->map(function (Pregunta $child) use ($contentDirectory) {
                         $childPath = $child->label;
 
+                        // Un child con estructura=array e imagen usa múltiple
                         $subField = match ($child->tipo) {
-                            'area' => Textarea::make($childPath)->rows(2),
-                            'imagen' => FileUpload::make($childPath)->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imagen...')->deletable(true)->openable()->downloadable(),
+                            'area'   => Textarea::make($childPath)->rows(2),
+                            'imagen' => $child->estructura === 'array'
+                                ? FileUpload::make($childPath)->multiple()->maxFiles($child->max_items ?? null)->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable()
+                                : FileUpload::make($childPath)->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imagen...')->deletable(true)->openable()->downloadable(),
                             'galeria' => FileUpload::make($childPath)->multiple()->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable(),
-                            'color' => ColorPicker::make($childPath),
-                            'icono' => IconPicker::make($childPath),
+                            'color'  => ColorPicker::make($childPath),
+                            'icono'  => IconPicker::make($childPath),
                             'enlace' => TextInput::make($childPath)->placeholder('https://ejemplo.com'),
-                            default => TextInput::make($childPath),
+
+                            // ── Hijo tipo grupo → Repeater con sus propios sub-campos ──
+                            'grupo'  => Repeater::make($childPath)
+                                ->schema(function () use ($child, $contentDirectory) {
+                                    $grandChildren = $child->children;
+                                    if ($grandChildren->isEmpty() && isset($child->id)) {
+                                        $grandChildren = Pregunta::where('parent_id', $child->id)->orderBy('orden')->get();
+                                    }
+
+                                    return $grandChildren->map(function (Pregunta $grandChild) use ($contentDirectory) {
+                                        $gcPath = $grandChild->label;
+
+                                        $gcField = match ($grandChild->tipo) {
+                                            'area'    => Textarea::make($gcPath)->rows(2),
+                                            'imagen'  => $grandChild->estructura === 'array'
+                                                ? FileUpload::make($gcPath)->multiple()->maxFiles($grandChild->max_items ?? null)->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable()
+                                                : FileUpload::make($gcPath)->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imagen...')->deletable(true)->openable()->downloadable(),
+                                            'galeria' => FileUpload::make($gcPath)->multiple()->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable(),
+                                            'color'   => ColorPicker::make($gcPath),
+                                            'icono'   => IconPicker::make($gcPath),
+                                            'enlace'  => TextInput::make($gcPath)->placeholder('https://ejemplo.com'),
+                                            default   => TextInput::make($gcPath),
+                                        };
+
+                                        return $gcField->label($grandChild->label);
+                                    })->all();
+                                })
+                                ->label($child->label)
+                                ->itemLabel(fn (array $state): ?string => $state['nombre'] ?? $state['titulo'] ?? $state['label'] ?? null)
+                                ->defaultItems($child->estructura === 'objeto' ? 1 : 0)
+                                ->minItems($child->estructura === 'objeto' ? 1 : 0)
+                                ->maxItems($child->estructura === 'objeto' ? 1 : $child->max_items)
+                                ->deletable($child->estructura === 'array')
+                                ->reorderable($child->estructura === 'array')
+                                ->addActionLabel('+ Agregar ' . $child->label)
+                                ->collapsible(),
+
+                            default  => TextInput::make($childPath),
                         };
 
-                        return $subField->label($child->label);
+                        // Los sub-Repeaters (tipo grupo) ya tienen ->label() aplicado arriba
+                        return $child->tipo === 'grupo' ? $subField : $subField->label($child->label);
                     })->all();
                 })
                 ->itemLabel(fn (array $state): ?string => $state['nombre'] ?? $state['titulo'] ?? $state['label'] ?? null)

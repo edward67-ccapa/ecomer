@@ -2,16 +2,16 @@ import { motion } from 'framer-motion';
 import { Link } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
 
-export default function ServiciosSection({ seccionData, serviciosSitio = [], dominio, siteSlug }) {
+export default function Servicios({ seccionData, serviciosSitio = [], dominio, siteSlug }) {
     const getValor = (label) =>
         seccionData?.contenido?.find((item) => item.label === label)?.valor;
-    console.log(getValor)
+
     const subTitulo = getValor('sub_titulo');
     const titulo = getValor('titulo');
     const icono = getValor('icono');
     const descripcion = getValor('descripcion');
 
-    // Cards desde servicio_detallado (plantilla) o panel admin (serviciosSitio)
+    // Extraer servicio_detallado
     const servicioDetalladoRaw = getValor('servicio_detallado');
 
     const itemsFromDetallado = Array.isArray(servicioDetalladoRaw)
@@ -31,7 +31,6 @@ export default function ServiciosSection({ seccionData, serviciosSitio = [], dom
                 subtitulo: sub,
                 descripcion: desc,
                 imagen: img,
-                imagenes: Array.isArray(item.ImagenesServicios) ? item.ImagenesServicios : [img].filter(Boolean),
                 icono: icon,
                 pdf: item.PDF || null,
                 lista: item.lista_servicio || [],
@@ -49,20 +48,18 @@ export default function ServiciosSection({ seccionData, serviciosSitio = [], dom
     const hayTexto = subTitulo || titulo || descripcion;
     const hayCards = todosLosItems.length > 0;
 
-    // Si no hay nada que mostrar, no renderizar la sección
     if (!hayTexto && !hayCards) return null;
 
-    // ── Helpers de cards ──────────────────────────────────────────────────────
     const buildUrl = (item) => {
         if (item.url && item.url.trim() !== '' && item.url.trim() !== '#') {
             return item.url.trim();
         }
-        const nameToUse = item.nombreServicio || item.titulo || item.Titulo || '';
+        const nameToUse = item.nombreServicio || item.titulo || '';
         const cat = encodeURIComponent(nameToUse);
         if (dominio === 'plantillas') return `/plantillas/${siteSlug}/Productos?categoria=${cat}`;
         if (dominio && siteSlug && siteSlug !== dominio) return `/${dominio}/${siteSlug}/Productos?categoria=${cat}`;
         if (dominio) return `/${dominio}/Productos?categoria=${cat}`;
-        return `/Productos?categoria=${cat}`;
+        return `/${nameToUse}`;
     };
 
     const count = todosLosItems.length;
@@ -82,8 +79,7 @@ export default function ServiciosSection({ seccionData, serviciosSitio = [], dom
     return (
         <section id="servicios" className="py-20 px-6 relative overflow-hidden bg-white">
             <div className="relative z-10 max-w-7xl mx-auto">
-
-                {/* ── Bloque de texto descriptivo (plantilla) ── */}
+                {/* ── Bloque de texto descriptivo ── */}
                 {hayTexto && (
                     <div className="text-start mb-14 grid grid-cols-1 md:grid-cols-2 gap-6 items-center">
                         <div>
@@ -158,7 +154,7 @@ export default function ServiciosSection({ seccionData, serviciosSitio = [], dom
                     </div>
                 )}
 
-                {/* ── Grid de cards (SOLO IMAGEN + HOVER OSCURO) ── */}
+                {/* ── Grid de cards (IMAGEN + HOVER OSCURO) ── */}
                 {hayCards && (
                     <motion.div
                         className={`grid gap-6 ${gridCols}`}
@@ -234,8 +230,9 @@ export default function ServiciosSection({ seccionData, serviciosSitio = [], dom
                                             )}
                                         </div>
 
-                                        {/* ── Efecto de borde brillante (opcional) ── */}
-                                        <div className="absolute inset-0 border-2 border-transparent group-hover:border-white/20 transition-colors duration-300 pointer-events-none"
+                                        {/* ── Efecto de borde brillante ── */}
+                                        <div
+                                            className="absolute inset-0 border-2 border-transparent group-hover:border-white/20 transition-colors duration-300 pointer-events-none"
                                             style={{ borderRadius: 'var(--radio-bordes)' }}
                                         />
                                     </Link>
