@@ -31,7 +31,6 @@ export function useInicioData(
     const inicio = isInicioSection ? seccionActiva : (findSeccion('inicio') || null);
     const categorias = findSeccion('categorias') || null;
     const servicios = findSeccion('servicios') || null;
-    console.log(servicios)
     const somos = findSeccion('nosotros') || findSeccion('somos') || null;
     const tortasDestacadas = findSeccion('tortas-destacadas') || findSeccion('tortas_destacadas') || null;
     const porQueElegirnos = findSeccion('elegirnos') || findSeccion('por-que-elegirnos') || findSeccion('por_que_elegirnos') || null;

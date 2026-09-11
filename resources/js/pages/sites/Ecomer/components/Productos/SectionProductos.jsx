@@ -21,7 +21,13 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
         return () => clearTimeout(timer);
     }, []);
 
-    const [busqueda, setBusqueda] = useState('');
+    const [busqueda, setBusqueda] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('q') || params.get('busqueda') || '';
+        }
+        return '';
+    });
     const [filtrosSeleccionados, setFiltrosSeleccionados] = useState(() => {
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);

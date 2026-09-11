@@ -51,7 +51,7 @@ export default function Ecomer({
     };
 
     const slugLower = seccionActiva?.slug?.toLowerCase() || '';
-    const ActiveComponent = sectionMap[slugLower] 
+    const ActiveComponent = sectionMap[slugLower]
         || (slugLower.includes('producto') ? SectionProductos : SectionInicio);
 
     return (

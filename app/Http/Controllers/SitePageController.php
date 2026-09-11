@@ -85,18 +85,25 @@ class SitePageController extends Controller
         }
 
         $tiendaIds = $site->tiendas->pluck('id')->all();
+        if (empty($tiendaIds) && $site->tienda_id) {
+            $tiendaIds = [$site->tienda_id];
+        }
+        if (empty($tiendaIds) && $site->plantilla) {
+            $tiendaIds = $site->plantilla->tiendas->pluck('id')->all();
+        }
 
         $productosQuery = \App\Models\Producto::with(['categoria', 'subcategoria', 'variantes', 'tiendas.moneda'])
             ->where('activo', true);
 
         if (! empty($tiendaIds)) {
             $productosQuery->whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds));
-        } else {
-            $productosQuery->whereRaw('1 = 0');
         }
 
         $productos = $productosQuery->orderBy('orden')->orderBy('nombre')->get();
         $productosDestacados = $productos->where('destacado', true)->values();
+        if ($productosDestacados->isEmpty() && $productos->isNotEmpty()) {
+            $productosDestacados = $productos;
+        }
 
         $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
 

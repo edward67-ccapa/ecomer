@@ -2,46 +2,37 @@
     $statePath = $getStatePath();
 @endphp
 
-@once
-    <script>
-        if (!window.__ICON_PICKER_DATA__) {
-            window.__ICON_PICKER_DATA__ = {
-                svgs: @js(App\Helpers\IconRegistry::getSvgs()),
-                categories: @js(App\Filament\Resources\Plantillas\Schemas\PlantillaForm::getIconOptions())
-            };
-        }
-    </script>
-@endonce
-
 <x-dynamic-component
     :component="$getFieldWrapperView()"
     :field="$field"
 >
     <div
         x-data="{
-            currentIcon: '',
+            state: $wire.{{ $applyStateBindingModifiers("\$entangle('{$statePath}')") }},
             search: '',
             open: false,
-            data: window.__ICON_PICKER_DATA__,
+            data: window.__ICON_PICKER_DATA__ || {
+                svgs: @js(App\Helpers\IconRegistry::getSvgs()),
+                categories: @js(App\Filament\Resources\Plantillas\Schemas\PlantillaForm::getIconOptions())
+            },
             init() {
-                this.currentIcon = $wire.get('{{ $statePath }}') || '';
+                if (!window.__ICON_PICKER_DATA__ && this.data) {
+                    window.__ICON_PICKER_DATA__ = this.data;
+                }
             },
             toggle() {
                 this.open = !this.open;
                 if (this.open) {
-                    this.currentIcon = $wire.get('{{ $statePath }}') || '';
                     this.search = '';
                 }
             },
             selectIcon(key) {
-                this.currentIcon = key;
-                $wire.set('{{ $statePath }}', key, false);
+                this.state = key;
                 this.open = false;
                 this.search = '';
             },
             clearIcon() {
-                this.currentIcon = '';
-                $wire.set('{{ $statePath }}', null, false);
+                this.state = null;
                 this.open = false;
                 this.search = '';
             }
@@ -54,18 +45,18 @@
             <button
                 type="button"
                 @click="toggle()"
-                :title="currentIcon ? currentIcon : 'Seleccionar ícono'"
+                :title="state ? state : 'Seleccionar ícono'"
                 class="w-12 h-12 flex items-center justify-center rounded-xl border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-primary-600 dark:text-primary-400 hover:border-primary-500 focus:ring-2 focus:ring-primary-500 outline-none transition cursor-pointer shadow-sm"
             >
-                <div x-show="currentIcon && data.svgs[currentIcon]" x-html="currentIcon && data.svgs[currentIcon] ? data.svgs[currentIcon] : ''" class="w-6 h-6 flex items-center justify-center"></div>
+                <div x-show="state && data?.svgs?.[state]" x-html="state && data?.svgs?.[state] ? data.svgs[state] : ''" class="w-6 h-6 flex items-center justify-center"></div>
 
-                <div x-show="!currentIcon || !data.svgs[currentIcon]" class="w-6 h-6 flex items-center justify-center text-gray-400 dark:text-gray-500">
+                <div x-show="!state || !data?.svgs?.[state]" class="w-6 h-6 flex items-center justify-center text-gray-400 dark:text-gray-500">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                 </div>
             </button>
 
             <!-- Quitar ícono -->
-            <template x-if="currentIcon">
+            <template x-if="state">
                 <button
                     type="button"
                     @click.prevent.stop="clearIcon()"
@@ -103,7 +94,7 @@
 
                 <!-- Grilla visual ultra ligera -->
                 <div class="max-h-60 overflow-y-auto pr-1 space-y-3 custom-scrollbar">
-                    <template x-for="(icons, groupName) in data.categories" :key="groupName">
+                    <template x-for="(icons, groupName) in (data?.categories || {})" :key="groupName">
                         <div x-show="Object.keys(icons).some(k => !search || k.toLowerCase().includes(search.toLowerCase()) || icons[k].toLowerCase().includes(search.toLowerCase()))">
                             <div class="text-[10px] font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500 mb-1.5" x-text="groupName"></div>
 
@@ -115,12 +106,12 @@
                                         @click="selectIcon(key)"
                                         :title="label"
                                         :class="{
-                                            'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-950/60 border-primary-500 text-primary-600 dark:text-primary-400': currentIcon === key,
-                                            'bg-gray-50 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700/80 hover:border-primary-400 hover:bg-primary-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200': currentIcon !== key
+                                            'ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-950/60 border-primary-500 text-primary-600 dark:text-primary-400': state === key,
+                                            'bg-gray-50 dark:bg-gray-800/80 border-gray-200 dark:border-gray-700/80 hover:border-primary-400 hover:bg-primary-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200': state !== key
                                         }"
                                         class="flex items-center justify-center h-10 rounded-lg border transition transform hover:scale-105 cursor-pointer"
                                     >
-                                        <div x-html="data.svgs[key]" class="w-5 h-5 flex items-center justify-center"></div>
+                                        <div x-html="data?.svgs?.[key] || ''" class="w-5 h-5 flex items-center justify-center"></div>
                                     </button>
                                 </template>
                             </div>

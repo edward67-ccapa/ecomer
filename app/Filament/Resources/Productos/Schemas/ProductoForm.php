@@ -296,8 +296,15 @@ class ProductoForm
                 Section::make('Descripción')
                     ->icon('heroicon-o-document-text')
                     ->schema([
+                        Textarea::make('descripcion_corta')
+                            ->label('Descripción corta')
+                            ->helperText('Resumen breve para tarjetas, ofertas o listados.')
+                            ->rows(2)
+                            ->columnSpanFull(),
                         Textarea::make('descripcion')
-                            ->rows(4),
+                            ->label('Descripción detallada')
+                            ->rows(5)
+                            ->columnSpanFull(),
                     ])
                     ->columnSpanFull(),
             ]);

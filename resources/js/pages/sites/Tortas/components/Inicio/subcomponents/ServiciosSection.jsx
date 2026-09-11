@@ -5,7 +5,6 @@ import DynamicIcon from '@/components/DynamicIcon';
 export default function ServiciosSection({ seccionData, serviciosSitio = [], dominio, siteSlug }) {
     const getValor = (label) =>
         seccionData?.contenido?.find((item) => item.label === label)?.valor;
-    console.log(getValor)
     const subTitulo = getValor('sub_titulo');
     const titulo = getValor('titulo');
     const icono = getValor('icono');

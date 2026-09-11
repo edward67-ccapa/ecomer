@@ -18,6 +18,8 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class AdminPanelProvider extends PanelProvider
@@ -30,6 +32,15 @@ class AdminPanelProvider extends PanelProvider
             ->path('admin')
             ->spa()
             ->viteTheme('resources/css/filament/admin/theme.css')
+            ->renderHook(
+                PanelsRenderHook::HEAD_END,
+                fn (): HtmlString => new HtmlString(
+                    '<script>window.__ICON_PICKER_DATA__ = ' . json_encode([
+                        'svgs' => \App\Helpers\IconRegistry::getSvgs(),
+                        'categories' => \App\Filament\Resources\Plantillas\Schemas\PlantillaForm::getIconOptions(),
+                    ]) . ';</script>'
+                )
+            )
             ->login(\App\Filament\Pages\Auth\Login::class)
             ->colors([
                 'primary' => Color::Amber,

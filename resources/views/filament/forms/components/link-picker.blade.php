@@ -9,14 +9,10 @@
     <div
         x-data="{
             open: false,
-            currentUrl: '',
-            init() {
-                this.currentUrl = $wire.get('{{ $statePath }}') || '';
-            },
+            state: $wire.{{ $applyStateBindingModifiers("\$entangle('{$statePath}')") }},
             toggle() {
                 this.open = !this.open;
                 if (this.open) {
-                    this.currentUrl = $wire.get('{{ $statePath }}') || '';
                     $nextTick(() => {
                         if (this.$refs.urlInput) {
                             this.$refs.urlInput.focus();
@@ -26,12 +22,10 @@
             },
             setUrl(val) {
                 const newVal = (val && val.trim() !== '') ? val.trim() : null;
-                this.currentUrl = newVal || '';
-                $wire.set('{{ $statePath }}', newVal, false);
+                this.state = newVal;
             },
             clearUrl() {
-                this.currentUrl = '';
-                $wire.set('{{ $statePath }}', null, false);
+                this.state = null;
                 this.open = false;
             }
         }"
@@ -44,16 +38,16 @@
                 type="button"
                 @click="toggle()"
                 :class="{
-                    'bg-primary-50 dark:bg-primary-950/60 border-primary-500 text-primary-600 dark:text-primary-400 font-semibold shadow-sm': currentUrl,
-                    'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-gray-400 hover:text-gray-900 dark:hover:text-white': !currentUrl
+                    'bg-primary-50 dark:bg-primary-950/60 border-primary-500 text-primary-600 dark:text-primary-400 font-semibold shadow-sm': state,
+                    'bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-600 dark:text-gray-300 hover:border-gray-400 hover:text-gray-900 dark:hover:text-white': !state
                 }"
                 class="inline-flex items-center gap-2 px-3 py-1.5 text-xs rounded-xl border transition cursor-pointer"
             >
-                <span x-text="currentUrl ? '🔗 Enlace configurado' : '🔗 Agregar enlace'"></span>
+                <span x-text="state ? '🔗 Enlace configurado' : '🔗 Agregar enlace'"></span>
             </button>
 
             <!-- Quitar enlace (100% Front-end puro, 0ms, sin llamadas HTTP al servidor) -->
-            <template x-if="currentUrl">
+            <template x-if="state">
                 <button
                     type="button"
                     @click.prevent.stop="clearUrl()"
@@ -84,7 +78,7 @@
                 <input
                     type="text"
                     x-ref="urlInput"
-                    :value="currentUrl"
+                    :value="state || ''"
                     @input="setUrl($event.target.value)"
                     placeholder="https://ejemplo.com o #contacto"
                     class="w-full px-3 py-2 text-xs rounded-xl border border-gray-300 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 focus:ring-2 focus:ring-primary-500 outline-none transition shadow-sm"

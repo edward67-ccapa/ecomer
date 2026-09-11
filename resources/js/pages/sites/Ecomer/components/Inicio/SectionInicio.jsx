@@ -1,19 +1,34 @@
 import { useInicioData } from './hooks/useInicioData';
 import HeroSection from './subcomponents/HeroSection';
-import CategoriasSection from './subcomponents/CategoriasSection';
-import ServiciosSection from './subcomponents/ServiciosSection';
-import SomosSection from './subcomponents/SomosSection';
+import GaleriaSection from './subcomponents/GaleriaSection';
 import ProductosDestacadosSection from './subcomponents/ProductosDestacadosSection';
-import PorQueElegirnosSection from './subcomponents/PorQueElegirnosSection';
-import ContactoSection from './subcomponents/ContactoSection';
 
-export default function SectionInicio({ dominio, siteSlug, seccion, seccionesData, productosDestacados, serviciosSitio = [] }) {
-    const { inicio, categorias, servicios, somos, tortasDestacadas, porQueElegirnos, contacto, productosDestacados: productos, loading, error } = useInicioData(
+export default function SectionInicio({
+    dominio,
+    siteSlug,
+    seccion,
+    seccionesData,
+    productosDestacados,
+    productos: initialProductos = [],
+}) {
+    // Si productosDestacados viene con datos se usan esos, de lo contrario la lista general de productos
+    const listaProductos =
+        productosDestacados && productosDestacados.length > 0
+            ? productosDestacados
+            : initialProductos;
+
+    const {
+        inicio,
+        galeria,
+        productosDestacados: productos,
+        loading,
+        error,
+    } = useInicioData(
         dominio,
         siteSlug,
         seccion,
         seccionesData,
-        productosDestacados
+        listaProductos
     );
 
     if (loading) {
@@ -38,17 +53,10 @@ export default function SectionInicio({ dominio, siteSlug, seccion, seccionesDat
     return (
         <main className="flex-1">
             <HeroSection seccionData={inicio} />
-            <CategoriasSection seccionData={categorias} dominio={dominio} siteSlug={siteSlug} />
-            <ServiciosSection
-                seccionData={servicios}
-                serviciosSitio={serviciosSitio}
-                dominio={dominio}
-                siteSlug={siteSlug}
+            <GaleriaSection seccionData={galeria} />
+            <ProductosDestacadosSection
+                productos={productos}
             />
-            <SomosSection seccionData={somos} />
-            <ProductosDestacadosSection seccionData={tortasDestacadas} productos={productos} />
-            <PorQueElegirnosSection seccionData={porQueElegirnos} />
-            <ContactoSection seccionData={contacto} />
         </main>
     );
 }

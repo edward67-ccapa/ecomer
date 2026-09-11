@@ -27,24 +27,14 @@ export function useInicioData(
         return null;
     };
 
-    const isInicioSection = seccionActiva?.slug?.toLowerCase() === 'inicio';
-    const inicio = isInicioSection ? seccionActiva : (findSeccion('inicio') || null);
-    const categorias = findSeccion('categorias') || null;
-    const servicios = findSeccion('servicios') || null;
-    console.log(servicios)
-    const somos = findSeccion('nosotros') || findSeccion('somos') || null;
-    const tortasDestacadas = findSeccion('tortas-destacadas') || findSeccion('tortas_destacadas') || null;
-    const porQueElegirnos = findSeccion('elegirnos') || findSeccion('por-que-elegirnos') || findSeccion('por_que_elegirnos') || null;
-    const contacto = findSeccion('contacto') || null;
-
+    // Identifica las secciones del sitio
+    const isInicioSection = seccionActiva?.slug?.toLowerCase() === 'inicio' || seccionActiva?.slug?.toLowerCase() === 'hero';
+    const inicio = isInicioSection ? seccionActiva : (findSeccion('inicio') || findSeccion('hero') || null);
+    const galeria = findSeccion('galeria') || null;
     return {
         inicio,
-        categorias,
-        somos,
-        tortasDestacadas,
-        porQueElegirnos,
-        contacto,
-        servicios,
+        hero: inicio,
+        galeria,
         productosDestacados: initialProductosDestacados || [],
         loading: false,
         error: null,
