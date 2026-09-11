@@ -4,7 +4,7 @@ import DynamicIcon from '@/components/DynamicIcon';
 import { useProductosData } from './hooks/useProductosData';
 import { useCartStore } from '@/stores/useCartStore';
 
-export default function SectionProductos({ dominio, siteSlug, seccion, seccionesData, productos: initialProductos }) {
+export default function SectionProductos({ dominio, siteSlug, seccion, seccionesData, productos: initialProductos, onSeleccionarProducto }) {
     const addItem = useCartStore((state) => state.addItem);
     const { seccionData, productos, loading, error } = useProductosData(
         dominio,
@@ -342,7 +342,17 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                         initial={{ opacity: 0, y: 20 }}
                                         animate={{ opacity: 1, y: 0 }}
                                         transition={{ duration: 0.4, delay: idx * 0.04 }}
-                                        className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col group"
+                                        onClick={() => {
+                                            if (onSeleccionarProducto) {
+                                                onSeleccionarProducto(prod);
+                                            } else if (typeof window !== 'undefined') {
+                                                const url = new URL(window.location.href);
+                                                url.searchParams.set('producto', prod.slug || prod.id);
+                                                window.history.pushState({}, '', url.toString());
+                                                window.dispatchEvent(new PopStateEvent('popstate'));
+                                            }
+                                        }}
+                                        className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 flex flex-col group cursor-pointer"
                                         style={{ borderRadius: 'var(--radio-bordes)' }}
                                     >
                                         {/* Imagen del Producto */}
@@ -400,7 +410,10 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                                 <div className="flex items-center gap-2">
                                                     <button
                                                         type="button"
-                                                        onClick={() => addItem(prod)}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            addItem(prod);
+                                                        }}
                                                         className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-gray-800 bg-gray-100 hover:bg-gray-200 transition shadow-xs cursor-pointer active:scale-95"
                                                         style={{ borderRadius: 'var(--radio-bordes)', background: 'var(--color-primario)' }}
                                                         title="Agregar al carrito"

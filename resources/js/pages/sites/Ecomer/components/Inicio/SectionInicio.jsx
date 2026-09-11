@@ -10,6 +10,7 @@ export default function SectionInicio({
     seccionesData,
     productosDestacados,
     productos: initialProductos = [],
+    onSeleccionarProducto,
 }) {
     // Si productosDestacados viene con datos se usan esos, de lo contrario la lista general de productos
     const listaProductos =
@@ -56,6 +57,7 @@ export default function SectionInicio({
             <GaleriaSection seccionData={galeria} />
             <ProductosDestacadosSection
                 productos={productos}
+                onSeleccionarProducto={onSeleccionarProducto}
             />
         </main>
     );

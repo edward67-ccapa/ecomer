@@ -1,7 +1,7 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults, validateParameters } from './../../wayfinder'
 /**
 * @see \App\Http\Controllers\PlantillasController::index
- * @see app/Http/Controllers/PlantillasController.php:15
+ * @see app/Http/Controllers/PlantillasController.php:17
  * @route '/plantillas'
  */
 export const index = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -16,7 +16,7 @@ index.definition = {
 
 /**
 * @see \App\Http\Controllers\PlantillasController::index
- * @see app/Http/Controllers/PlantillasController.php:15
+ * @see app/Http/Controllers/PlantillasController.php:17
  * @route '/plantillas'
  */
 index.url = (options?: RouteQueryOptions) => {
@@ -25,7 +25,7 @@ index.url = (options?: RouteQueryOptions) => {
 
 /**
 * @see \App\Http\Controllers\PlantillasController::index
- * @see app/Http/Controllers/PlantillasController.php:15
+ * @see app/Http/Controllers/PlantillasController.php:17
  * @route '/plantillas'
  */
 index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -34,7 +34,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
 })
 /**
 * @see \App\Http\Controllers\PlantillasController::index
- * @see app/Http/Controllers/PlantillasController.php:15
+ * @see app/Http/Controllers/PlantillasController.php:17
  * @route '/plantillas'
  */
 index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -44,7 +44,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
     /**
 * @see \App\Http\Controllers\PlantillasController::index
- * @see app/Http/Controllers/PlantillasController.php:15
+ * @see app/Http/Controllers/PlantillasController.php:17
  * @route '/plantillas'
  */
     const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -54,7 +54,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
 
             /**
 * @see \App\Http\Controllers\PlantillasController::index
- * @see app/Http/Controllers/PlantillasController.php:15
+ * @see app/Http/Controllers/PlantillasController.php:17
  * @route '/plantillas'
  */
         indexForm.get = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -63,7 +63,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
         })
             /**
 * @see \App\Http\Controllers\PlantillasController::index
- * @see app/Http/Controllers/PlantillasController.php:15
+ * @see app/Http/Controllers/PlantillasController.php:17
  * @route '/plantillas'
  */
         indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -79,7 +79,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     index.form = indexForm
 /**
 * @see \App\Http\Controllers\PlantillasController::preview
- * @see app/Http/Controllers/PlantillasController.php:37
+ * @see app/Http/Controllers/PlantillasController.php:39
  * @route '/plantillas/{plantilla}/{seccion?}'
  */
 export const preview = (args: { plantilla: string | { slug: string }, seccion?: string | number } | [plantilla: string | { slug: string }, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -94,7 +94,7 @@ preview.definition = {
 
 /**
 * @see \App\Http\Controllers\PlantillasController::preview
- * @see app/Http/Controllers/PlantillasController.php:37
+ * @see app/Http/Controllers/PlantillasController.php:39
  * @route '/plantillas/{plantilla}/{seccion?}'
  */
 preview.url = (args: { plantilla: string | { slug: string }, seccion?: string | number } | [plantilla: string | { slug: string }, seccion: string | number ], options?: RouteQueryOptions) => {
@@ -126,7 +126,7 @@ preview.url = (args: { plantilla: string | { slug: string }, seccion?: string | 
 
 /**
 * @see \App\Http\Controllers\PlantillasController::preview
- * @see app/Http/Controllers/PlantillasController.php:37
+ * @see app/Http/Controllers/PlantillasController.php:39
  * @route '/plantillas/{plantilla}/{seccion?}'
  */
 preview.get = (args: { plantilla: string | { slug: string }, seccion?: string | number } | [plantilla: string | { slug: string }, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -135,7 +135,7 @@ preview.get = (args: { plantilla: string | { slug: string }, seccion?: string | 
 })
 /**
 * @see \App\Http\Controllers\PlantillasController::preview
- * @see app/Http/Controllers/PlantillasController.php:37
+ * @see app/Http/Controllers/PlantillasController.php:39
  * @route '/plantillas/{plantilla}/{seccion?}'
  */
 preview.head = (args: { plantilla: string | { slug: string }, seccion?: string | number } | [plantilla: string | { slug: string }, seccion: string | number ], options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -145,7 +145,7 @@ preview.head = (args: { plantilla: string | { slug: string }, seccion?: string |
 
     /**
 * @see \App\Http\Controllers\PlantillasController::preview
- * @see app/Http/Controllers/PlantillasController.php:37
+ * @see app/Http/Controllers/PlantillasController.php:39
  * @route '/plantillas/{plantilla}/{seccion?}'
  */
     const previewForm = (args: { plantilla: string | { slug: string }, seccion?: string | number } | [plantilla: string | { slug: string }, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -155,7 +155,7 @@ preview.head = (args: { plantilla: string | { slug: string }, seccion?: string |
 
             /**
 * @see \App\Http\Controllers\PlantillasController::preview
- * @see app/Http/Controllers/PlantillasController.php:37
+ * @see app/Http/Controllers/PlantillasController.php:39
  * @route '/plantillas/{plantilla}/{seccion?}'
  */
         previewForm.get = (args: { plantilla: string | { slug: string }, seccion?: string | number } | [plantilla: string | { slug: string }, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -164,7 +164,7 @@ preview.head = (args: { plantilla: string | { slug: string }, seccion?: string |
         })
             /**
 * @see \App\Http\Controllers\PlantillasController::preview
- * @see app/Http/Controllers/PlantillasController.php:37
+ * @see app/Http/Controllers/PlantillasController.php:39
  * @route '/plantillas/{plantilla}/{seccion?}'
  */
         previewForm.head = (args: { plantilla: string | { slug: string }, seccion?: string | number } | [plantilla: string | { slug: string }, seccion: string | number ], options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
