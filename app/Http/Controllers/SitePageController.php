@@ -65,9 +65,24 @@ class SitePageController extends Controller
             $sSlug = strtolower(str_replace(['_', ' '], '-', $s->slug));
             $sNombre = strtolower(str_replace(['_', ' '], '-', $s->nombre));
             return $sSlug === $targetSlug || $sNombre === $targetSlug || str_contains($sSlug, $targetSlug) || str_contains($targetSlug, $sSlug);
-        }) ?? $seccionesNav->first();
+        });
 
-        abort_unless($seccion instanceof Seccion, 404);
+        if (!$seccion && in_array($targetSlug, ['productos', 'tienda', 'tiendas', 'servicios', 'servicio'])) {
+            $canonicalSlug = in_array($targetSlug, ['productos', 'tienda', 'tiendas']) ? 'productos' : 'servicios';
+            $seccionActiva = [
+                'slug' => $canonicalSlug,
+                'nombre' => ucfirst($canonicalSlug),
+                'contenido' => [],
+            ];
+        } else {
+            $seccion = $seccion ?? $seccionesNav->first();
+            abort_unless($seccion instanceof Seccion, 404);
+            $seccionActiva = $seccionesData[strtolower(str_replace(['_', ' '], '-', $seccion->slug))] ?? [
+                'slug' => $seccion->slug,
+                'nombre' => $seccion->nombre,
+                'contenido' => self::formatearPreguntas($seccion->preguntas, $respuestas),
+            ];
+        }
 
         $siteRespuestas = $site->respuestas->keyBy('pregunta_id')->all();
         $plantillaRespuestas = \App\Models\Respuesta::where('plantilla_id', $site->plantilla_id)->get()->keyBy('pregunta_id')->all();
@@ -154,11 +169,7 @@ class SitePageController extends Controller
                     'nombre' => $s->nombre,
                 ])
                 ->values(),
-            'seccionActiva' => $seccionesData[strtolower(str_replace(['_', ' '], '-', $seccion->slug))] ?? [
-                'slug' => $seccion->slug,
-                'nombre' => $seccion->nombre,
-                'contenido' => self::formatearPreguntas($seccion->preguntas, $respuestas),
-            ],
+            'seccionActiva' => $seccionActiva,
             'seccionesData' => $seccionesData,
             'productos' => \App\Http\Resources\v1\ProductoResource::collection($productos)->resolve(),
             'productosDestacados' => \App\Http\Resources\v1\ProductoResource::collection($productosDestacados)->resolve(),
@@ -184,7 +195,20 @@ class SitePageController extends Controller
             });
         }
 
-        return $query->firstOrFail();
+        $site = $query->first();
+
+        if (!$site && in_array(strtolower($dominioOrSlug), ['productos', 'servicios', 'tienda', 'tiendas', 'servicio'])) {
+            $site = Site::query()
+                ->with(['plantilla.secciones.preguntas', 'dominio', 'respuestas', 'servicios.servicios'])
+                ->where('estado', 'publicado')
+                ->first();
+        }
+
+        if (!$site) {
+            abort(404);
+        }
+
+        return $site;
     }
 
     public static function paginaPlantilla(Plantilla|string $plantillaOrTipo): string

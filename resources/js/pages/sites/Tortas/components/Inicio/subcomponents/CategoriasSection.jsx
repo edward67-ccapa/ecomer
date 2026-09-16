@@ -68,7 +68,7 @@ export default function CategoriasSection({ seccionData, dominio, siteSlug }) {
                     )}
                 </div>
 
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-6">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
                     {categorias.map((categoria, idx) => {
                         const getValidLink = (url) => {
                             if (!url || typeof url !== 'string') return null;
@@ -83,13 +83,13 @@ export default function CategoriasSection({ seccionData, dominio, siteSlug }) {
                         let targetUrl = customEnlace;
                         if (!targetUrl) {
                             if (dominio === 'plantillas') {
-                                targetUrl = `/plantillas/${siteSlug}/Productos?categoria=${categoriaParam}`;
+                                targetUrl = `/plantillas/${siteSlug}/productos?categoria=${categoriaParam}`;
                             } else if (dominio && siteSlug && siteSlug !== dominio) {
-                                targetUrl = `/${dominio}/${siteSlug}/Productos?categoria=${categoriaParam}`;
+                                targetUrl = `/${dominio}/${siteSlug}/productos?categoria=${categoriaParam}`;
                             } else if (dominio) {
-                                targetUrl = `/${dominio}/Productos?categoria=${categoriaParam}`;
+                                targetUrl = `/${dominio}/productos?categoria=${categoriaParam}`;
                             } else {
-                                targetUrl = `/Productos?categoria=${categoriaParam}`;
+                                targetUrl = `/productos?categoria=${categoriaParam}`;
                             }
                         }
 
@@ -99,38 +99,47 @@ export default function CategoriasSection({ seccionData, dominio, siteSlug }) {
                                 initial={{ opacity: 0, y: 30 }}
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
-                                transition={{ duration: 0.5, delay: idx * 0.1 }}
+                                transition={{ duration: 0.5, delay: idx * 0.08 }}
                             >
                                 <Link
                                     href={targetUrl}
-                                    className="bg-white rounded-xl p-5 shadow-md hover:shadow-xl transition-all duration-300 border border-gray-100 flex flex-col items-center text-center group h-full cursor-pointer block"
-                                    style={{ borderRadius: 'var(--radio-bordes)' }}
+                                    className="relative h-44 rounded-2xl transition-all duration-300 text-left group cursor-pointer overflow-hidden border border-gray-800 hover:border-gray-600 shadow-md hover:scale-[1.02] bg-neutral-950 p-5 flex flex-col justify-between block"
                                 >
-                                    {categoria.imagen && (
-                                        <div className="w-20 h-20 mb-4 flex items-center justify-center">
-                                            <img
-                                                src={categoria.imagen}
-                                                alt={categoria.titulo || 'Categoría'}
-                                                className="w-full h-full object-cover"
-                                            />
-                                        </div>
+                                    {/* Imagen de Fondo Real de la Categoría */}
+                                    {categoria.imagen ? (
+                                        <img
+                                            src={categoria.imagen}
+                                            alt={categoria.titulo || 'Categoría'}
+                                            width={400}
+                                            height={400}
+                                            loading="lazy"
+                                            decoding="async"
+                                            className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                                        />
+                                    ) : (
+                                        <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black" />
                                     )}
 
-                                    <div className="flex-1 flex flex-col justify-center">
+                                    {/* Superposición Oscura Elegante */}
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30 group-hover:via-black/40 transition-colors z-10" />
+
+                                    {/* Contenido Superior */}
+                                    <div className="relative z-20 flex items-center justify-between">
+                                        <span className="text-[10px] font-bold uppercase tracking-wider text-white/90 bg-black/40 px-2.5 py-0.5 rounded-md backdrop-blur-xs border border-white/10">
+                                            Categoría
+                                        </span>
+                                    </div>
+
+                                    {/* Contenido Inferior */}
+                                    <div className="relative z-20">
                                         {categoria.titulo && (
-                                            <h3
-                                                className="text-sm font-bold mb-1 group-hover:text-[var(--color-primario)] transition-colors"
-                                                style={{ fontFamily: 'var(--tipografia-titulos)', color: '#1a1a2e' }}
-                                            >
+                                            <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-[var(--color-primario)] transition-colors tracking-tight line-clamp-1">
                                                 {categoria.titulo}
                                             </h3>
                                         )}
 
                                         {categoria.descripción && (
-                                            <p
-                                                className="text-xs leading-relaxed"
-                                                style={{ fontFamily: 'var(--tipografia-texto)', color: '#666666' }}
-                                            >
+                                            <p className="text-[11px] text-gray-300 font-medium line-clamp-1">
                                                 {categoria.descripción}
                                             </p>
                                         )}

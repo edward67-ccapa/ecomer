@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
-import ServiciosSection from '../Inicio/subcomponents/ServiciosSection';
+import ServiciosSection from './Servicios';
 
 export default function SectionServicios({ dominio, siteSlug, seccion, seccionesData, serviciosSitio = [] }) {
     const findSeccion = (slugKey) => {

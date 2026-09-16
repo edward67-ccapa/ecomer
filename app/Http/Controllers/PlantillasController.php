@@ -42,27 +42,43 @@ class PlantillasController extends Controller
 
         $seccionesNav = $plantilla->secciones->where('activa', true);
 
+        $targetSlug = filled($seccion) ? strtolower(str_replace(['_', ' '], '-', $seccion)) : null;
+
         $seccionModel = $plantilla->secciones
-            ->when(filled($seccion), function ($items) use ($seccion) {
-                $target = strtolower(str_replace(['_', ' '], '-', $seccion));
-                return $items->filter(fn ($s) => strtolower(str_replace(['_', ' '], '-', $s->slug)) === $target);
+            ->when(filled($seccion), function ($items) use ($targetSlug) {
+                return $items->filter(fn ($s) => strtolower(str_replace(['_', ' '], '-', $s->slug)) === $targetSlug);
             })
             ->first();
 
-        if (filled($seccion) && ! $seccionModel) {
-            abort(404);
-        }
-
-        $seccionModel ??= $plantilla->secciones
-            ->where('activa', true)
-            ->reject(fn ($s) => strtolower($s->slug) === 'nav')
-            ->first() ?? $seccionesNav->first();
-
-        abort_unless($seccionModel instanceof Seccion, 404);
-
         $respuestas = $plantilla->respuestas->keyBy('pregunta_id');
 
-        $contenido = SitePageController::formatearPreguntas($seccionModel->preguntas, $respuestas);
+        if (filled($seccion) && !$seccionModel && in_array($targetSlug, ['productos', 'tienda', 'tiendas', 'servicios', 'servicio'])) {
+            $canonicalSlug = in_array($targetSlug, ['productos', 'tienda', 'tiendas']) ? 'productos' : 'servicios';
+            $seccionActiva = [
+                'slug' => $canonicalSlug,
+                'nombre' => ucfirst($canonicalSlug),
+                'contenido' => [],
+            ];
+        } else {
+            if (filled($seccion) && ! $seccionModel) {
+                abort(404);
+            }
+
+            $seccionModel ??= $plantilla->secciones
+                ->where('activa', true)
+                ->reject(fn ($s) => strtolower($s->slug) === 'nav')
+                ->first() ?? $seccionesNav->first();
+
+            abort_unless($seccionModel instanceof Seccion, 404);
+
+            $contenido = SitePageController::formatearPreguntas($seccionModel->preguntas, $respuestas);
+
+            $seccionActiva = [
+                'slug' => $seccionModel->slug,
+                'nombre' => $seccionModel->nombre,
+                'contenido' => $contenido,
+            ];
+        }
 
         $seccionesData = [];
         foreach ($plantilla->secciones as $s) {
@@ -114,11 +130,7 @@ class PlantillasController extends Controller
                     'nombre' => $s->nombre,
                 ])
                 ->values(),
-            'seccionActiva' => [
-                'slug' => $seccionModel->slug,
-                'nombre' => $seccionModel->nombre,
-                'contenido' => $contenido,
-            ],
+            'seccionActiva' => $seccionActiva,
             'seccionesData' => $seccionesData,
             'productos' => ProductoResource::collection($productos)->resolve(),
             'productosDestacados' => ProductoResource::collection($productosDestacados)->resolve(),

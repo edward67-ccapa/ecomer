@@ -12,6 +12,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\MultiSelect;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -475,7 +476,7 @@ class PlantillaForm
                                 ->addActionLabel('+ Agregar ' . $child->label)
                                 ->collapsible(),
 
-                            default  => TextInput::make($childPath),
+                            default  => $child->estructura === 'array' ? TagsInput::make($childPath) : TextInput::make($childPath),
                         };
 
                         // Los sub-Repeaters (tipo grupo) ya tienen ->label() aplicado arriba
@@ -490,8 +491,12 @@ class PlantillaForm
                 ->reorderable($pregunta->estructura === 'array')
                 ->collapsible(),
 
-            default => TextInput::make($statePath)
-                ->placeholder('Ingresa el valor...'),
+            default => $pregunta->estructura === 'array'
+                ? TagsInput::make($statePath)
+                    ->placeholder('Escribe y presiona Enter para agregar...')
+                    ->helperText('Puedes agregar múltiples elementos de texto.')
+                : TextInput::make($statePath)
+                    ->placeholder('Ingresa el valor...'),
         };
 
         // Aplicar propiedades comunes

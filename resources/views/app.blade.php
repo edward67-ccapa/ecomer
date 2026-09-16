@@ -19,7 +19,7 @@
             })();
         </script>
 
-        {{-- Inline style to set the HTML background color based on our theme in app.css --}}
+        {{-- Inline style to set the HTML background color and prevent FOUC image expansion --}}
         <style>
             html {
                 background-color: oklch(1 0 0);
@@ -27,6 +27,41 @@
 
             html.dark {
                 background-color: oklch(0.145 0 0);
+            }
+
+            img, svg, video, canvas {
+                max-width: 100% !important;
+                height: auto;
+            }
+
+            /* Swiper critical fallback rules to prevent image pop on F5 refresh */
+            .swiper {
+                width: 100%;
+                overflow: hidden;
+                display: block;
+            }
+            .swiper-wrapper {
+                display: flex;
+                width: 100%;
+            }
+            .swiper-slide {
+                flex-shrink: 0;
+                box-sizing: border-box;
+            }
+            @media (min-width: 480px) {
+                .swiper-slide {
+                    width: 33.333% !important;
+                }
+            }
+            @media (min-width: 768px) {
+                .swiper-slide {
+                    width: 25% !important;
+                }
+            }
+            @media (min-width: 1024px) {
+                .swiper-slide {
+                    width: 20% !important;
+                }
             }
         </style>
 

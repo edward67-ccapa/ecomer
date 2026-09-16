@@ -26,33 +26,39 @@ export default function CartOffcanvas() {
             if (pathParts.length >= 2) {
                 const dom = pathParts[0];
                 const slug = pathParts[1];
-                Promise.allSettled([
-                    fetchSectionData(dom, slug, 'nav'),
-                    fetchSectionData(dom, slug, 'contacto'),
-                ]).then(([navRes, contactosRes]) => {
-                    const nav = navRes.status === 'fulfilled' ? (navRes.value?.seccionActiva || navRes.value) : null;
-                    const contactos = contactosRes.status === 'fulfilled' ? (contactosRes.value?.seccionActiva || contactosRes.value) : null;
 
-                    const accionesNav = nav?.contenido?.find((c) => c.label === 'accion_nav')?.valor || [];
-                    const waNav = accionesNav.find((a) => a.icon?.toLowerCase() === 'fawhatsapp')?.texto;
-                    const itemContacto = contactos?.contenido?.find(
-                        (c) => c.label?.toLowerCase() === 'whatsap' || c.label?.toLowerCase() === 'whatsapp'
-                    );
-
-                    const rawVal = waNav || itemContacto?.enlace || (Array.isArray(itemContacto?.valor) ? itemContacto.valor[0]?.texto : null);
-
-                    if (rawVal) {
-                        if (rawVal.startsWith('http')) {
-                            setWhatsappUrl(rawVal);
-                        } else {
-                            const cleanNum = rawVal.replace(/\D/g, '');
-                            if (cleanNum) {
-                                const finalNum = cleanNum.length === 9 ? `51${cleanNum}` : cleanNum;
-                                setWhatsappUrl(`https://wa.me/${finalNum}`);
-                            }
-                        }
+                const processRawVal = (rawVal) => {
+                    if (!rawVal) return false;
+                    if (rawVal.startsWith('http')) {
+                        setWhatsappUrl(rawVal);
+                        return true;
                     }
-                });
+                    const cleanNum = rawVal.replace(/\D/g, '');
+                    if (cleanNum) {
+                        const finalNum = cleanNum.length === 9 ? `51${cleanNum}` : cleanNum;
+                        setWhatsappUrl(`https://wa.me/${finalNum}`);
+                        return true;
+                    }
+                    return false;
+                };
+
+                fetchSectionData(dom, slug, 'nav')
+                    .then((navRes) => {
+                        const nav = navRes?.seccionActiva || navRes;
+                        const contenido = nav?.contenido || [];
+                        const accionesNav =
+                            contenido.find((c) => c.label?.toLowerCase() === 'accion')?.valor ||
+                            contenido.find((c) => c.label?.toLowerCase() === 'acciones')?.valor ||
+                            contenido.find((c) => c.label?.toLowerCase() === 'accion_nav')?.valor || [];
+
+                        const waNav = Array.isArray(accionesNav)
+                            ? accionesNav.find((a) => a.icon?.toLowerCase() === 'fawhatsapp' || a.icon?.toLowerCase() === 'whatsapp' || (typeof a.texto === 'string' && a.texto.includes('wa.me')))?.[typeof accionesNav[0]?.url === 'string' ? 'url' : 'texto'] ||
+                              accionesNav.find((a) => a.icon?.toLowerCase() === 'fawhatsapp' || a.icon?.toLowerCase() === 'whatsapp')?.texto
+                            : null;
+
+                        processRawVal(waNav);
+                    })
+                    .catch(() => null);
             }
         }
     }, []);

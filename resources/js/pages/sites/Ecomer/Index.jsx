@@ -12,6 +12,7 @@ export default function Ecomer({
     site,
     dominio,
     siteSlug,
+    tieneTienda,
     secciones,
     seccionActiva,
     seccionesData,
@@ -59,6 +60,9 @@ export default function Ecomer({
                         p.nombre?.toLowerCase() === paramProd.toLowerCase()
                 );
                 setProductoSeleccionado(encontrado || null);
+                if (encontrado && typeof window !== 'undefined') {
+                    window.scrollTo(0, 0);
+                }
             } else {
                 setProductoSeleccionado(null);
             }
@@ -75,7 +79,7 @@ export default function Ecomer({
             if (prod) {
                 url.searchParams.set('producto', prod.slug || prod.id);
                 window.history.pushState({}, '', url.toString());
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.scrollTo(0, 0);
             } else {
                 url.searchParams.delete('producto');
                 window.history.pushState({}, '', url.toString());
@@ -143,6 +147,11 @@ export default function Ecomer({
                     secciones={secciones}
                     seccionActiva={seccionActiva}
                     seccionesData={seccionesData}
+                    tieneTienda={tieneTienda}
+                    productos={productos}
+                    serviciosSitio={serviciosSitio}
+                    estilos={estilos}
+                    esDetalleProducto={Boolean(productoSeleccionado)}
                 />
 
                 {productoSeleccionado ? (

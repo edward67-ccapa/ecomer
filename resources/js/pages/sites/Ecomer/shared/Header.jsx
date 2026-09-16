@@ -1,10 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link, router } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
 import { useCartStore } from '@/stores/useCartStore';
 import CartOffcanvas from '@/components/CartOffcanvas';
 
-export default function Header({ site, dominio, siteSlug, secciones, seccionActiva, tieneTienda, productos, seccionesData }) {
+export default function Header({ site, dominio, siteSlug, secciones, seccionActiva, tieneTienda, productos, seccionesData, serviciosSitio, estilos, esDetalleProducto = false }) {
     const [isScrolled, setIsScrolled] = useState(false);
 
     // --- SCROLL DETECTION ---
@@ -58,17 +58,71 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
     const accionesNav = getNavContent('accion') || getNavContent('acciones') || getNavContent('accion_nav') || [];
     const logoNav = getNavContent('logo') || getNavContent('logo_nav') || site?.imagen;
 
+    // --- NAVEGACIÓN DINÁMICA Y RENOMBRADO PERSONALIZADO EN FRONTEND ---
+    const navSecciones = useMemo(() => {
+        let list = Array.isArray(secciones) ? [...secciones] : [];
+
+        // Verificar si la lista ya incluye tienda/productos
+        const hasProductosOrTienda = list.some((s) => {
+            const slug = (s.slug || '').toLowerCase();
+            return slug === 'productos' || slug === 'tienda' || slug === 'tiendas';
+        });
+
+        // Si tieneTienda es verdadero (hasStore) y no está en la navegación, se agrega 'productos' por defecto
+        if (hasStore && !hasProductosOrTienda) {
+            list.splice(1, 0, { slug: 'productos', nombre: 'Productos' });
+        }
+
+        // Verificar si la lista ya incluye servicios
+        const hasServiciosInList = list.some((s) => {
+            const slug = (s.slug || '').toLowerCase();
+            return slug === 'servicios' || slug === 'servicio';
+        });
+
+        const hasServicesData = Boolean(
+            (serviciosSitio && serviciosSitio.length > 0) ||
+            seccionesData?.servicios ||
+            seccionesData?.Servicios ||
+            (site?.servicios && site.servicios.length > 0) ||
+            site?.tiene_servicios
+        );
+
+        // Si tiene servicios y no están en la navegación, se agregan 'servicios' por defecto
+        if (hasServicesData && !hasServiciosInList) {
+            list.push({ slug: 'servicios', nombre: 'Servicios' });
+        }
+
+        return list;
+    }, [secciones, hasStore, serviciosSitio, seccionesData, site]);
+
+    const getDisplayName = (seccion) => {
+        const slugLower = (seccion?.slug || '').toLowerCase().trim();
+        const nombreLower = (seccion?.nombre || '').toLowerCase().trim();
+
+        // Renombrar 'tienda' / 'tiendas' -> 'Productos'
+        if (slugLower === 'tienda' || slugLower === 'tiendas' || nombreLower === 'tienda' || nombreLower === 'tiendas') {
+            return 'Productos';
+        }
+
+        // Renombrar 'servicios' -> 'Servicios'
+        if (slugLower === 'servicios' || slugLower === 'servicio' || nombreLower === 'servicios' || nombreLower === 'servicio') {
+            return 'Servicios';
+        }
+
+        return seccion?.nombre || seccion?.slug || '';
+    };
+
     // --- STYLES BASED ON SCROLL ---
     const activeSlug = (seccionActiva?.slug || '').toLowerCase();
     const activeNombre = (seccionActiva?.nombre || '').toLowerCase();
     const isHeroPage =
-        !seccionActiva ||
-        activeSlug === 'inicio' ||
-        activeSlug === 'hero' ||
-        activeNombre === 'inicio' ||
-        activeNombre === 'hero' ||
-        activeSlug === '' ||
-        Boolean(seccionesData?.hero || seccionesData?.inicio);
+        !esDetalleProducto &&
+        (!seccionActiva ||
+            activeSlug === 'inicio' ||
+            activeSlug === 'hero' ||
+            activeNombre === 'inicio' ||
+            activeNombre === 'hero' ||
+            activeSlug === '');
     const isTransparentMode = isHeroPage && !isScrolled;
 
     const headerBg = isTransparentMode
@@ -195,14 +249,19 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
 
                         {/* Enlaces Desktop */}
                         <nav className="hidden md:flex flex-wrap items-center gap-1">
-                            {secciones?.map((seccion) => {
+                            {navSecciones?.map((seccion) => {
                                 const slugLower = seccion.slug?.toLowerCase() || '';
-                                const anchorId = slugLower === 'contactos' ? 'contacto' : slugLower;
+                                const displayName = getDisplayName(seccion);
+                                const normalizedSlug = slugLower.replace(/[\s_]+/g, '-');
+                                const anchorId = slugLower === 'contactos' ? 'contacto' : normalizedSlug;
                                 const isInicioPage = !seccionActiva || seccionActiva.slug?.toLowerCase() === 'inicio';
 
-                                const PAGE_SECTIONS = ['inicio', 'productos', 'servicios'];
-                                const hasStandalonePage = PAGE_SECTIONS.includes(slugLower);
-                                const activa = slugLower === seccionActiva?.slug?.toLowerCase();
+                                const isProductos = slugLower === 'productos' || slugLower === 'tienda' || slugLower === 'tiendas';
+                                const isServicios = slugLower === 'servicios' || slugLower === 'servicio';
+                                const hasStandalonePage = slugLower === 'inicio' || isProductos || isServicios;
+
+                                const pageSlugTarget = isProductos ? 'productos' : (isServicios ? 'servicios' : seccion.slug);
+                                const activa = pageSlugTarget === seccionActiva?.slug?.toLowerCase() || (isProductos && seccionActiva?.slug?.toLowerCase() === 'productos') || (isServicios && seccionActiva?.slug?.toLowerCase() === 'servicios');
 
                                 const linkClasses = `rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 ${
                                     activa
@@ -217,16 +276,16 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                     return (
                                         <Link
                                             key={seccion.slug}
-                                            href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : (siteSlug ? `/${dominio}/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`)}
+                                            href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${pageSlugTarget}` : (siteSlug ? `/${dominio}/${siteSlug}/${pageSlugTarget}` : `/${dominio}/${pageSlugTarget}`)}
                                             className={linkClasses}
                                             style={activeStyle}
                                         >
-                                            {seccion.nombre}
+                                            {displayName}
                                         </Link>
                                     );
                                 }
 
-                                const mainPageSlug = secciones?.[0]?.slug || 'inicio';
+                                const mainPageSlug = (secciones && secciones[0]?.slug) || 'inicio';
                                 const anchorHref = isInicioPage
                                     ? `#${anchorId}`
                                     : (dominio === 'plantillas' ? `/plantillas/${siteSlug}/${mainPageSlug}#${anchorId}` : (siteSlug ? `/${dominio}/${siteSlug}/${mainPageSlug}#${anchorId}` : `/${dominio}/${mainPageSlug}#${anchorId}`));
@@ -238,7 +297,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                         className={linkClasses}
                                         style={activeStyle}
                                     >
-                                        {seccion.nombre}
+                                        {displayName}
                                     </a>
                                 );
                             })}
@@ -391,14 +450,19 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                             ? 'border-white/10 bg-transparent text-white'
                             : 'border-gray-200/60 bg-white/98 shadow-lg text-gray-800'
                     }`}>
-                        {secciones?.map((seccion) => {
+                        {navSecciones?.map((seccion) => {
                             const slugLower = seccion.slug?.toLowerCase() || '';
-                            const anchorId = slugLower === 'contactos' ? 'contacto' : slugLower;
+                            const displayName = getDisplayName(seccion);
+                            const normalizedSlug = slugLower.replace(/[\s_]+/g, '-');
+                            const anchorId = slugLower === 'contactos' ? 'contacto' : normalizedSlug;
                             const isInicioPage = !seccionActiva || seccionActiva.slug?.toLowerCase() === 'inicio';
 
-                            const PAGE_SECTIONS = ['inicio', 'productos', 'servicios'];
-                            const hasStandalonePage = PAGE_SECTIONS.includes(slugLower);
-                            const activa = slugLower === seccionActiva?.slug?.toLowerCase();
+                            const isProductos = slugLower === 'productos' || slugLower === 'tienda' || slugLower === 'tiendas';
+                            const isServicios = slugLower === 'servicios' || slugLower === 'servicio';
+                            const hasStandalonePage = slugLower === 'inicio' || isProductos || isServicios;
+
+                            const pageSlugTarget = isProductos ? 'productos' : (isServicios ? 'servicios' : seccion.slug);
+                            const activa = pageSlugTarget === seccionActiva?.slug?.toLowerCase() || (isProductos && seccionActiva?.slug?.toLowerCase() === 'productos') || (isServicios && seccionActiva?.slug?.toLowerCase() === 'servicios');
 
                             const linkClasses = `block rounded-lg px-3 py-2 text-sm font-semibold transition ${
                                 activa
@@ -413,17 +477,17 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 return (
                                     <Link
                                         key={seccion.slug}
-                                        href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : (siteSlug ? `/${dominio}/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`)}
+                                        href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${pageSlugTarget}` : (siteSlug ? `/${dominio}/${siteSlug}/${pageSlugTarget}` : `/${dominio}/${pageSlugTarget}`)}
                                         onClick={() => setMobileMenuOpen(false)}
                                         className={linkClasses}
                                         style={activeStyle}
                                     >
-                                        {seccion.nombre}
+                                        {displayName}
                                     </Link>
                                 );
                             }
 
-                            const mainPageSlug = secciones?.[0]?.slug || 'inicio';
+                            const mainPageSlug = (secciones && secciones[0]?.slug) || 'inicio';
                             const anchorHref = isInicioPage
                                 ? `#${anchorId}`
                                 : (dominio === 'plantillas' ? `/plantillas/${siteSlug}/${mainPageSlug}#${anchorId}` : (siteSlug ? `/${dominio}/${siteSlug}/${mainPageSlug}#${anchorId}` : `/${dominio}/${mainPageSlug}#${anchorId}`));
@@ -436,7 +500,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                     className={linkClasses}
                                     style={activeStyle}
                                 >
-                                    {seccion.nombre}
+                                    {displayName}
                                 </a>
                             );
                         })}

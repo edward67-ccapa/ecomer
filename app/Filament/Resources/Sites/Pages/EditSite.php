@@ -29,13 +29,72 @@ class EditSite extends EditRecord
 
     protected function mutateFormDataBeforeFill(array $data): array
     {
-        $this->record->load(['respuestas', 'plantilla.secciones.preguntas.children']);
+        $this->record->load(['respuestas', 'plantilla.secciones.preguntas.children.children']);
+
+        $allPreguntas = collect();
+        if ($this->record->plantilla) {
+            foreach ($this->record->plantilla->secciones as $seccion) {
+                foreach ($seccion->preguntas as $pregunta) {
+                    $allPreguntas->push($pregunta);
+                    if ($pregunta->children) {
+                        foreach ($pregunta->children as $child) {
+                            $allPreguntas->push($child);
+                            if ($child->children) {
+                                foreach ($child->children as $grandChild) {
+                                    $allPreguntas->push($grandChild);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        $preguntasById = $allPreguntas->keyBy('id');
 
         $respuestasMap = $this->record->respuestas
-            ->mapWithKeys(function (Respuesta $respuesta): array {
+            ->mapWithKeys(function (Respuesta $respuesta) use ($preguntasById): array {
+                $pregunta = $preguntasById->get($respuesta->pregunta_id);
                 $valor = $respuesta->valor;
-                if (is_string($valor) && is_array($decoded = json_decode($valor, true))) {
-                    $valor = $decoded;
+
+                if (is_string($valor)) {
+                    $decoded = json_decode($valor, true);
+                    if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_object($decoded))) {
+                        $valor = $decoded;
+                    }
+                }
+
+                $isRepeaterOrMultiple = $pregunta && (
+                    $pregunta->tipo === 'grupo' ||
+                    $pregunta->tipo === 'galeria' ||
+                    $pregunta->estructura === 'array'
+                );
+
+                if ($isRepeaterOrMultiple) {
+                    if (! is_array($valor)) {
+                        if (is_string($valor) && trim($valor) !== '') {
+                            $valor = $pregunta->tipo === 'grupo' ? [] : [trim($valor)];
+                        } else {
+                            $valor = [];
+                        }
+                    } else {
+                        if ($pregunta && $pregunta->tipo !== 'grupo') {
+                            $valor = array_values(array_filter(array_map(function ($item) {
+                                if (is_array($item)) {
+                                    return $item['nombre'] ?? $item['titulo'] ?? $item['valor'] ?? $item['label'] ?? null;
+                                }
+                                return is_scalar($item) ? (string) $item : null;
+                            }, $valor)));
+                        }
+                    }
+                } else {
+                    if (is_array($valor)) {
+                        $first = reset($valor);
+                        if (is_array($first)) {
+                            $valor = $first['nombre'] ?? $first['titulo'] ?? $first['valor'] ?? $first['label'] ?? null;
+                        } else {
+                            $valor = is_scalar($first) ? (string) $first : null;
+                        }
+                    }
                 }
 
                 return [
@@ -52,20 +111,51 @@ class EditSite extends EditRecord
                 ->get()
                 ->keyBy('pregunta_id');
 
-            foreach ($this->record->plantilla->secciones as $seccion) {
-                foreach ($seccion->preguntas as $pregunta) {
-                    if (! isset($respuestasMap[$pregunta->id])) {
-                        $pResp = $plantillaRespuestasMap->get($pregunta->id);
-                        $valor = $pResp?->valor;
-                        if (is_string($valor) && is_array($decoded = json_decode($valor, true))) {
+            foreach ($allPreguntas as $pregunta) {
+                if (! isset($respuestasMap[$pregunta->id])) {
+                    $pResp = $plantillaRespuestasMap->get($pregunta->id);
+                    $valor = $pResp?->valor;
+
+                    if (is_string($valor)) {
+                        $decoded = json_decode($valor, true);
+                        if (json_last_error() === JSON_ERROR_NONE && (is_array($decoded) || is_object($decoded))) {
                             $valor = $decoded;
                         }
-
-                        $respuestasMap[$pregunta->id] = [
-                            'valor' => $valor,
-                            'enlace' => $pResp?->enlace,
-                        ];
                     }
+
+                    $isRepeaterOrMultiple = $pregunta->tipo === 'grupo' || $pregunta->tipo === 'galeria' || $pregunta->estructura === 'array';
+                    if ($isRepeaterOrMultiple) {
+                        if (! is_array($valor)) {
+                            if (is_string($valor) && trim($valor) !== '') {
+                                $valor = $pregunta->tipo === 'grupo' ? [] : [trim($valor)];
+                            } else {
+                                $valor = [];
+                            }
+                        } else {
+                            if ($pregunta->tipo !== 'grupo') {
+                                $valor = array_values(array_filter(array_map(function ($item) {
+                                    if (is_array($item)) {
+                                        return $item['nombre'] ?? $item['titulo'] ?? $item['valor'] ?? $item['label'] ?? null;
+                                    }
+                                    return is_scalar($item) ? (string) $item : null;
+                                }, $valor)));
+                            }
+                        }
+                    } else {
+                        if (is_array($valor)) {
+                            $first = reset($valor);
+                            if (is_array($first)) {
+                                $valor = $first['nombre'] ?? $first['titulo'] ?? $first['valor'] ?? $first['label'] ?? null;
+                            } else {
+                                $valor = is_scalar($first) ? (string) $first : null;
+                            }
+                        }
+                    }
+
+                    $respuestasMap[$pregunta->id] = [
+                        'valor' => $valor,
+                        'enlace' => $pResp?->enlace,
+                    ];
                 }
             }
         }

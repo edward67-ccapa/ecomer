@@ -1,6 +1,10 @@
 import { useInicioData } from './hooks/useInicioData';
 import HeroSection from './subcomponents/HeroSection';
 import GaleriaSection from './subcomponents/GaleriaSection';
+import OfertasSection from './subcomponents/OfertasSection';
+import MarcasSection from './subcomponents/MarcasSection';
+import CategoriaSection from './subcomponents/CategoriaSection';
+import TikTokSection from './subcomponents/TikTokSection';
 import ProductosDestacadosSection from './subcomponents/ProductosDestacadosSection';
 
 export default function SectionInicio({
@@ -21,6 +25,9 @@ export default function SectionInicio({
     const {
         inicio,
         galeria,
+        ofertas,
+        marcas,
+        tiktok,
         productosDestacados: productos,
         loading,
         error,
@@ -59,6 +66,23 @@ export default function SectionInicio({
                 productos={productos}
                 onSeleccionarProducto={onSeleccionarProducto}
             />
+            <OfertasSection
+                seccionData={ofertas}
+                productos={productos}
+                onSeleccionarProducto={onSeleccionarProducto}
+            />
+            <MarcasSection
+                seccionData={marcas}
+                productos={productos}
+                onSeleccionarProducto={onSeleccionarProducto}
+            />
+            <CategoriaSection
+                productos={productos}
+                dominio={dominio}
+                siteSlug={siteSlug}
+                onSeleccionarProducto={onSeleccionarProducto}
+            />
+            <TikTokSection seccionData={tiktok} />
         </main>
     );
 }
