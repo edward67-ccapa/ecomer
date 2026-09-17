@@ -84,7 +84,7 @@ export default function OfertasSection({
                     {/* ── LADO DERECHO: PRODUCTOS EN 3 COLUMNAS CON SCROLL VERTICAL INVISIBLE (MITAD 50%) ── */}
                     <div className="flex flex-col justify-start max-h-[760px] lg:max-h-[800px] overflow-y-auto [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
                         {productosFiltrados.length > 0 ? (
-                            <div className="grid grid-cols-3 gap-3.5 sm:gap-4 h-full content-start">
+                            <div className="grid grid-cols-2 md:grid-cols-3 gap-3.5 sm:gap-4 h-full content-start">
                                 {productosFiltrados.map((prod, idx) => {
                                     const inCart = isInCart(prod);
                                     const tieneOferta = Boolean(prod.precio_oferta || prod.precio_oferta_soles);

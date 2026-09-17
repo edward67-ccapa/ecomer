@@ -26,7 +26,7 @@ export default function Footer({ site, dominio, siteSlug, secciones, seccionActi
         ? rawWa
         : `https://wa.me/${rawWa.replace(/\D/g, '').length === 9 ? '51' + rawWa.replace(/\D/g, '') : rawWa.replace(/\D/g, '')}`;
 
-    const PAGE_SECTIONS = ['inicio', 'productos'];
+    const PAGE_SECTIONS = ['inicio', 'productos', 'servicios', 'nosotros', 'sobre-nosotros'];
     const isInicioPage = !seccionActiva || seccionActiva.slug?.toLowerCase() === 'inicio';
     const mainPageSlug = secciones?.[0]?.slug || 'inicio';
 

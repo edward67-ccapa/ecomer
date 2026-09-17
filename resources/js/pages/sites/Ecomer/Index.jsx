@@ -6,6 +6,8 @@ import FloatingWhatsApp from './shared/FloatingWhatsApp';
 import SectionInicio from './components/Inicio/SectionInicio';
 import SectionProductos from './components/Productos/SectionProductos';
 import SectionServicios from './components/Servicios/SectionServicios';
+import SectionNosotros from './components/Nosotros/SectionNosotros';
+import SectionContacto from './components/Contacto/SectionContacto';
 import SectionProductoDetalle from './components/Productos/SectionProductoDetalle';
 
 export default function Ecomer({
@@ -25,6 +27,9 @@ export default function Ecomer({
         if (typeof document !== 'undefined') {
             document.documentElement.classList.remove('dark');
             document.documentElement.style.colorScheme = 'light';
+        }
+        if (typeof window !== 'undefined' && window.location.hash) {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
         }
     }, []);
 
@@ -109,6 +114,10 @@ export default function Ecomer({
         inicio: SectionInicio,
         productos: SectionProductos,
         servicios: SectionServicios,
+        nosotros: SectionNosotros,
+        'sobre-nosotros': SectionNosotros,
+        contacto: SectionContacto,
+        contactos: SectionContacto,
     };
 
     const slugLower = seccionActiva?.slug?.toLowerCase() || '';

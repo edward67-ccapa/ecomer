@@ -46,14 +46,27 @@ class PlantillasController extends Controller
 
         $seccionModel = $plantilla->secciones
             ->when(filled($seccion), function ($items) use ($targetSlug) {
-                return $items->filter(fn ($s) => strtolower(str_replace(['_', ' '], '-', $s->slug)) === $targetSlug);
+                return $items->filter(function ($s) use ($targetSlug) {
+                    $sSlug = strtolower(str_replace(['_', ' '], '-', $s->slug));
+                    $sNombre = strtolower(str_replace(['_', ' '], '-', $s->nombre));
+                    if ($targetSlug === 'inicio' || $targetSlug === 'hero') {
+                        return in_array($sSlug, ['inicio', 'hero']) || in_array($sNombre, ['inicio', 'hero']);
+                    }
+                    return $sSlug === $targetSlug || $sNombre === $targetSlug;
+                });
             })
             ->first();
 
         $respuestas = $plantilla->respuestas->keyBy('pregunta_id');
 
-        if (filled($seccion) && !$seccionModel && in_array($targetSlug, ['productos', 'tienda', 'tiendas', 'servicios', 'servicio'])) {
-            $canonicalSlug = in_array($targetSlug, ['productos', 'tienda', 'tiendas']) ? 'productos' : 'servicios';
+        if (filled($seccion) && !$seccionModel && in_array($targetSlug, ['inicio', 'hero', 'productos', 'tienda', 'tiendas', 'servicios', 'servicio', 'nosotros', 'sobre-nosotros', 'contacto', 'contactos'])) {
+            $canonicalSlug = in_array($targetSlug, ['productos', 'tienda', 'tiendas'])
+                ? 'productos'
+                : (in_array($targetSlug, ['servicios', 'servicio'])
+                    ? 'servicios'
+                    : (in_array($targetSlug, ['nosotros', 'sobre-nosotros'])
+                        ? 'nosotros'
+                        : (in_array($targetSlug, ['contacto', 'contactos']) ? 'contacto' : 'inicio')));
             $seccionActiva = [
                 'slug' => $canonicalSlug,
                 'nombre' => ucfirst($canonicalSlug),

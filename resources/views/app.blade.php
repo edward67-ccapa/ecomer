@@ -48,21 +48,6 @@
                 flex-shrink: 0;
                 box-sizing: border-box;
             }
-            @media (min-width: 480px) {
-                .swiper-slide {
-                    width: 33.333% !important;
-                }
-            }
-            @media (min-width: 768px) {
-                .swiper-slide {
-                    width: 25% !important;
-                }
-            }
-            @media (min-width: 1024px) {
-                .swiper-slide {
-                    width: 20% !important;
-                }
-            }
         </style>
 
         <link rel="icon" href="/favicon.ico" sizes="any">

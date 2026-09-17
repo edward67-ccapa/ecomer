@@ -99,11 +99,11 @@ export default function HeroSection({ seccionData }) {
     };
 
     return (
-        <section id="inicio" className="scroll-mt-10 relative min-h-[85vh] lg:min-h-[90vh] flex items-center overflow-hidden bg-slate-950">
+        <section id="inicio" className="scroll-mt-10 relative min-h-[100vh] flex items-center overflow-hidden bg-slate-950">
             {imgHero && (
                 <>
                     <motion.img
-                        initial={{ scale: 1.06 }}
+                        initial={{ scale: 1.08 }}
                         animate={{ scale: 1 }}
                         transition={{ duration: 1.1, ease: 'easeOut' }}
                         src={imgHero}
@@ -111,21 +111,16 @@ export default function HeroSection({ seccionData }) {
                         fetchPriority="high"
                         decoding="async"
                         loading="eager"
-                        className="absolute inset-0 h-full w-full object-cover object-center"
+                        className="absolute inset-0 h-full w-full min-h-full min-w-full object-cover object-center"
                     />
-                    {/* Fondo con opacidad sobre la imagen */}
-                    <div className="absolute inset-0 bg-black/45" />
+                    {/* Fondo con degradado y opacidad sobre la imagen para legibilidad en celular y desktop */}
+                    <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-black/35 sm:bg-black/45" />
                 </>
             )}
 
             {/* Contenedor centrado verticalmente en el medio a la izquierda */}
-            <div className="relative mx-auto flex min-h-[85vh] lg:min-h-[100vh] w-full items-center justify-start px-6 sm:px-8 lg:px-12 py-16 z-10">
-                <motion.div
-                    initial={{ x: -35, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ duration: 0.7 }}
-                    className="max-w-xl lg:max-w-2xl text-left"
-                >
+            <div className="relative mx-auto flex min-h-[550px] sm:min-h-[85vh] lg:min-h-[90vh] w-full items-center justify-start px-5 sm:px-8 lg:px-12 py-12 sm:py-16 z-10">
+                <div className="max-w-xl lg:max-w-2xl text-left">
                     {tituloHero && (
                         <h1
                             className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-white drop-shadow-sm"
@@ -156,14 +151,12 @@ export default function HeroSection({ seccionData }) {
                             {botones.map((btn, idx) => {
                                 const btnUrl = btn.enlace || defaultEnlace;
                                 return (
-                                    <motion.a
+                                    <a
                                         key={idx}
-                                        whileHover={{ scale: 1.04 }}
-                                        whileTap={{ scale: 0.96 }}
                                         href={btnUrl}
                                         target={btnUrl.startsWith('http') ? '_blank' : '_self'}
                                         rel="noopener noreferrer"
-                                        className="inline-flex items-center gap-3 px-8 py-4 text-base sm:text-lg font-bold text-white shadow-xl transition-all duration-200 hover:brightness-110 hover:shadow-2xl"
+                                        className="inline-flex items-center gap-3 px-8 py-4 text-base sm:text-lg font-bold text-white shadow-xl transition-all duration-300 hover:scale-[1.03] active:scale-[0.98] hover:brightness-110 hover:shadow-2xl"
                                         style={{
                                             backgroundColor: 'var(--color-primario)',
                                             borderRadius: 'var(--radio-bordes)',
@@ -172,20 +165,14 @@ export default function HeroSection({ seccionData }) {
                                     >
                                         {renderIcon(btn.icon, 'h-6 w-6 text-white')}
                                         <span>{btn.texto}</span>
-                                    </motion.a>
+                                    </a>
                                 );
                             })}
                         </div>
                     )}
 
                     {etiquetas.length > 0 && (
-                        <motion.div
-                            initial={{ y: 20, opacity: 0 }}
-                            whileInView={{ y: 0, opacity: 1 }}
-                            viewport={{ once: true, amount: 0.2 }}
-                            transition={{ delay: 0.3, duration: 0.6 }}
-                            className="mt-8 w-full border-t border-white/15 pt-6"
-                        >
+                        <div className="mt-8 w-full border-t border-white/15 pt-6">
                             <div className="flex flex-wrap items-center justify-start gap-6 md:gap-8">
                                 {etiquetas.map((item, idx) => (
                                     <div key={idx} className="flex items-center gap-3">
@@ -213,9 +200,9 @@ export default function HeroSection({ seccionData }) {
                                     </div>
                                 ))}
                             </div>
-                        </motion.div>
+                        </div>
                     )}
-                </motion.div>
+                </div>
             </div>
         </section>
     );

@@ -64,11 +64,20 @@ class SitePageController extends Controller
         $seccion = $site->plantilla->secciones->first(function ($s) use ($targetSlug) {
             $sSlug = strtolower(str_replace(['_', ' '], '-', $s->slug));
             $sNombre = strtolower(str_replace(['_', ' '], '-', $s->nombre));
+            if ($targetSlug === 'inicio' || $targetSlug === 'hero') {
+                return in_array($sSlug, ['inicio', 'hero']) || in_array($sNombre, ['inicio', 'hero']);
+            }
             return $sSlug === $targetSlug || $sNombre === $targetSlug || str_contains($sSlug, $targetSlug) || str_contains($targetSlug, $sSlug);
         });
 
-        if (!$seccion && in_array($targetSlug, ['productos', 'tienda', 'tiendas', 'servicios', 'servicio'])) {
-            $canonicalSlug = in_array($targetSlug, ['productos', 'tienda', 'tiendas']) ? 'productos' : 'servicios';
+        if (!$seccion && in_array($targetSlug, ['inicio', 'hero', 'productos', 'tienda', 'tiendas', 'servicios', 'servicio', 'nosotros', 'sobre-nosotros', 'contacto', 'contactos'])) {
+            $canonicalSlug = in_array($targetSlug, ['productos', 'tienda', 'tiendas'])
+                ? 'productos'
+                : (in_array($targetSlug, ['servicios', 'servicio'])
+                    ? 'servicios'
+                    : (in_array($targetSlug, ['nosotros', 'sobre-nosotros'])
+                        ? 'nosotros'
+                        : (in_array($targetSlug, ['contacto', 'contactos']) ? 'contacto' : 'inicio')));
             $seccionActiva = [
                 'slug' => $canonicalSlug,
                 'nombre' => ucfirst($canonicalSlug),

@@ -605,6 +605,64 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                 );
                             })}
                         </div>
+
+                        {/* BANNER PRODUCTOS (Debajo del filtro, con el mismo ancho del panel de filtros) */}
+                        {(() => {
+                            if (!seccionesData) return null;
+                            const normalize = (str) =>
+                                String(str || '')
+                                    .toLowerCase()
+                                    .normalize('NFD')
+                                    .replace(/[\u0300-\u036f]/g, '')
+                                    .replace(/[-_ ]/g, '');
+
+                            const list = Array.isArray(seccionesData) ? seccionesData : Object.values(seccionesData);
+                            const banerObj = list.find((s) => {
+                                const norm = normalize(s?.slug || s?.nombre || '');
+                                return norm === 'banerproducto' || norm === 'banerproductos' || norm.includes('banerproducto');
+                            });
+
+                            if (!banerObj || !banerObj.contenido) return null;
+                            const itemImg = banerObj.contenido.find(
+                                (c) => c.label?.toLowerCase() === 'imagen' || c.tipo === 'imagen' || c.label?.toLowerCase() === 'img'
+                            );
+                            const val = itemImg?.valor;
+                            const imgUrl = Array.isArray(val) ? val[0] : (typeof val === 'string' ? val : null);
+                            const enlace = itemImg?.enlace || banerObj.enlace || null;
+
+                            if (!imgUrl) return null;
+
+                            return (
+                                <div className="mt-6 pt-6 border-t border-gray-100">
+                                    {enlace ? (
+                                        <a
+                                            href={enlace}
+                                            target={enlace.startsWith('http') ? '_blank' : '_self'}
+                                            rel="noopener noreferrer"
+                                            className="block overflow-hidden rounded-2xl shadow-xs hover:shadow-md transition-all group"
+                                        >
+                                            <img
+                                                src={imgUrl}
+                                                alt="Banner Producto"
+                                                className="w-full h-auto object-cover rounded-2xl group-hover:scale-102 transition-transform duration-300"
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
+                                        </a>
+                                    ) : (
+                                        <div className="overflow-hidden rounded-2xl shadow-xs">
+                                            <img
+                                                src={imgUrl}
+                                                alt="Banner Producto"
+                                                className="w-full h-auto object-cover rounded-2xl"
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            );
+                        })()}
                     </aside>
 
                     {/* COLUMNA DERECHA: Buscador + Grilla de Productos */}

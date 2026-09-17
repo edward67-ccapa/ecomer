@@ -6,6 +6,8 @@ import MarcasSection from './subcomponents/MarcasSection';
 import CategoriaSection from './subcomponents/CategoriaSection';
 import TikTokSection from './subcomponents/TikTokSection';
 import ProductosDestacadosSection from './subcomponents/ProductosDestacadosSection';
+import ContactoSection from './subcomponents/ContactoSection';
+import BanerPieSection from './subcomponents/BanerPieSection';
 
 export default function SectionInicio({
     dominio,
@@ -16,7 +18,6 @@ export default function SectionInicio({
     productos: initialProductos = [],
     onSeleccionarProducto,
 }) {
-    // Si productosDestacados viene con datos se usan esos, de lo contrario la lista general de productos
     const listaProductos =
         productosDestacados && productosDestacados.length > 0
             ? productosDestacados
@@ -28,6 +29,8 @@ export default function SectionInicio({
         ofertas,
         marcas,
         tiktok,
+        banerpie,
+        contacto,
         productosDestacados: productos,
         loading,
         error,
@@ -83,6 +86,8 @@ export default function SectionInicio({
                 onSeleccionarProducto={onSeleccionarProducto}
             />
             <TikTokSection seccionData={tiktok} />
+            <ContactoSection seccionData={contacto} />
+            <BanerPieSection seccionData={banerpie} />
         </main>
     );
 }
