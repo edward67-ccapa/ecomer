@@ -33,10 +33,6 @@ export default function ContactoSection({ seccionData }) {
     const whatsapIcono = whatsapVal?.Icono || 'FaWhatsapp';
     const whatsapEnlace = whatsapItem?.enlace || 'https://wa.me/';
 
-    useEffect(() => {
-        console.log('Enviando a número:', whatsapEnlace || 'https://wa.me/');
-    }, [whatsapEnlace]);
-
     // Extraer datos de Dirección
     const direccionVal = Array.isArray(direccionItem?.valor) ? direccionItem.valor[0] : null;
     const direccionTexto = direccionVal?.texto || 'Av. Gran Chimú N°680, San Juan de Lurigancho 15401';

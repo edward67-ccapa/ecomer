@@ -128,15 +128,6 @@ export function useServiciosData(seccion, seccionesData, serviciosSitio = []) {
         raw: videoDataObj,
     };
 
-    console.log('servicios:', {
-        serviciosData,
-        hero,
-        serviciosBlock,
-        procesosBlock,
-        videoBlock,
-        videoGroup: videoDataObj,
-    });
-
     return {
         serviciosData,
         hero,

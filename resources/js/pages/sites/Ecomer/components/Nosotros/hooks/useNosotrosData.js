@@ -27,7 +27,7 @@ export function useNosotrosData(seccion, seccionesData) {
     };
 
     const nosotros = seccion || findSeccion('nosotros') || findSeccion('sobre-nosotros') || null;
-    console.log(nosotros)
+
     const getItem = (label) => {
         if (!nosotros?.contenido) return null;
         return nosotros.contenido.find(
