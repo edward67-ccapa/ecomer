@@ -322,7 +322,7 @@
     "src": "_vendor-swiper-CeYfhhVD.css"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DpQC0x_E.css",
+    "file": "assets/app-CVzpM4E_.css",
     "name": "app",
     "names": [
       "app.css"
@@ -340,7 +340,7 @@
     "isEntry": true
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-DBXkWMAh.js",
+    "file": "assets/app-JrkrdlJm.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -480,7 +480,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/Index.jsx": {
-    "file": "assets/Index-aGIsy0qI.js",
+    "file": "assets/Index-Cvcj7WTb.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Ecomer/Index.jsx",
     "isDynamicEntry": true,
@@ -556,7 +556,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Productos/SectionProductos.jsx": {
-    "file": "assets/SectionProductos-BoA4XSCR.js",
+    "file": "assets/SectionProductos-CXfCEpiA.js",
     "name": "SectionProductos",
     "src": "resources/js/pages/sites/Ecomer/components/Productos/SectionProductos.jsx",
     "isDynamicEntry": true,

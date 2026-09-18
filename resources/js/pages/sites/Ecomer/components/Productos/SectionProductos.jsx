@@ -543,6 +543,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                                 {/* Range Input Min */}
                                                 <input
                                                     type="range"
+                                                    aria-label="Precio mínimo"
                                                     min={minPrecioAbsoluto}
                                                     max={maxPrecioAbsoluto}
                                                     step={1}
@@ -552,13 +553,14 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                                         setRangoPrecio([val, rangoPrecio[1]]);
                                                     }}
                                                     className="absolute inset-0 w-full h-2 appearance-none bg-transparent pointer-events-none z-20 cursor-pointer
-                                                    [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--color-primario)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:appearance-none
-                                                    [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[var(--color-primario)] [&::-moz-range-thumb]:shadow-md"
+                                                    [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--color-primario)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:appearance-none
+                                                    [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[var(--color-primario)] [&::-moz-range-thumb]:shadow-md"
                                                 />
 
                                                 {/* Range Input Max */}
                                                 <input
                                                     type="range"
+                                                    aria-label="Precio máximo"
                                                     min={minPrecioAbsoluto}
                                                     max={maxPrecioAbsoluto}
                                                     step={1}
@@ -568,8 +570,8 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                                         setRangoPrecio([rangoPrecio[0], val]);
                                                     }}
                                                     className="absolute inset-0 w-full h-2 appearance-none bg-transparent pointer-events-none z-30 cursor-pointer
-                                                    [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--color-primario)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:appearance-none
-                                                    [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[var(--color-primario)] [&::-moz-range-thumb]:shadow-md"
+                                                    [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--color-primario)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:appearance-none
+                                                    [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[var(--color-primario)] [&::-moz-range-thumb]:shadow-md"
                                                 />
                                             </div>
                                         </motion.div>
