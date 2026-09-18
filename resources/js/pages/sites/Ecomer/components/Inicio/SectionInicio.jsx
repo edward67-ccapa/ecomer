@@ -6,7 +6,6 @@ import MarcasSection from './subcomponents/MarcasSection';
 import CategoriaSection from './subcomponents/CategoriaSection';
 import TikTokSection from './subcomponents/TikTokSection';
 import ProductosDestacadosSection from './subcomponents/ProductosDestacadosSection';
-import ContactoSection from './subcomponents/ContactoSection';
 import BanerPieSection from './subcomponents/BanerPieSection';
 
 export default function SectionInicio({
@@ -30,7 +29,6 @@ export default function SectionInicio({
         marcas,
         tiktok,
         banerpie,
-        contacto,
         productosDestacados: productos,
         loading,
         error,
@@ -86,7 +84,6 @@ export default function SectionInicio({
                 onSeleccionarProducto={onSeleccionarProducto}
             />
             <TikTokSection seccionData={tiktok} />
-            <ContactoSection seccionData={contacto} />
             <BanerPieSection seccionData={banerpie} />
         </main>
     );

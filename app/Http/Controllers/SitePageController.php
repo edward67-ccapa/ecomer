@@ -70,6 +70,21 @@ class SitePageController extends Controller
             return $sSlug === $targetSlug || $sNombre === $targetSlug || str_contains($sSlug, $targetSlug) || str_contains($targetSlug, $sSlug);
         });
 
+        $siteRespuestas = $site->respuestas->keyBy('pregunta_id')->all();
+        $plantillaRespuestas = \App\Models\Respuesta::where('plantilla_id', $site->plantilla_id)->get()->keyBy('pregunta_id')->all();
+        $respuestas = $siteRespuestas + $plantillaRespuestas;
+
+        // Pre-cargar el contenido de TODAS las secciones (activas e inanimadas/ocultas del nav) para renderizado instantáneo
+        $seccionesData = [];
+        foreach ($site->plantilla->secciones as $s) {
+            $key = strtolower(str_replace(['_', ' '], '-', $s->slug));
+            $seccionesData[$key] = [
+                'slug' => $s->slug,
+                'nombre' => $s->nombre,
+                'contenido' => self::formatearPreguntas($s->preguntas, $respuestas),
+            ];
+        }
+
         if (!$seccion && in_array($targetSlug, ['inicio', 'hero', 'productos', 'tienda', 'tiendas', 'servicios', 'servicio', 'nosotros', 'sobre-nosotros', 'contacto', 'contactos'])) {
             $canonicalSlug = in_array($targetSlug, ['productos', 'tienda', 'tiendas'])
                 ? 'productos'
@@ -90,21 +105,6 @@ class SitePageController extends Controller
                 'slug' => $seccion->slug,
                 'nombre' => $seccion->nombre,
                 'contenido' => self::formatearPreguntas($seccion->preguntas, $respuestas),
-            ];
-        }
-
-        $siteRespuestas = $site->respuestas->keyBy('pregunta_id')->all();
-        $plantillaRespuestas = \App\Models\Respuesta::where('plantilla_id', $site->plantilla_id)->get()->keyBy('pregunta_id')->all();
-        $respuestas = $siteRespuestas + $plantillaRespuestas;
-
-        // Pre-cargar el contenido de TODAS las secciones (activas e inanimadas/ocultas del nav) para renderizado instantáneo
-        $seccionesData = [];
-        foreach ($site->plantilla->secciones as $s) {
-            $key = strtolower(str_replace(['_', ' '], '-', $s->slug));
-            $seccionesData[$key] = [
-                'slug' => $s->slug,
-                'nombre' => $s->nombre,
-                'contenido' => self::formatearPreguntas($s->preguntas, $respuestas),
             ];
         }
 

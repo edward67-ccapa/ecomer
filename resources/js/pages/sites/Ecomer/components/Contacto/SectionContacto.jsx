@@ -15,6 +15,21 @@ export default function SectionContacto({ seccion, seccionesData }) {
     const mapaDireccion = data?.Mapa || data?.mapa;
     const redes = Array.isArray(data?.Redes) ? data.Redes : (Array.isArray(data?.redes) ? data.redes : []);
 
+    // Extract nav actions (accionesNav from nav)
+    const activeNav =
+        seccionesData?.nav ||
+        seccionesData?.NAV ||
+        seccionesData?.['nav'] ||
+        Object.values(seccionesData || {}).find((s) => s?.slug?.toLowerCase() === 'nav');
+
+    const getNavContent = (labelName) => {
+        return activeNav?.contenido?.find(
+            (c) => c.label?.toLowerCase() === labelName.toLowerCase()
+        )?.valor;
+    };
+
+    const accionesNav = getNavContent('accion') || getNavContent('acciones') || getNavContent('accion_nav') || [];
+
     // Form state
     const [nombre, setNombre] = useState('');
     const [correo, setCorreo] = useState('');
@@ -117,31 +132,79 @@ export default function SectionContacto({ seccion, seccionesData }) {
                                 transition={{ duration: 0.6 }}
                                 className="space-y-6"
                             >
-                                {/* Item 1: Teléfono / WhatsApp */}
-                                {phoneText && (
-                                    <div className="flex items-center gap-4">
-                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-800 shadow-xs border border-gray-200/60">
-                                            <DynamicIcon name="FaPhone" className="h-5 w-5 text-gray-700" />
-                                        </div>
-                                        <div>
-                                            <span className="block text-xs font-bold uppercase tracking-wider text-gray-400">Teléfono / WhatsApp</span>
-                                            <span className="block text-base font-bold text-gray-900">{phoneText}</span>
-                                        </div>
-                                    </div>
+                                {/* Dynamic Contact Actions from Nav (accionesNav) */}
+                                {Array.isArray(accionesNav) && accionesNav.length > 0 ? (
+                                    accionesNav.map((item, idx) => {
+                                        const iconName = item.icono || item.icon || 'FaInfoCircle';
+                                        const textVal = item.texto || item.Texto || '';
+                                        if (!textVal) return null;
+
+                                        const iconLower = iconName.toLowerCase();
+                                        const textLower = textVal.toLowerCase();
+
+                                        const label = item.label || item.Label || (
+                                            iconLower.includes('envelope') || textLower.includes('@') ? 'Correo Electrónico' :
+                                            iconLower.includes('phone') || iconLower.includes('whatsapp') || iconLower.includes('mobile') ? 'Teléfono / WhatsApp' :
+                                            iconLower.includes('location') || iconLower.includes('map') || iconLower.includes('marker') || iconLower.includes('pin') ? 'Dirección' :
+                                            'Contacto'
+                                        );
+
+                                        const isEmail = textLower.includes('@') || iconLower.includes('envelope');
+                                        const isPhone = iconLower.includes('whatsapp') || iconLower.includes('phone');
+                                        const isLink = textVal.includes('.com') || textVal.includes('.pe') || textVal.startsWith('http');
+                                        const cleanDigits = textVal.replace(/\D/g, '');
+
+                                        let href = null;
+                                        if (isEmail) {
+                                            href = `mailto:${textVal}`;
+                                        } else if (isPhone) {
+                                            href = iconLower.includes('whatsapp')
+                                                ? `https://wa.me/${cleanDigits.length === 9 ? '51' + cleanDigits : cleanDigits}`
+                                                : `tel:${cleanDigits}`;
+                                        } else if (isLink) {
+                                            href = textVal.startsWith('http') ? textVal : `https://${textVal}`;
+                                        }
+
+                                        return (
+                                            <div key={idx} className="flex items-center gap-4">
+                                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-800 shadow-xs border border-gray-200/60">
+                                                    <DynamicIcon name={iconName} className="h-5 w-5 text-gray-700" />
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs font-bold uppercase tracking-wider text-gray-400">{label}</span>
+                                                    {href ? (
+                                                        <a
+                                                            href={href}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="block text-base font-bold text-gray-900 hover:text-[var(--color-primario)] transition-colors"
+                                                        >
+                                                            {textVal}
+                                                        </a>
+                                                    ) : (
+                                                        <span className="block text-base font-bold text-gray-900">{textVal}</span>
+                                                    )}
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                ) : (
+                                    <>
+                                        {phoneText && (
+                                            <div className="flex items-center gap-4">
+                                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-800 shadow-xs border border-gray-200/60">
+                                                    <DynamicIcon name="FaPhone" className="h-5 w-5 text-gray-700" />
+                                                </div>
+                                                <div>
+                                                    <span className="block text-xs font-bold uppercase tracking-wider text-gray-400">Teléfono / WhatsApp</span>
+                                                    <span className="block text-base font-bold text-gray-900">{phoneText}</span>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </>
                                 )}
 
-                                {/* Item 2: Correo Electrónico */}
-                                <div className="flex items-center gap-4">
-                                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-800 shadow-xs border border-gray-200/60">
-                                        <DynamicIcon name="FaEnvelope" className="h-5 w-5 text-gray-700" />
-                                    </div>
-                                    <div>
-                                        <span className="block text-xs font-bold uppercase tracking-wider text-gray-400">Correo Electrónico</span>
-                                        <span className="block text-base font-bold text-gray-900">contacto@ecomer.pe</span>
-                                    </div>
-                                </div>
-
-                                {/* Item 3: Dirección del Mapa */}
+                                {/* Dirección del Mapa */}
                                 {mapaDireccion && (
                                     <div className="flex items-start gap-4">
                                         <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-800 shadow-xs border border-gray-200/60 mt-0.5">

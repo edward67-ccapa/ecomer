@@ -46,12 +46,47 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
         return {};
     });
     const [acordeonesAbiertos, setAcordeonesAbiertos] = useState({
+        precio: true,
         categoria: true,
         subcategoria: true,
         tags: true,
     });
     const [subAcordeonesAbiertos, setSubAcordeonesAbiertos] = useState({});
     const [mostrarFiltrosMovil, setMostrarFiltrosMovil] = useState(false);
+
+    // Rango global de precios min y max calculados de la lista de productos
+    const { minPrecioAbsoluto, maxPrecioAbsoluto } = useMemo(() => {
+        if (!productos || productos.length === 0) {
+            return { minPrecioAbsoluto: 0, maxPrecioAbsoluto: 500 };
+        }
+        let minP = Infinity;
+        let maxP = -Infinity;
+
+        productos.forEach((prod) => {
+            const tieneOferta = Boolean(prod.precio_oferta || prod.precio_oferta_soles);
+            const p = tieneOferta
+                ? Number(prod.precio_oferta_soles || prod.precio_oferta)
+                : Number(prod.precio_soles || prod.precio || 0);
+            if (!isNaN(p) && p >= 0) {
+                if (p < minP) minP = p;
+                if (p > maxP) maxP = p;
+            }
+        });
+
+        if (minP === Infinity) minP = 0;
+        if (maxP === -Infinity) maxP = 500;
+
+        return {
+            minPrecioAbsoluto: Math.floor(minP),
+            maxPrecioAbsoluto: Math.ceil(maxP),
+        };
+    }, [productos]);
+
+    const [rangoPrecio, setRangoPrecio] = useState([minPrecioAbsoluto, maxPrecioAbsoluto]);
+
+    useEffect(() => {
+        setRangoPrecio([minPrecioAbsoluto, maxPrecioAbsoluto]);
+    }, [minPrecioAbsoluto, maxPrecioAbsoluto]);
 
     const getValor = (label) => seccionData?.contenido?.find((item) => item.label === label)?.valor;
 
@@ -165,16 +200,37 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
         }));
     };
 
+    const isPrecioFiltrado = rangoPrecio[0] > minPrecioAbsoluto || rangoPrecio[1] < maxPrecioAbsoluto;
+
     const limpiarFiltros = () => {
         setFiltrosSeleccionados({});
         setBusqueda('');
+        setRangoPrecio([minPrecioAbsoluto, maxPrecioAbsoluto]);
     };
 
-    const totalFiltrosActivos = Object.values(filtrosSeleccionados).flat().length;
+    const totalFiltrosActivos = Object.values(filtrosSeleccionados).flat().length + (isPrecioFiltrado ? 1 : 0);
+
+    const minPercent = maxPrecioAbsoluto > minPrecioAbsoluto
+        ? Math.max(0, Math.min(100, ((rangoPrecio[0] - minPrecioAbsoluto) / (maxPrecioAbsoluto - minPrecioAbsoluto)) * 100))
+        : 0;
+
+    const maxPercent = maxPrecioAbsoluto > minPrecioAbsoluto
+        ? Math.max(0, Math.min(100, ((rangoPrecio[1] - minPrecioAbsoluto) / (maxPrecioAbsoluto - minPrecioAbsoluto)) * 100))
+        : 100;
 
     // Productos filtrados dinámicamente
     const productosFiltrados = useMemo(() => {
         return productos.filter((prod) => {
+            // Coincidencia por rango de precio
+            const tieneOferta = Boolean(prod.precio_oferta || prod.precio_oferta_soles);
+            const pEfectivo = tieneOferta
+                ? Number(prod.precio_oferta_soles || prod.precio_oferta)
+                : Number(prod.precio_soles || prod.precio || 0);
+
+            if (pEfectivo < rangoPrecio[0] || pEfectivo > rangoPrecio[1]) {
+                return false;
+            }
+
             // Coincidencia por búsqueda de texto
             const busq = busqueda.trim().toLowerCase();
             const coincideBusqueda =
@@ -213,7 +269,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                 return valoresSeleccionados.includes(valProducto);
             });
         });
-    }, [productos, busqueda, filtrosSeleccionados]);
+    }, [productos, busqueda, filtrosSeleccionados, rangoPrecio]);
 
     const whatsappUrl = 'https://wa.me/51999999999';
 
@@ -434,6 +490,93 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
 
                         {/* Acordeones Dinámicos de Filtros (Categorías anidadas con subcategorías + otros grupos) */}
                         <div className="space-y-4">
+                            {/* 0. RANGO DE PRECIO (SLIDER DOBLE) */}
+                            <div className="border-b border-gray-100 pb-4">
+                                <button
+                                    onClick={() => toggleAcordeon('precio')}
+                                    className="w-full flex items-center justify-between py-2 text-sm font-bold text-gray-800 hover:text-[var(--color-primario)] transition-colors cursor-pointer"
+                                    style={{ fontFamily: 'var(--tipografia-titulos)' }}
+                                >
+                                    <span>Rango de Precio</span>
+                                    <span className="text-xs text-gray-400">
+                                        {acordeonesAbiertos.precio ? '▲' : '▼'}
+                                    </span>
+                                </button>
+
+                                <AnimatePresence initial={false}>
+                                    {acordeonesAbiertos.precio && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="overflow-hidden pt-2 space-y-4"
+                                        >
+                                            {/* Valores Min y Max */}
+                                            <div className="flex items-center justify-between gap-2 text-xs font-semibold text-gray-700">
+                                                <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-lg">
+                                                    <span className="text-gray-400 font-normal">Min:</span>
+                                                    <span>S/ {rangoPrecio[0]}</span>
+                                                </div>
+                                                <span className="text-gray-400 font-bold">-</span>
+                                                <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-lg">
+                                                    <span className="text-gray-400 font-normal">Max:</span>
+                                                    <span>S/ {rangoPrecio[1]}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Slider de Doble Rango */}
+                                            <div className="relative w-full h-6 flex items-center select-none">
+                                                {/* Barra de Fondo */}
+                                                <div className="absolute inset-x-0 h-2 rounded-full bg-gray-200 pointer-events-none" />
+
+                                                {/* Tramo Seleccionado */}
+                                                <div
+                                                    className="absolute h-2 rounded-full pointer-events-none transition-all duration-75"
+                                                    style={{
+                                                        left: `${minPercent}%`,
+                                                        right: `${100 - maxPercent}%`,
+                                                        backgroundColor: 'var(--color-primario)',
+                                                    }}
+                                                />
+
+                                                {/* Range Input Min */}
+                                                <input
+                                                    type="range"
+                                                    min={minPrecioAbsoluto}
+                                                    max={maxPrecioAbsoluto}
+                                                    step={1}
+                                                    value={rangoPrecio[0]}
+                                                    onChange={(e) => {
+                                                        const val = Math.min(Number(e.target.value), rangoPrecio[1] - 1);
+                                                        setRangoPrecio([val, rangoPrecio[1]]);
+                                                    }}
+                                                    className="absolute inset-0 w-full h-2 appearance-none bg-transparent pointer-events-none z-20 cursor-pointer
+                                                    [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--color-primario)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:appearance-none
+                                                    [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[var(--color-primario)] [&::-moz-range-thumb]:shadow-md"
+                                                />
+
+                                                {/* Range Input Max */}
+                                                <input
+                                                    type="range"
+                                                    min={minPrecioAbsoluto}
+                                                    max={maxPrecioAbsoluto}
+                                                    step={1}
+                                                    value={rangoPrecio[1]}
+                                                    onChange={(e) => {
+                                                        const val = Math.max(Number(e.target.value), rangoPrecio[0] + 1);
+                                                        setRangoPrecio([rangoPrecio[0], val]);
+                                                    }}
+                                                    className="absolute inset-0 w-full h-2 appearance-none bg-transparent pointer-events-none z-30 cursor-pointer
+                                                    [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--color-primario)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:appearance-none
+                                                    [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-4 [&::-moz-range-thumb]:h-4 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[var(--color-primario)] [&::-moz-range-thumb]:shadow-md"
+                                                />
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
                             {/* 1. GRUPO CATEGORÍAS CON DESPLEGABLES ANIDADOS */}
                             {categoriasArbol.length > 0 && (
                                 <div className="border-b border-gray-100 pb-4">
