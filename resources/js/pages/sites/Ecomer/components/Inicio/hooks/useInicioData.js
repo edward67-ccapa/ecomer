@@ -51,7 +51,7 @@ export function useInicioData(
     const banerpie = findSeccion('banerpie') || findSeccion('baner_pie') || findSeccion('banerPie') || null;
     const banerproductos = findSeccion('banerproductos') || findSeccion('baner_productos') || findSeccion('banerProductos') || findSeccion('banerproducto') || findSeccion('banerProducto') || null;
     const contancto = findSeccion('contacto') || null;
-
+    console.log(inicio)
     return {
         inicio,
         hero: inicio,

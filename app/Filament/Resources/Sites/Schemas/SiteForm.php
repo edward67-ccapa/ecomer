@@ -10,7 +10,9 @@ use App\Models\User;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\MultiSelect;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
@@ -103,6 +105,44 @@ class SiteForm
                                                 ->downloadable()
                                                 ->columnSpanFull(),
                                         ]),
+
+                                        Section::make('Datos de Contacto Globales')
+                                            ->icon('heroicon-o-phone')
+                                            ->description('Define números de WhatsApp, correos electrónicos y horarios globales del sitio.')
+                                            ->collapsible()
+                                            ->schema([
+                                                Repeater::make('estilos.acciones_nav')
+                                                    ->label('WhatsApp, Correos y Contacto')
+                                                    ->schema([
+                                                        Grid::make(3)->schema([
+                                                            Select::make('icono')
+                                                                ->label('Tipo / Ícono')
+                                                                ->options([
+                                                                    'FaWhatsapp' => 'WhatsApp',
+                                                                    'FaEnvelope' => 'Correo Electrónico',
+                                                                    'FaBriefcase' => 'Correo de Trabajo / Maletín',
+                                                                    'FaPhone' => 'Teléfono Fijo / Móvil',
+                                                                    'FaClock' => 'Horario de Atención',
+                                                                    'FaLocationDot' => 'Ubicación / Dirección',
+                                                                ])
+                                                                ->default('FaWhatsapp')
+                                                                ->required(),
+                                                            TextInput::make('Label')
+                                                                ->label('Etiqueta')
+                                                                ->placeholder('Ej. WhatsApp Ventas, Correo, Horario')
+                                                                ->required(),
+                                                            Textarea::make('texto')
+                                                                ->label('Número(s) o Correo(s)')
+                                                                ->placeholder("Ej. 987654321 o correo@gmail.com\n(Soporta múltiples líneas)")
+                                                                ->rows(2)
+                                                                ->required(),
+                                                        ]),
+                                                    ])
+                                                    ->collapsible()
+                                                    ->itemLabel(fn (array $state): ?string => ($state['Label'] ?? '') ? ($state['Label'] . ': ' . ($state['texto'] ?? '')) : null)
+                                                    ->columnSpanFull(),
+                                            ])
+                                            ->columnSpanFull(),
 
                                         Section::make('Tiendas')
                                             ->icon('heroicon-o-shopping-bag')

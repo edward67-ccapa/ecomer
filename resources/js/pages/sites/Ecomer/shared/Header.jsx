@@ -134,7 +134,13 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
     };
 
     const mensajeNav = getNavContent('mensaje');
-    const accionesNav = getNavContent('accion') || getNavContent('acciones') || getNavContent('accion_nav') || [];
+    const rawNavActions = getNavContent('accion') || getNavContent('acciones') || getNavContent('accion_nav');
+    const cmsNavActions = Array.isArray(rawNavActions) ? rawNavActions : [];
+    const globalActions = Array.isArray(estilos?.acciones_nav) ? estilos.acciones_nav : [];
+    const combinedNavActions = [...globalActions, ...cmsNavActions];
+    const accionesNav = combinedNavActions.filter((item, index, self) =>
+        index === self.findIndex((t) => (t.texto || t.Texto) === (item.texto || item.Texto) && (t.icono || t.icon) === (item.icono || item.icon))
+    );
     const logoNav = getNavContent('logo') || getNavContent('logo_nav') || site?.imagen;
 
     // --- NAVEGACIÓN DINÁMICA Y RENOMBRADO PERSONALIZADO EN FRONTEND ---
@@ -290,9 +296,8 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                 {mensajeNav && (
                     <div
                         suppressHydrationWarning
-                        className={`w-full text-white text-xs py-1.5 px-4 text-center font-medium tracking-wide transition-all duration-300 ${
-                            isTransparentMode ? 'bg-[var(--color-primario)]/90 backdrop-blur-xs border-b border-white/10' : ''
-                        }`}
+                        className={`w-full text-white text-xs py-1.5 px-4 text-center font-medium tracking-wide transition-all duration-300 ${isTransparentMode ? 'bg-[var(--color-primario)]/90 backdrop-blur-xs border-b border-white/10' : ''
+                            }`}
                         style={{
                             backgroundColor: isTransparentMode ? undefined : 'var(--color-primario)',
                             fontFamily: 'var(--tipografia-texto)',
@@ -311,11 +316,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                 {Array.isArray(accionesNav) && accionesNav.length > 0 && (
                     <div
                         suppressHydrationWarning
-                        className={`w-full border-b text-xs py-1.5 px-4 transition-all duration-300 ${
-                            isTransparentMode
-                                ? 'border-white/10 bg-transparent text-white/90'
-                                : 'border-gray-200/60 bg-white/95 backdrop-blur-md text-gray-700'
-                        }`}
+                        className={`w-full border-b text-xs py-1.5 px-4 transition-all duration-300 ${isTransparentMode
+                            ? 'border-white/10 bg-transparent text-white/90'
+                            : 'border-gray-200/60 bg-white/95 backdrop-blur-md text-gray-700'
+                            }`}
                         style={{
                             fontFamily: 'var(--tipografia-texto)',
                         }}
@@ -323,20 +327,20 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                         <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-center sm:justify-end gap-x-4 sm:gap-x-6 gap-y-1">
                             {accionesNav.map((item, idx) => {
                                 const iconName = item.icono || item.icon;
-                                const textVal = item.texto || '';
-                                const isLink = textVal.includes('.com') || textVal.startsWith('http');
+                                const rawTextVal = item.texto || '';
+                                const textVal = typeof rawTextVal === 'string' ? rawTextVal.replace(/\s*\r?\n\s*/g, ' / ') : rawTextVal;
+                                const isLink = typeof rawTextVal === 'string' && (rawTextVal.includes('.com') || rawTextVal.startsWith('http'));
                                 const isPhone = iconName === 'FaWhatsapp' || iconName === 'FaPhone';
-                                const cleanDigits = textVal.replace(/\D/g, '');
+                                const cleanDigits = typeof rawTextVal === 'string' ? rawTextVal.replace(/\D/g, '') : '';
                                 const href = isLink
-                                    ? (textVal.startsWith('http') ? textVal : `https://${textVal}`)
+                                    ? (rawTextVal.startsWith('http') ? rawTextVal : `https://${rawTextVal}`)
                                     : (isPhone ? (iconName === 'FaWhatsapp' ? `https://wa.me/${cleanDigits}` : `tel:${cleanDigits}`) : null);
 
                                 const content = (
-                                    <div className={`group flex items-center gap-1.5 transition-colors ${
-                                        isTransparentMode
-                                            ? 'text-white/90 hover:text-white'
-                                            : 'text-gray-700 hover:text-gray-900'
-                                    }`}>
+                                    <div className={`group flex items-center gap-1.5 transition-colors ${isTransparentMode
+                                        ? 'text-white/90 hover:text-white'
+                                        : 'text-gray-700 hover:text-gray-900'
+                                        }`}>
                                         {iconName && (
                                             <DynamicIcon
                                                 name={iconName}
@@ -380,11 +384,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                         <button
                             type="button"
                             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                            className={`md:hidden p-2 rounded-xl transition cursor-pointer ${
-                                isTransparentMode
-                                    ? 'text-white hover:bg-white/20'
-                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                            }`}
+                            className={`md:hidden p-2 rounded-xl transition cursor-pointer ${isTransparentMode
+                                ? 'text-white hover:bg-white/20'
+                                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                }`}
                             title={mobileMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
                         >
                             {mobileMenuOpen ? (
@@ -419,13 +422,12 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                     ? (!seccionActiva || seccionActiva.slug?.toLowerCase() === 'inicio' || seccionActiva.slug?.toLowerCase() === 'hero')
                                     : (pageSlugTarget === seccionActiva?.slug?.toLowerCase() || (isProductos && seccionActiva?.slug?.toLowerCase() === 'productos') || (isServicios && seccionActiva?.slug?.toLowerCase() === 'servicios') || (isNosotros && (seccionActiva?.slug?.toLowerCase() === 'nosotros' || seccionActiva?.slug?.toLowerCase() === 'sobre-nosotros')) || (isContacto && (seccionActiva?.slug?.toLowerCase() === 'contacto' || seccionActiva?.slug?.toLowerCase() === 'contactos')));
 
-                                const linkClasses = `rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 ${
-                                    activa
-                                        ? 'text-white shadow-xs'
-                                        : isTransparentMode
-                                            ? 'text-white/90 hover:text-white hover:bg-white/20'
-                                            : 'text-gray-800 hover:text-white hover:bg-[var(--color-primario)]/60'
-                                }`;
+                                const linkClasses = `rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 ${activa
+                                    ? 'text-white shadow-xs'
+                                    : isTransparentMode
+                                        ? 'text-white/90 hover:text-white hover:bg-white/20'
+                                        : 'text-gray-800 hover:text-white hover:bg-[var(--color-primario)]/60'
+                                    }`;
                                 const activeStyle = activa ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {};
 
                                 if (isProductos) {
@@ -444,9 +446,8 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                 <span>{displayName}</span>
                                                 <DynamicIcon
                                                     name="FaChevronDown"
-                                                    className={`h-3 w-3 transition-transform duration-300 ${
-                                                        isMegaMenuOpen ? 'rotate-180 text-white' : 'opacity-70'
-                                                    }`}
+                                                    className={`h-3 w-3 transition-transform duration-300 ${isMegaMenuOpen ? 'rotate-180 text-white' : 'opacity-70'
+                                                        }`}
                                                 />
                                             </Link>
                                         </div>
@@ -499,12 +500,11 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                     width={180}
                                     height={48}
                                     decoding="async"
-                                    className="h-10 sm:h-12 w-auto max-h-12 object-contain transition-all duration-300"
+                                    className="h-10 sm:h-12 w-auto max-h-18 object-contain transition-all duration-300"
                                 />
                             ) : (
-                                <span className={`text-xl font-extrabold tracking-tight transition-colors duration-300 ${
-                                    isTransparentMode ? 'text-white drop-shadow-sm' : 'text-gray-900'
-                                }`}>
+                                <span className={`text-xl font-extrabold tracking-tight transition-colors duration-300 ${isTransparentMode ? 'text-white drop-shadow-sm' : 'text-gray-900'
+                                    }`}>
                                     {site?.nombre}
                                 </span>
                             )}
@@ -520,17 +520,15 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 placeholder="Buscar..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className={`w-36 lg:w-52 rounded-full py-1.5 pl-8 pr-3 text-xs outline-none transition duration-300 ${
-                                    isTransparentMode
-                                        ? 'border border-white/30 bg-white/20 backdrop-blur-md text-white placeholder-white/70 focus:border-white focus:bg-white/30 focus:ring-2 focus:ring-white/20'
-                                        : 'border border-gray-300/80 bg-white/90 text-gray-900 placeholder-gray-400 focus:border-[var(--color-primario)] focus:ring-2 focus:ring-[var(--color-primario)]/20 shadow-2xs'
-                                }`}
+                                className={`w-36 lg:w-52 rounded-full py-1.5 pl-8 pr-3 text-xs outline-none transition duration-300 ${isTransparentMode
+                                    ? 'border border-white/30 bg-white/20 backdrop-blur-md text-white placeholder-white/70 focus:border-white focus:bg-white/30 focus:ring-2 focus:ring-white/20'
+                                    : 'border border-gray-300/80 bg-white/90 text-gray-900 placeholder-gray-400 focus:border-[var(--color-primario)] focus:ring-2 focus:ring-[var(--color-primario)]/20 shadow-2xs'
+                                    }`}
                             />
                             <button
                                 type="submit"
-                                className={`absolute left-2.5 top-1/2 -translate-y-1/2 transition cursor-pointer ${
-                                    isTransparentMode ? 'text-white/80 hover:text-white' : 'text-gray-400 hover:text-[var(--color-primario)]'
-                                }`}
+                                className={`absolute left-2.5 top-1/2 -translate-y-1/2 transition cursor-pointer ${isTransparentMode ? 'text-white/80 hover:text-white' : 'text-gray-400 hover:text-[var(--color-primario)]'
+                                    }`}
                                 title="Buscar"
                             >
                                 <DynamicIcon name="FaMagnifyingGlass" className="h-3.5 w-3.5" />
@@ -541,11 +539,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                         <button
                             type="button"
                             onClick={() => setMobileSearchOpen(!mobileSearchOpen)}
-                            className={`md:hidden p-2 rounded-xl transition cursor-pointer ${
-                                isTransparentMode
-                                    ? 'text-white hover:bg-white/20'
-                                    : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                            }`}
+                            className={`md:hidden p-2 rounded-xl transition cursor-pointer ${isTransparentMode
+                                ? 'text-white hover:bg-white/20'
+                                : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
+                                }`}
                             title="Buscar productos"
                         >
                             <DynamicIcon name="FaMagnifyingGlass" className="h-4 w-4" />
@@ -556,18 +553,16 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                             <button
                                 type="button"
                                 onClick={openCart}
-                                className={`relative flex items-center justify-center rounded-xl p-2 transition cursor-pointer ${
-                                    isTransparentMode
-                                        ? 'border border-white/30 bg-white/20 backdrop-blur-md text-white hover:bg-white/30 shadow-sm'
-                                        : 'border border-gray-200/80 bg-white/90 text-gray-800 hover:bg-gray-100 hover:text-black shadow-2xs'
-                                }`}
+                                className={`relative flex items-center justify-center rounded-xl p-2 transition cursor-pointer ${isTransparentMode
+                                    ? 'border border-white/30 bg-white/20 backdrop-blur-md text-white hover:bg-white/30 shadow-sm'
+                                    : 'border border-gray-200/80 bg-white/90 text-gray-800 hover:bg-gray-100 hover:text-black shadow-2xs'
+                                    }`}
                                 title="Ver Carrito de Compras"
                             >
                                 <DynamicIcon
                                     name="FaCartShopping"
-                                    className={`h-5 w-5 transition-colors ${
-                                        isTransparentMode ? 'text-white' : 'text-[var(--color-primario)]'
-                                    }`}
+                                    className={`h-5 w-5 transition-colors ${isTransparentMode ? 'text-white' : 'text-[var(--color-primario)]'
+                                        }`}
                                 />
                                 {cartCount > 0 && (
                                     <span
@@ -607,15 +602,14 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                         href={getProductosUrl(null, null)}
                                         onClick={handleMegaMenuClick}
                                         onMouseEnter={() => setActiveHoverCategory(null)}
-                                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                                            activeHoverCategory === null
-                                                ? 'bg-[var(--color-primario)] text-white shadow-md'
-                                                : 'text-gray-700 hover:bg-gray-200/60 hover:text-gray-900'
-                                        }`}
+                                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${activeHoverCategory === null
+                                            ? 'bg-[var(--color-primario)] text-white shadow-md'
+                                            : 'text-gray-700 hover:bg-gray-200/60 hover:text-gray-900'
+                                            }`}
                                     >
                                         <div className="flex items-center gap-2.5">
                                             <DynamicIcon name="FaGrip" className="h-4 w-4" />
-                                            <span>Ver Todo el Catálogo</span>
+                                            <span>Ver Todsso el Catálogo</span>
                                         </div>
                                         <DynamicIcon name="FaChevronRight" className="h-3 w-3 opacity-70" />
                                     </Link>
@@ -631,16 +625,14 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                     handleMegaMenuClick();
                                                     router.visit(getProductosUrl(cat.nombre, null));
                                                 }}
-                                                className={`group/cat w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 ${
-                                                    isSelected
-                                                        ? 'bg-white text-[var(--color-primario)] shadow-sm font-bold border border-gray-200/80 translate-x-1'
-                                                        : 'text-gray-700 hover:bg-gray-200/50 hover:text-gray-900'
-                                                }`}
+                                                className={`group/cat w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 ${isSelected
+                                                    ? 'bg-white text-[var(--color-primario)] shadow-sm font-bold border border-gray-200/80 translate-x-1'
+                                                    : 'text-gray-700 hover:bg-gray-200/50 hover:text-gray-900'
+                                                    }`}
                                             >
                                                 <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                                                    <span className={`p-1.5 rounded-lg transition-colors ${
-                                                        isSelected ? 'bg-[var(--color-primario)]/10 text-[var(--color-primario)]' : 'bg-gray-200/60 text-gray-500 group-hover/cat:text-gray-800'
-                                                    }`}>
+                                                    <span className={`p-1.5 rounded-lg transition-colors ${isSelected ? 'bg-[var(--color-primario)]/10 text-[var(--color-primario)]' : 'bg-gray-200/60 text-gray-500 group-hover/cat:text-gray-800'
+                                                        }`}>
                                                         <DynamicIcon name={cat.icono || getCategoryIcon(cat.nombre)} className="h-3.5 w-3.5 shrink-0" />
                                                     </span>
                                                     <span className="truncate">{cat.nombre}</span>
@@ -879,11 +871,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 ? (!seccionActiva || seccionActiva.slug?.toLowerCase() === 'inicio' || seccionActiva.slug?.toLowerCase() === 'hero')
                                 : (pageSlugTarget === seccionActiva?.slug?.toLowerCase() || (isProductos && seccionActiva?.slug?.toLowerCase() === 'productos') || (isServicios && seccionActiva?.slug?.toLowerCase() === 'servicios') || (isNosotros && (seccionActiva?.slug?.toLowerCase() === 'nosotros' || seccionActiva?.slug?.toLowerCase() === 'sobre-nosotros')) || (isContacto && (seccionActiva?.slug?.toLowerCase() === 'contacto' || seccionActiva?.slug?.toLowerCase() === 'contactos')));
 
-                            const linkClasses = `block rounded-lg px-3 py-2.5 text-sm font-semibold transition ${
-                                activa
-                                    ? 'text-white shadow-xs'
-                                    : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
-                            }`;
+                            const linkClasses = `block rounded-lg px-3 py-2.5 text-sm font-semibold transition ${activa
+                                ? 'text-white shadow-xs'
+                                : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
+                                }`;
                             const activeStyle = activa ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {};
 
                             if (isProductos && categoriasArbol.length > 0) {

@@ -21,10 +21,12 @@ export default function Footer({ site, dominio, siteSlug, secciones, seccionActi
     const direccion = activeContacto?.contenido?.find((c) => c.label === 'direccion')?.valor?.[0]?.texto
         || 'Av. Gran Chimú N°680, San Juan de Lurigancho';
 
-    const rawWa = waNavTexto || activeContacto?.contenido?.find((c) => c.label === 'whatsap' || c.label === 'whatsapp')?.enlace || '916628409';
-    const whatsappNum = rawWa.startsWith('http')
-        ? rawWa
-        : `https://wa.me/${rawWa.replace(/\D/g, '').length === 9 ? '51' + rawWa.replace(/\D/g, '') : rawWa.replace(/\D/g, '')}`;
+    const rawWa = waNavTexto || activeContacto?.contenido?.find((c) => c.label === 'whatsap' || c.label === 'whatsapp')?.enlace || null;
+    const whatsappNum = rawWa
+        ? (rawWa.startsWith('http')
+            ? rawWa
+            : `https://wa.me/${rawWa.replace(/\D/g, '').length === 9 ? '51' + rawWa.replace(/\D/g, '') : rawWa.replace(/\D/g, '')}`)
+        : null;
 
     const PAGE_SECTIONS = ['inicio', 'productos'];
     const isInicioPage = !seccionActiva || seccionActiva.slug?.toLowerCase() === 'inicio';

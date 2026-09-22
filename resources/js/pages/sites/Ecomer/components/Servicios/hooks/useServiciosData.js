@@ -115,17 +115,29 @@ export function useServiciosData(seccion, seccionesData, serviciosSitio = []) {
         enlace: videoGroupItem.enlace || videoDataObj.enlace || '',
         porcentajes: Array.isArray(videoDataObj.Porcentaje || videoDataObj.porcentaje)
             ? (videoDataObj.Porcentaje || videoDataObj.porcentaje).map((p) => ({
-                  titulo: p.Titulo || p.titulo || '',
-                  porcentaje: p.Porcentaje || p.porcentaje || '0',
-              }))
+                titulo: p.Titulo || p.titulo || '',
+                porcentaje: p.Porcentaje || p.porcentaje || '0',
+            }))
             : [],
         info: Array.isArray(videoDataObj.Info || videoDataObj.info)
             ? (videoDataObj.Info || videoDataObj.info).map((i) => ({
-                  icono: i.Icono || i.icono || '',
-                  titulo: i.Titulo || i.titulo || '',
-              }))
+                icono: i.Icono || i.icono || '',
+                titulo: i.Titulo || i.titulo || '',
+            }))
             : [],
         raw: videoDataObj,
+    };
+
+    // 5. SERVICIOS DETALLADOS BLOCK
+    const serviciosDetalladosGroup = getGroupData('servicios_detallados') || getGroupData('serviciosdetallados') || getGroupData('servicios_detallado');
+    const serviciosDetalladosDataObj = serviciosDetalladosGroup.data || {};
+
+    const serviciosDetalladosBlock = {
+        servicioName: serviciosDetalladosDataObj.ServicioName || serviciosDetalladosDataObj.servicioName || serviciosDetalladosDataObj.servicioname || 'postres',
+        titulo: serviciosDetalladosDataObj.Titulo || serviciosDetalladosDataObj.titulo || '',
+        descripcion: serviciosDetalladosDataObj.Descripcion || serviciosDetalladosDataObj.descripcion || '',
+        items: Array.isArray(serviciosDetalladosDataObj.Items || serviciosDetalladosDataObj.items) ? (serviciosDetalladosDataObj.Items || serviciosDetalladosDataObj.items) : [],
+        raw: serviciosDetalladosDataObj,
     };
 
     return {
@@ -134,6 +146,7 @@ export function useServiciosData(seccion, seccionesData, serviciosSitio = []) {
         serviciosBlock,
         procesosBlock,
         videoBlock,
+        serviciosDetalladosBlock,
         serviciosGroup: serviciosDataObj,
         procesosGroup: procesosDataObj,
         videoGroup: videoDataObj,

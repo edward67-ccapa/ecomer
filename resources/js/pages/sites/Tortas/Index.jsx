@@ -105,7 +105,7 @@ export default function Tortas({
                     seccionesData={seccionesData}
                 />
 
-                <FloatingWhatsApp site={site} dominio={dominio} siteSlug={siteSlug} seccionesData={seccionesData} />
+                <FloatingWhatsApp site={site} dominio={dominio} siteSlug={siteSlug} seccionesData={seccionesData} estilos={estilos} />
             </div>
         </>
     );

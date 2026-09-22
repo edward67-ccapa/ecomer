@@ -139,6 +139,44 @@ class PlantillaForm
                                                             ->preload(),
                                                     ])
                                                     ->columnSpanFull(),
+
+                                                Section::make('Datos de Contacto Globales')
+                                                    ->icon('heroicon-o-phone')
+                                                    ->description('Define números de WhatsApp, correos electrónicos y horarios por defecto para la plantilla.')
+                                                    ->collapsible()
+                                                    ->schema([
+                                                        Repeater::make('estilos.acciones_nav')
+                                                            ->label('WhatsApp, Correos y Contacto')
+                                                            ->schema([
+                                                                Grid::make(3)->schema([
+                                                                    Select::make('icono')
+                                                                        ->label('Tipo / Ícono')
+                                                                        ->options([
+                                                                            'FaWhatsapp' => 'WhatsApp',
+                                                                            'FaEnvelope' => 'Correo Electrónico',
+                                                                            'FaBriefcase' => 'Correo de Trabajo / Maletín',
+                                                                            'FaPhone' => 'Teléfono Fijo / Móvil',
+                                                                            'FaClock' => 'Horario de Atención',
+                                                                            'FaLocationDot' => 'Ubicación / Dirección',
+                                                                        ])
+                                                                        ->default('FaWhatsapp')
+                                                                        ->required(),
+                                                                    TextInput::make('Label')
+                                                                        ->label('Etiqueta')
+                                                                        ->placeholder('Ej. WhatsApp Ventas, Correo, Horario')
+                                                                        ->required(),
+                                                                    Textarea::make('texto')
+                                                                        ->label('Número(s) o Correo(s)')
+                                                                        ->placeholder("Ej. 987654321 o correo@gmail.com\n(Soporta múltiples líneas)")
+                                                                        ->rows(2)
+                                                                        ->required(),
+                                                                ]),
+                                                            ])
+                                                            ->collapsible()
+                                                            ->itemLabel(fn (array $state): ?string => ($state['Label'] ?? '') ? ($state['Label'] . ': ' . ($state['texto'] ?? '')) : null)
+                                                            ->columnSpanFull(),
+                                                    ])
+                                                    ->columnSpanFull(),
                                             ]),
 
                                         Tab::make('Secciones & Preguntas')

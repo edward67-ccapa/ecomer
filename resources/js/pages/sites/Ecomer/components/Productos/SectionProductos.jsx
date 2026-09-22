@@ -271,8 +271,6 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
         });
     }, [productos, busqueda, filtrosSeleccionados, rangoPrecio]);
 
-    const whatsappUrl = 'https://wa.me/51999999999';
-
     if (loading || cargandoPantalla) {
         return (
             <div className="fixed inset-0 z-50 flex items-center justify-center bg-white">

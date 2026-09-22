@@ -171,6 +171,7 @@ export default function Ecomer({
                         productosRelacionados={productos}
                         site={site}
                         seccionesData={seccionesData}
+                        estilos={estilos}
                     />
                 ) : (
                     <ActiveComponent
@@ -183,6 +184,7 @@ export default function Ecomer({
                         productosDestacados={productosDestacados}
                         serviciosSitio={serviciosSitio}
                         styles={styles}
+                        estilos={estilos}
                         onSeleccionarProducto={handleSeleccionarProducto}
                     />
                 )}
@@ -194,9 +196,10 @@ export default function Ecomer({
                     secciones={secciones}
                     seccionActiva={seccionActiva}
                     seccionesData={seccionesData}
+                    estilos={estilos}
                 />
 
-                <FloatingWhatsApp site={site} dominio={dominio} siteSlug={siteSlug} seccionesData={seccionesData} />
+                <FloatingWhatsApp site={site} dominio={dominio} siteSlug={siteSlug} seccionesData={seccionesData} estilos={estilos} />
             </div>
         </>
     );

@@ -13,6 +13,7 @@ export default function SectionProductoDetalle({
     productosRelacionados = [],
     site = {},
     seccionesData = {},
+    estilos = {},
 }) {
     const addItem = useCartStore((state) => state.addItem);
     const cartItems = useCartStore((state) => state.items);
@@ -116,8 +117,30 @@ export default function SectionProductoDetalle({
         setTimeout(() => setAgregadoAnim(false), 2000);
     };
 
+    const getWhatsAppNumber = () => {
+        const rawCmsNavActions = seccionesData?.nav?.contenido?.find((c) => c.label === 'accion_nav')?.valor;
+        const cmsNavActions = Array.isArray(rawCmsNavActions) ? rawCmsNavActions : [];
+        const globalActions = Array.isArray(estilos?.acciones_nav) ? estilos.acciones_nav : [];
+        const combinedNavActions = [...globalActions, ...cmsNavActions];
+        const accionesNav = combinedNavActions.filter((item, index, self) =>
+            index === self.findIndex((t) => (t.texto || t.Texto) === (item.texto || item.Texto) && (t.icono || t.icon) === (item.icono || item.icon))
+        );
+
+        const waItem = accionesNav.find((a) => {
+            const ico = (a.icono || a.icon || '').toLowerCase();
+            const txt = (a.texto || a.Texto || '').toLowerCase();
+            return ico.includes('whatsapp') || ico.includes('phone') || txt.includes('wa.me');
+        });
+
+        const rawWa = waItem?.texto || waItem?.Texto || '';
+        const firstLineWa = String(rawWa).split(/\r?\n/).map((s) => s.trim()).filter(Boolean)[0] || '';
+        const cleanDigits = firstLineWa.replace(/\D/g, '');
+        return cleanDigits ? (cleanDigits.length === 9 ? '51' + cleanDigits : cleanDigits) : '';
+    };
+
     const handleWhatsApp = () => {
-        const tel = '51999999999';
+        const tel = getWhatsAppNumber();
+        if (!tel) return;
         const varTexto = varianteSeleccionada ? ` - Variante: ${varianteSeleccionada.nombre}` : '';
         const msg = `¡Hola! Me interesa comprar *${producto.nombre}${varTexto}* (Cantidad: ${cantidad}) por ${simboloMoneda} ${(precioActual * cantidad).toFixed(2)}. ¿Tienen disponibilidad?`;
         window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`, '_blank');

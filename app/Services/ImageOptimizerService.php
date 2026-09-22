@@ -83,17 +83,29 @@ class ImageOptimizerService
 
                 for ($i = 0; $i < 6; $i++) {
                     $canvas = imagecreatetruecolor($w, $h);
-                    $bg = imagecolorallocate($canvas, 255, 255, 255);
-                    imagefill($canvas, 0, 0, $bg);
+                    if (in_array($ext, ["png", "webp"], true)) {
+                        imagealphablending($canvas, false);
+                        imagesavealpha($canvas, true);
+                        $transparent = imagecolorallocatealpha($canvas, 255, 255, 255, 127);
+                        imagefilledrectangle($canvas, 0, 0, $w, $h, $transparent);
+                    } else {
+                        $bg = imagecolorallocate($canvas, 255, 255, 255);
+                        imagefill($canvas, 0, 0, $bg);
+                    }
                     imagecopyresampled($canvas, $srcImage, 0, 0, 0, 0, $w, $h, $origWidth, $origHeight);
 
-                    $tmp = sys_get_temp_dir() . "/o_" . md5($filePath . microtime(true)) . "." . ($ext === "webp" ? "webp" : "jpg");
+                    $targetExt = in_array($ext, ["png", "webp"], true) ? $ext : "jpg";
+                    $tmp = sys_get_temp_dir() . "/o_" . md5($filePath . microtime(true)) . "." . $targetExt;
 
-                    if ($ext === "webp" && file_exists($cwebpBin)) {
-                        $tj = sys_get_temp_dir() . "/j_" . md5($filePath) . ".jpg";
-                        @imagejpeg($canvas, $tj, 90);
-                        @exec(escapeshellarg($cwebpBin) . " -q " . (int)$quality . " -resize " . (int)$w . " 0 " . escapeshellarg($tj) . " -o " . escapeshellarg($tmp) . " 2>&1");
-                        if (file_exists($tj)) @unlink($tj);
+                    if ($targetExt === "webp" && function_exists("imagewebp")) {
+                        @imagewebp($canvas, $tmp, $quality);
+                    } else if ($targetExt === "png" && function_exists("imagepng")) {
+                        @imagepng($canvas, $tmp, (int) max(0, min(9, round((100 - $quality) / 10))));
+                    } else if ($ext === "webp" && file_exists($cwebpBin)) {
+                        $tp = sys_get_temp_dir() . "/p_" . md5($filePath) . ".png";
+                        @imagepng($canvas, $tp);
+                        @exec(escapeshellarg($cwebpBin) . " -q " . (int)$quality . " -resize " . (int)$w . " 0 " . escapeshellarg($tp) . " -o " . escapeshellarg($tmp) . " 2>&1");
+                        if (file_exists($tp)) @unlink($tp);
                     } else {
                         @imagejpeg($canvas, $tmp, $quality);
                     }
@@ -234,9 +246,17 @@ class ImageOptimizerService
         for ($attempt = 0; $attempt < 6; $attempt++) {
             $canvas = imagecreatetruecolor($currentWidth, $currentHeight);
 
-            // Fondo blanco para imágenes convertidas a JPG
-            $bg = imagecolorallocate($canvas, 255, 255, 255);
-            imagefill($canvas, 0, 0, $bg);
+            if (in_array($ext, ['png', 'webp'], true)) {
+                // Preservar la transparencia transparente para PNG y WebP
+                imagealphablending($canvas, false);
+                imagesavealpha($canvas, true);
+                $transparent = imagecolorallocatealpha($canvas, 255, 255, 255, 127);
+                imagefilledrectangle($canvas, 0, 0, $currentWidth, $currentHeight, $transparent);
+            } else {
+                // Fondo blanco únicamente para imágenes JPG/JPEG
+                $bg = imagecolorallocate($canvas, 255, 255, 255);
+                imagefill($canvas, 0, 0, $bg);
+            }
 
             imagecopyresampled(
                 $canvas,
@@ -248,15 +268,20 @@ class ImageOptimizerService
                 $origHeight
             );
 
-            $tmpFile = sys_get_temp_dir() . '/opt_' . md5($filePath . microtime(true)) . '.' . ($ext === 'webp' ? 'webp' : 'jpg');
+            $targetExt = in_array($ext, ['png', 'webp'], true) ? $ext : 'jpg';
+            $tmpFile = sys_get_temp_dir() . '/opt_' . md5($filePath . microtime(true)) . '.' . $targetExt;
 
-            if ($ext === 'webp' && function_exists('imagewebp')) {
+            if ($targetExt === 'webp' && function_exists('imagewebp')) {
                 @imagewebp($canvas, $tmpFile, $quality);
+            } elseif ($targetExt === 'png' && function_exists('imagepng')) {
+                // imagepng usa calidad de 0 (sin compresión) a 9 (máxima compresión)
+                $pngQuality = (int) max(0, min(9, round((100 - $quality) / 10)));
+                @imagepng($canvas, $tmpFile, $pngQuality);
             } elseif ($ext === 'webp' && $cwebpBin) {
-                $tmpJpg = sys_get_temp_dir() . '/tmp_cwebp_' . md5($filePath) . '.jpg';
-                @imagejpeg($canvas, $tmpJpg, 90);
-                @exec(escapeshellarg($cwebpBin) . ' -q ' . (int) $quality . ' -resize ' . (int) $currentWidth . ' 0 ' . escapeshellarg($tmpJpg) . ' -o ' . escapeshellarg($tmpFile) . ' 2>&1');
-                if (file_exists($tmpJpg)) @unlink($tmpJpg);
+                $tmpPng = sys_get_temp_dir() . '/tmp_cwebp_' . md5($filePath) . '.png';
+                @imagepng($canvas, $tmpPng);
+                @exec(escapeshellarg($cwebpBin) . ' -q ' . (int) $quality . ' -resize ' . (int) $currentWidth . ' 0 ' . escapeshellarg($tmpPng) . ' -o ' . escapeshellarg($tmpFile) . ' 2>&1');
+                if (file_exists($tmpPng)) @unlink($tmpPng);
             } else {
                 @imagejpeg($canvas, $tmpFile, $quality);
             }

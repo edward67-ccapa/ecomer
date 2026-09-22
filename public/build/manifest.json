@@ -16,8 +16,8 @@
       "_vendor-framer-motion-C1JIXETN.js"
     ]
   },
-  "_CartOffcanvas-CuHTrmyI.js": {
-    "file": "assets/CartOffcanvas-CuHTrmyI.js",
+  "_CartOffcanvas-DpfGhKdF.js": {
+    "file": "assets/CartOffcanvas-DpfGhKdF.js",
     "name": "CartOffcanvas",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
@@ -64,14 +64,14 @@
       "_vendor-react-icons-B2FuCa6A.js"
     ]
   },
-  "_ElegirnosSection-DMF1ZZHx.js": {
-    "file": "assets/ElegirnosSection-DMF1ZZHx.js",
+  "_ElegirnosSection-6u8MWT6U.js": {
+    "file": "assets/ElegirnosSection-6u8MWT6U.js",
     "name": "ElegirnosSection",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
       "_vendor-framer-motion-C1JIXETN.js",
       "_DynamicIcon-9-N_SdjM.js",
-      "_vendor-swiper-7ec0ES1S.js"
+      "_vendor-swiper-D5Wh1uOI.js"
     ]
   },
   "_GaleriaSection-c-HkhU03.js": {
@@ -80,15 +80,6 @@
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
       "_vendor-framer-motion-C1JIXETN.js"
-    ]
-  },
-  "_HeroSection-BmfvBEqw.js": {
-    "file": "assets/HeroSection-BmfvBEqw.js",
-    "name": "HeroSection",
-    "imports": [
-      "_rolldown-runtime-hePW80VL.js",
-      "_vendor-framer-motion-C1JIXETN.js",
-      "_DynamicIcon-9-N_SdjM.js"
     ]
   },
   "_HeroSection-CzkfBe6w.js": {
@@ -108,6 +99,16 @@
       "_DynamicIcon-9-N_SdjM.js"
     ]
   },
+  "_HeroSection-qyYSFxPM.js": {
+    "file": "assets/HeroSection-qyYSFxPM.js",
+    "name": "HeroSection",
+    "imports": [
+      "_rolldown-runtime-hePW80VL.js",
+      "_vendor-framer-motion-C1JIXETN.js",
+      "_DynamicIcon-9-N_SdjM.js",
+      "_vendor-swiper-D5Wh1uOI.js"
+    ]
+  },
   "_HistoriaSection-zTBnlj1O.js": {
     "file": "assets/HistoriaSection-zTBnlj1O.js",
     "name": "HistoriaSection",
@@ -117,15 +118,15 @@
       "_DynamicIcon-9-N_SdjM.js"
     ]
   },
-  "_MarcasSection-D986mlMA.js": {
-    "file": "assets/MarcasSection-D986mlMA.js",
+  "_MarcasSection-EucXrObd.js": {
+    "file": "assets/MarcasSection-EucXrObd.js",
     "name": "MarcasSection",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
       "_vendor-framer-motion-C1JIXETN.js",
       "_DynamicIcon-9-N_SdjM.js",
       "_useCartStore-DfqRC0U3.js",
-      "_vendor-swiper-7ec0ES1S.js"
+      "_vendor-swiper-D5Wh1uOI.js"
     ]
   },
   "_MisionVisionSection-CJPUiy5X.js": {
@@ -174,8 +175,8 @@
       "_DynamicIcon-9-N_SdjM.js"
     ]
   },
-  "_ProductosDestacadosSection-CNiyaEaw.js": {
-    "file": "assets/ProductosDestacadosSection-CNiyaEaw.js",
+  "_ProductosDestacadosSection-1KHFfrTA.js": {
+    "file": "assets/ProductosDestacadosSection-1KHFfrTA.js",
     "name": "ProductosDestacadosSection",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
@@ -183,11 +184,11 @@
       "_vendor-framer-motion-C1JIXETN.js",
       "_DynamicIcon-9-N_SdjM.js",
       "_useCartStore-DfqRC0U3.js",
-      "_vendor-swiper-7ec0ES1S.js"
+      "_vendor-swiper-D5Wh1uOI.js"
     ]
   },
-  "_ProductosDestacadosSection-G5Oi8SwS.js": {
-    "file": "assets/ProductosDestacadosSection-G5Oi8SwS.js",
+  "_ProductosDestacadosSection-BePioKn8.js": {
+    "file": "assets/ProductosDestacadosSection-BePioKn8.js",
     "name": "ProductosDestacadosSection",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
@@ -195,7 +196,15 @@
       "_vendor-framer-motion-C1JIXETN.js",
       "_DynamicIcon-9-N_SdjM.js",
       "_useCartStore-DfqRC0U3.js",
-      "_vendor-swiper-7ec0ES1S.js"
+      "_vendor-swiper-D5Wh1uOI.js"
+    ]
+  },
+  "_ServiciosDetalladosGroup-BSfPyB10.js": {
+    "file": "assets/ServiciosDetalladosGroup-BSfPyB10.js",
+    "name": "ServiciosDetalladosGroup",
+    "imports": [
+      "_rolldown-runtime-hePW80VL.js",
+      "_vendor-framer-motion-C1JIXETN.js"
     ]
   },
   "_ServiciosGroup-CYDnKUNo.js": {
@@ -306,23 +315,23 @@
       "_vendor-framer-motion-C1JIXETN.js"
     ]
   },
-  "_vendor-swiper-7ec0ES1S.js": {
-    "file": "assets/vendor-swiper-7ec0ES1S.js",
+  "_vendor-swiper-D5Wh1uOI.js": {
+    "file": "assets/vendor-swiper-D5Wh1uOI.js",
     "name": "vendor-swiper",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
       "_vendor-framer-motion-C1JIXETN.js"
     ],
     "css": [
-      "assets/vendor-swiper-CeYfhhVD.css"
+      "assets/vendor-swiper-DBDkIWrS.css"
     ]
   },
-  "_vendor-swiper-CeYfhhVD.css": {
-    "file": "assets/vendor-swiper-CeYfhhVD.css",
-    "src": "_vendor-swiper-CeYfhhVD.css"
+  "_vendor-swiper-DBDkIWrS.css": {
+    "file": "assets/vendor-swiper-DBDkIWrS.css",
+    "src": "_vendor-swiper-DBDkIWrS.css"
   },
   "resources/css/app.css": {
-    "file": "assets/app-CVzpM4E_.css",
+    "file": "assets/app-DVJ2Ih_k.css",
     "name": "app",
     "names": [
       "app.css"
@@ -340,7 +349,7 @@
     "isEntry": true
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-JrkrdlJm.js",
+    "file": "assets/app-Bn_lHi03.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -363,14 +372,14 @@
       "_BanerPieSection-D5bCNXax.js",
       "_CategoriaSection-nbQ1Aikx.js",
       "_GaleriaSection-c-HkhU03.js",
-      "_HeroSection-BmfvBEqw.js",
-      "_MarcasSection-D986mlMA.js",
+      "_HeroSection-qyYSFxPM.js",
+      "_MarcasSection-EucXrObd.js",
       "_OfertasSection-BSa1NdF6.js",
-      "_ProductosDestacadosSection-CNiyaEaw.js",
+      "_ProductosDestacadosSection-BePioKn8.js",
       "_TikTokSection-T2zXCebo.js",
       "resources/js/pages/sites/Ecomer/components/Nosotros/SectionNosotros.jsx",
       "_AccionSection-BD0AB_sh.js",
-      "_ElegirnosSection-DMF1ZZHx.js",
+      "_ElegirnosSection-6u8MWT6U.js",
       "_HistoriaSection-zTBnlj1O.js",
       "_MisionVisionSection-CJPUiy5X.js",
       "_PortadaSection-CmdAf3xY.js",
@@ -379,6 +388,7 @@
       "resources/js/pages/sites/Ecomer/components/Servicios/SectionServicios.jsx",
       "_HeroSection-CzkfBe6w.js",
       "_ProcesosGroup-DddvSAEm.js",
+      "_ServiciosDetalladosGroup-BSfPyB10.js",
       "_ServiciosGroup-CYDnKUNo.js",
       "_VideoGroup-CPRKlKFh.js",
       "resources/js/pages/sites/Ecomer/shared/FloatingWhatsApp.jsx",
@@ -392,7 +402,7 @@
       "_ContactoSection-CzODuGjo.js",
       "_HeroSection-JgYnSXfO.js",
       "_PorQueElegirnosSection-n3Ex_Yy3.js",
-      "_ProductosDestacadosSection-G5Oi8SwS.js",
+      "_ProductosDestacadosSection-1KHFfrTA.js",
       "_ServiciosSection-DFoS4qMt.js",
       "_SomosSection-BibRJ5ih.js",
       "resources/js/pages/sites/Tortas/components/Productos/SectionProductos.jsx",
@@ -480,7 +490,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/Index.jsx": {
-    "file": "assets/Index-Cvcj7WTb.js",
+    "file": "assets/Index-BlO2ioVU.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Ecomer/Index.jsx",
     "isDynamicEntry": true,
@@ -500,7 +510,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Contacto/SectionContacto.jsx": {
-    "file": "assets/SectionContacto-BqjuNLaK.js",
+    "file": "assets/SectionContacto-QJEejb7Q.js",
     "name": "SectionContacto",
     "src": "resources/js/pages/sites/Ecomer/components/Contacto/SectionContacto.jsx",
     "isDynamicEntry": true,
@@ -511,24 +521,24 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Inicio/SectionInicio.jsx": {
-    "file": "assets/SectionInicio-C_yH7mWH.js",
+    "file": "assets/SectionInicio-ah7zQgdU.js",
     "name": "SectionInicio",
     "src": "resources/js/pages/sites/Ecomer/components/Inicio/SectionInicio.jsx",
     "isDynamicEntry": true,
     "imports": [
       "_vendor-framer-motion-C1JIXETN.js",
-      "_HeroSection-BmfvBEqw.js",
+      "_HeroSection-qyYSFxPM.js",
       "_GaleriaSection-c-HkhU03.js",
       "_OfertasSection-BSa1NdF6.js",
-      "_MarcasSection-D986mlMA.js",
+      "_MarcasSection-EucXrObd.js",
       "_CategoriaSection-nbQ1Aikx.js",
       "_TikTokSection-T2zXCebo.js",
-      "_ProductosDestacadosSection-CNiyaEaw.js",
+      "_ProductosDestacadosSection-BePioKn8.js",
       "_BanerPieSection-D5bCNXax.js"
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Nosotros/SectionNosotros.jsx": {
-    "file": "assets/SectionNosotros-D8eEmBPB.js",
+    "file": "assets/SectionNosotros-v7PBjEFQ.js",
     "name": "SectionNosotros",
     "src": "resources/js/pages/sites/Ecomer/components/Nosotros/SectionNosotros.jsx",
     "isDynamicEntry": true,
@@ -538,12 +548,12 @@
       "_PortadaSection-CmdAf3xY.js",
       "_HistoriaSection-zTBnlj1O.js",
       "_MisionVisionSection-CJPUiy5X.js",
-      "_ElegirnosSection-DMF1ZZHx.js",
+      "_ElegirnosSection-6u8MWT6U.js",
       "_AccionSection-BD0AB_sh.js"
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Productos/SectionProductoDetalle.jsx": {
-    "file": "assets/SectionProductoDetalle-DwQoN-9-.js",
+    "file": "assets/SectionProductoDetalle--u_-LAJa.js",
     "name": "SectionProductoDetalle",
     "src": "resources/js/pages/sites/Ecomer/components/Productos/SectionProductoDetalle.jsx",
     "isDynamicEntry": true,
@@ -552,7 +562,7 @@
       "_vendor-framer-motion-C1JIXETN.js",
       "_DynamicIcon-9-N_SdjM.js",
       "_useCartStore-DfqRC0U3.js",
-      "_vendor-swiper-7ec0ES1S.js"
+      "_vendor-swiper-D5Wh1uOI.js"
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Productos/SectionProductos.jsx": {
@@ -568,7 +578,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Servicios/SectionServicios.jsx": {
-    "file": "assets/SectionServicios-CFuIZNgq.js",
+    "file": "assets/SectionServicios-CkapK9FX.js",
     "name": "SectionServicios",
     "src": "resources/js/pages/sites/Ecomer/components/Servicios/SectionServicios.jsx",
     "isDynamicEntry": true,
@@ -578,11 +588,12 @@
       "_HeroSection-CzkfBe6w.js",
       "_ServiciosGroup-CYDnKUNo.js",
       "_ProcesosGroup-DddvSAEm.js",
-      "_VideoGroup-CPRKlKFh.js"
+      "_VideoGroup-CPRKlKFh.js",
+      "_ServiciosDetalladosGroup-BSfPyB10.js"
     ]
   },
   "resources/js/pages/sites/Ecomer/shared/FloatingWhatsApp.jsx": {
-    "file": "assets/FloatingWhatsApp-_WR4SLTZ.js",
+    "file": "assets/FloatingWhatsApp-Cm16B0Lz.js",
     "name": "FloatingWhatsApp",
     "src": "resources/js/pages/sites/Ecomer/shared/FloatingWhatsApp.jsx",
     "isDynamicEntry": true,
@@ -593,7 +604,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/shared/Footer.jsx": {
-    "file": "assets/Footer-BhHtqKBg.js",
+    "file": "assets/Footer-BXbCB4OK.js",
     "name": "Footer",
     "src": "resources/js/pages/sites/Ecomer/shared/Footer.jsx",
     "isDynamicEntry": true,
@@ -605,7 +616,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/shared/Header.jsx": {
-    "file": "assets/Header-DitXr94D.js",
+    "file": "assets/Header-DpO6TneA.js",
     "name": "Header",
     "src": "resources/js/pages/sites/Ecomer/shared/Header.jsx",
     "isDynamicEntry": true,
@@ -615,7 +626,7 @@
       "_vendor-framer-motion-C1JIXETN.js",
       "_DynamicIcon-9-N_SdjM.js",
       "_useCartStore-DfqRC0U3.js",
-      "_CartOffcanvas-CuHTrmyI.js"
+      "_CartOffcanvas-DpfGhKdF.js"
     ]
   },
   "resources/js/pages/sites/Ecomer/shared/components.jsx": {
@@ -639,7 +650,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/Index.jsx": {
-    "file": "assets/Index-C12oN-Wr.js",
+    "file": "assets/Index-CTCJK1cL.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Tortas/Index.jsx",
     "isDynamicEntry": true,
@@ -656,7 +667,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/components/Inicio/SectionInicio.jsx": {
-    "file": "assets/SectionInicio-CCZBaI8N.js",
+    "file": "assets/SectionInicio-CdohCX2X.js",
     "name": "SectionInicio",
     "src": "resources/js/pages/sites/Tortas/components/Inicio/SectionInicio.jsx",
     "isDynamicEntry": true,
@@ -666,7 +677,7 @@
       "_CategoriasSection-HDshrxCp.js",
       "_ServiciosSection-DFoS4qMt.js",
       "_SomosSection-BibRJ5ih.js",
-      "_ProductosDestacadosSection-G5Oi8SwS.js",
+      "_ProductosDestacadosSection-1KHFfrTA.js",
       "_PorQueElegirnosSection-n3Ex_Yy3.js",
       "_ContactoSection-CzODuGjo.js"
     ]
@@ -708,7 +719,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/shared/FloatingWhatsApp.jsx": {
-    "file": "assets/FloatingWhatsApp-vCTJBh8J.js",
+    "file": "assets/FloatingWhatsApp-DqDVh-Vj.js",
     "name": "FloatingWhatsApp",
     "src": "resources/js/pages/sites/Tortas/shared/FloatingWhatsApp.jsx",
     "isDynamicEntry": true,
@@ -719,7 +730,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/shared/Footer.jsx": {
-    "file": "assets/Footer-D0I6u2rH.js",
+    "file": "assets/Footer-BfsU5Vif.js",
     "name": "Footer",
     "src": "resources/js/pages/sites/Tortas/shared/Footer.jsx",
     "isDynamicEntry": true,
@@ -731,7 +742,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/shared/Header.jsx": {
-    "file": "assets/Header-C8yKmi8H.js",
+    "file": "assets/Header-CjjPKkl-.js",
     "name": "Header",
     "src": "resources/js/pages/sites/Tortas/shared/Header.jsx",
     "isDynamicEntry": true,
@@ -741,7 +752,7 @@
       "_vendor-framer-motion-C1JIXETN.js",
       "_DynamicIcon-9-N_SdjM.js",
       "_useCartStore-DfqRC0U3.js",
-      "_CartOffcanvas-CuHTrmyI.js"
+      "_CartOffcanvas-DpfGhKdF.js"
     ]
   },
   "resources/js/pages/sites/Tortas/shared/components.jsx": {
