@@ -1,5 +1,5 @@
-import { useEffect, useState, useMemo, useRef } from 'react';
-import { Link, router } from '@inertiajs/react';
+import { useEffect, useState, useMemo, useRef, Fragment } from 'react';
+import { Link, router, usePage } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DynamicIcon from '@/components/DynamicIcon';
 import { useCartStore } from '@/stores/useCartStore';
@@ -71,6 +71,24 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
     const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState(false);
+
+    // --- CATÁLOGO DE PRODUCTOS CONFIGURATION ---
+    const { url: currentUrl } = usePage();
+    const catalogoConfig = estilos?.catalogo || {};
+    const isCatalogoActivo = Boolean(catalogoConfig.activo);
+    const catalogoTitulo = catalogoConfig.titulo || 'Catálogo';
+    const catalogoEnlace = catalogoConfig.enlace ? String(catalogoConfig.enlace).trim() : null;
+    const isCatalogoUrlActive = Boolean(currentUrl && currentUrl.includes('catalogo=1'));
+    const downloadUrl = catalogoEnlace
+        ? catalogoEnlace
+        : (dominio === 'plantillas'
+            ? `/plantillas/${siteSlug}/catalogo/descargar-pdf`
+            : (siteSlug ? `/${dominio}/${siteSlug}/catalogo/descargar-pdf` : `/${dominio}/catalogo/descargar-pdf`));
+
+    const handleDescargarCatalogo = (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        window.location.href = downloadUrl;
+    };
 
     // --- MEGA MENU HOVER STATE ---
     const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
@@ -156,25 +174,8 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
             list.splice(1, 0, { slug: 'productos', nombre: 'Productos' });
         }
 
-        const hasServiciosInList = list.some((s) => {
-            const slug = (s.slug || '').toLowerCase();
-            return slug === 'servicios' || slug === 'servicio';
-        });
-
-        const hasServicesData = Boolean(
-            (serviciosSitio && serviciosSitio.length > 0) ||
-            seccionesData?.servicios ||
-            seccionesData?.Servicios ||
-            (site?.servicios && site.servicios.length > 0) ||
-            site?.tiene_servicios
-        );
-
-        if (hasServicesData && !hasServiciosInList) {
-            list.push({ slug: 'servicios', nombre: 'Servicios' });
-        }
-
         return list;
-    }, [secciones, hasStore, serviciosSitio, seccionesData, site]);
+    }, [secciones, hasStore]);
 
     const getDisplayName = (seccion) => {
         const slugLower = (seccion?.slug || '').toLowerCase().trim();
@@ -418,9 +419,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 const hasStandalonePage = isInicio || isProductos || isServicios || isNosotros || isContacto;
 
                                 const pageSlugTarget = isInicio ? 'inicio' : (isProductos ? 'productos' : (isServicios ? 'servicios' : (isNosotros ? 'nosotros' : (isContacto ? 'contacto' : seccion.slug))));
-                                const activa = isInicio
+                                const activa = (isInicio
                                     ? (!seccionActiva || seccionActiva.slug?.toLowerCase() === 'inicio' || seccionActiva.slug?.toLowerCase() === 'hero')
-                                    : (pageSlugTarget === seccionActiva?.slug?.toLowerCase() || (isProductos && seccionActiva?.slug?.toLowerCase() === 'productos') || (isServicios && seccionActiva?.slug?.toLowerCase() === 'servicios') || (isNosotros && (seccionActiva?.slug?.toLowerCase() === 'nosotros' || seccionActiva?.slug?.toLowerCase() === 'sobre-nosotros')) || (isContacto && (seccionActiva?.slug?.toLowerCase() === 'contacto' || seccionActiva?.slug?.toLowerCase() === 'contactos')));
+                                    : (pageSlugTarget === seccionActiva?.slug?.toLowerCase() || (isProductos && seccionActiva?.slug?.toLowerCase() === 'productos') || (isServicios && seccionActiva?.slug?.toLowerCase() === 'servicios') || (isNosotros && (seccionActiva?.slug?.toLowerCase() === 'nosotros' || seccionActiva?.slug?.toLowerCase() === 'sobre-nosotros')) || (isContacto && (seccionActiva?.slug?.toLowerCase() === 'contacto' || seccionActiva?.slug?.toLowerCase() === 'contactos'))))
+                                    && !isCatalogoUrlActive;
 
                                 const linkClasses = `rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 ${activa
                                     ? 'text-white shadow-xs'
@@ -432,25 +434,38 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
 
                                 if (isProductos) {
                                     return (
-                                        <div
-                                            key={seccion.slug}
-                                            className="relative"
-                                            onMouseEnter={handleMouseEnterMega}
-                                            onMouseLeave={handleMouseLeaveMega}
-                                        >
-                                            <Link
-                                                href={getProductosUrl(null, null)}
-                                                className={`inline-flex items-center gap-1.5 ${linkClasses}`}
-                                                style={activeStyle}
+                                        <Fragment key={seccion.slug}>
+                                            <div
+                                                className="relative"
+                                                onMouseEnter={handleMouseEnterMega}
+                                                onMouseLeave={handleMouseLeaveMega}
                                             >
-                                                <span>{displayName}</span>
-                                                <DynamicIcon
-                                                    name="FaChevronDown"
-                                                    className={`h-3 w-3 transition-transform duration-300 ${isMegaMenuOpen ? 'rotate-180 text-white' : 'opacity-70'
-                                                        }`}
-                                                />
-                                            </Link>
-                                        </div>
+                                                <Link
+                                                    href={getProductosUrl(null, null)}
+                                                    className={`inline-flex items-center gap-1.5 ${linkClasses}`}
+                                                    style={activeStyle}
+                                                >
+                                                    <span>{displayName}</span>
+                                                    <DynamicIcon
+                                                        name="FaChevronDown"
+                                                        className={`h-3 w-3 transition-transform duration-300 ${isMegaMenuOpen ? 'rotate-180 text-white' : 'opacity-70'
+                                                            }`}
+                                                    />
+                                                </Link>
+                                            </div>
+
+                                            {isCatalogoActivo && (
+                                                <a
+                                                    href={downloadUrl}
+                                                    onClick={handleDescargarCatalogo}
+                                                    className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 cursor-pointer ${isTransparentMode
+                                                        ? 'text-white/90 hover:text-white hover:bg-white/20'
+                                                        : 'text-gray-800 hover:text-white hover:bg-[var(--color-primario)]/60'}`}
+                                                >
+                                                    {catalogoTitulo}
+                                                </a>
+                                            )}
+                                        </Fragment>
                                     );
                                 }
 
@@ -879,50 +894,65 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
 
                             if (isProductos && categoriasArbol.length > 0) {
                                 return (
-                                    <div key={seccion.slug} className="space-y-1">
-                                        <div className="flex items-center justify-between">
-                                            <Link
-                                                href={getProductosUrl(null, null)}
-                                                onClick={() => setMobileMenuOpen(false)}
-                                                className={`${linkClasses} flex-1`}
-                                                style={activeStyle}
-                                            >
-                                                {displayName}
-                                            </Link>
-                                            <button
-                                                type="button"
-                                                onClick={() => setMobileSubmenuOpen(!mobileSubmenuOpen)}
-                                                className="p-2 text-gray-500 hover:text-gray-900"
-                                            >
-                                                <DynamicIcon name="FaChevronDown" className={`h-4 w-4 transition-transform ${mobileSubmenuOpen ? 'rotate-180' : ''}`} />
-                                            </button>
-                                        </div>
-                                        {mobileSubmenuOpen && (
-                                            <div className="pl-4 space-y-2 border-l-2 border-[var(--color-primario)]/30 ml-2 my-1.5">
-                                                {categoriasArbol.map((cat) => (
-                                                    <div key={cat.nombre} className="space-y-1">
-                                                        <Link
-                                                            href={getProductosUrl(cat.nombre, null)}
-                                                            onClick={() => setMobileMenuOpen(false)}
-                                                            className="block text-xs font-bold text-gray-800 hover:text-[var(--color-primario)] py-0.5"
-                                                        >
-                                                            {cat.nombre}
-                                                        </Link>
-                                                        {cat.subcategorias?.map((sub) => (
-                                                            <Link
-                                                                key={sub.nombre}
-                                                                href={getProductosUrl(cat.nombre, sub.nombre)}
-                                                                onClick={() => setMobileMenuOpen(false)}
-                                                                className="block text-[11px] text-gray-600 hover:text-gray-900 pl-2 py-0.5"
-                                                            >
-                                                                • {sub.nombre}
-                                                            </Link>
-                                                        ))}
-                                                    </div>
-                                                ))}
+                                    <Fragment key={seccion.slug}>
+                                        <div className="space-y-1">
+                                            <div className="flex items-center justify-between">
+                                                <Link
+                                                    href={getProductosUrl(null, null)}
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                    className={`${linkClasses} flex-1`}
+                                                    style={activeStyle}
+                                                >
+                                                    {displayName}
+                                                </Link>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setMobileSubmenuOpen(!mobileSubmenuOpen)}
+                                                    className="p-2 text-gray-500 hover:text-gray-900"
+                                                >
+                                                    <DynamicIcon name="FaChevronDown" className={`h-4 w-4 transition-transform ${mobileSubmenuOpen ? 'rotate-180' : ''}`} />
+                                                </button>
                                             </div>
+                                            {mobileSubmenuOpen && (
+                                                <div className="pl-4 space-y-2 border-l-2 border-[var(--color-primario)]/30 ml-2 my-1.5">
+                                                    {categoriasArbol.map((cat) => (
+                                                        <div key={cat.nombre} className="space-y-1">
+                                                            <Link
+                                                                href={getProductosUrl(cat.nombre, null)}
+                                                                onClick={() => setMobileMenuOpen(false)}
+                                                                className="block text-xs font-bold text-gray-800 hover:text-[var(--color-primario)] py-0.5"
+                                                            >
+                                                                {cat.nombre}
+                                                            </Link>
+                                                            {cat.subcategorias?.map((sub) => (
+                                                                <Link
+                                                                    key={sub.nombre}
+                                                                    href={getProductosUrl(cat.nombre, sub.nombre)}
+                                                                    onClick={() => setMobileMenuOpen(false)}
+                                                                    className="block text-[11px] text-gray-600 hover:text-gray-900 pl-2 py-0.5"
+                                                                >
+                                                                    • {sub.nombre}
+                                                                </Link>
+                                                            ))}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        {isCatalogoActivo && (
+                                            <a
+                                                href={downloadUrl}
+                                                onClick={(e) => {
+                                                    setMobileMenuOpen(false);
+                                                    handleDescargarCatalogo(e);
+                                                }}
+                                                className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+                                            >
+                                                {catalogoTitulo}
+                                            </a>
                                         )}
-                                    </div>
+                                    </Fragment>
                                 );
                             }
 

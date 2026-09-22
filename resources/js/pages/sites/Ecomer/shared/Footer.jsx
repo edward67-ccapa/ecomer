@@ -91,18 +91,45 @@ export default function Footer({ site, dominio, siteSlug, secciones, seccionActi
                                     const anchorId = slugLower === 'contactos' ? 'contacto' : slugLower;
                                     const hasStandalonePage = PAGE_SECTIONS.includes(slugLower);
 
-                                    if (hasStandalonePage) {
-                                        return (
-                                            <li key={seccion.slug}>
-                                                <Link
-                                                    href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`}
-                                                    className="transition-colors hover:text-[var(--color-primario)] font-medium text-gray-700 hover:underline"
-                                                >
-                                                    {seccion.nombre}
-                                                </Link>
-                                            </li>
-                                        );
-                                    }
+                                     if (hasStandalonePage) {
+                                         const isProductos = slugLower === 'productos' || slugLower === 'tienda' || slugLower === 'tiendas';
+                                         const catalogoConfig = estilos?.catalogo || {};
+                                         const isCatalogoActivo = Boolean(catalogoConfig.activo);
+                                         const catalogoTitulo = catalogoConfig.titulo || 'Catálogo';
+                                         const catalogoEnlace = catalogoConfig.enlace ? String(catalogoConfig.enlace).trim() : null;
+                                         const downloadUrl = catalogoEnlace
+                                             ? catalogoEnlace
+                                             : (dominio === 'plantillas'
+                                                 ? `/plantillas/${siteSlug}/catalogo/descargar-pdf`
+                                                 : (siteSlug ? `/${dominio}/${siteSlug}/catalogo/descargar-pdf` : `/${dominio}/catalogo/descargar-pdf`));
+
+                                         return (
+                                             <React.Fragment key={seccion.slug}>
+                                                 <li>
+                                                     <Link
+                                                         href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`}
+                                                         className="transition-colors hover:text-[var(--color-primario)] font-medium text-gray-700 hover:underline"
+                                                     >
+                                                         {seccion.nombre}
+                                                     </Link>
+                                                 </li>
+                                                 {isProductos && isCatalogoActivo && (
+                                                     <li key="catalogo-footer">
+                                                         <a
+                                                             href={downloadUrl}
+                                                             onClick={(e) => {
+                                                                 if (e && e.preventDefault) e.preventDefault();
+                                                                 window.location.href = downloadUrl;
+                                                             }}
+                                                             className="transition-colors hover:text-[var(--color-primario)] font-medium text-gray-700 hover:underline cursor-pointer"
+                                                         >
+                                                             {catalogoTitulo}
+                                                         </a>
+                                                     </li>
+                                                 )}
+                                             </React.Fragment>
+                                         );
+                                     }
 
                                     const anchorHref = isInicioPage
                                         ? `#${anchorId}`

@@ -12,6 +12,8 @@ Route::get('/', function () {
 
 Route::get('/plantillas', [PlantillasController::class, 'index'])->name('plantillas.index');
 
+Route::get('/plantillas/{plantilla:slug}/catalogo/descargar-pdf', [PlantillasController::class, 'descargarCatalogo'])->name('plantillas.descargarCatalogo');
+
 Route::get('/plantillas/{plantilla:slug}/{seccion?}', [PlantillasController::class, 'preview'])
     ->where('seccion', '[a-zA-Z0-9\-]+')
     ->name('plantillas.preview');
@@ -52,6 +54,9 @@ Route::get('/storage/{path}', function (string $path) {
         'Cache-Control' => 'public, max-age=31536000',
     ]);
 })->where('path', '.*')->name('storage.local');
+
+Route::get('/{param1}/{param2}/catalogo/descargar-pdf', [SitePageController::class, 'descargarCatalogo'])->name('catalogo.descargar2');
+Route::get('/{dominio}/catalogo/descargar-pdf', [SitePageController::class, 'descargarCatalogo'])->name('catalogo.descargar1');
 
 Route::get('/{param1}/{param2}/{param3}', [SitePageController::class, 'show'])->name('sitios.show3');
 Route::get('/{dominio}/{seccion}', [SitePageController::class, 'show'])->name('sitios.show');

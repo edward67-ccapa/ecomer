@@ -369,4 +369,62 @@ class SitePageController extends Controller
 
         return $valor;
     }
+
+    public function descargarCatalogo(string $param1, ?string $param2 = null)
+    {
+        $dominio = $param1;
+        $siteSlug = $param2;
+
+        $site = $this->findSite($dominio, $siteSlug);
+
+        $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
+        $catalogoConfig = $estilos['catalogo'] ?? [];
+
+        if (!empty($catalogoConfig['enlace'])) {
+            $enlace = trim($catalogoConfig['enlace']);
+            if (str_starts_with($enlace, 'http://') || str_starts_with($enlace, 'https://')) {
+                return redirect()->away($enlace);
+            }
+            $cleanPath = preg_replace('/^\/?storage\//', '', $enlace);
+            if (Storage::disk('public')->exists($cleanPath)) {
+                return response()->download(Storage::disk('public')->path($cleanPath));
+            }
+        }
+
+        $tiendaIds = $site->tiendas->pluck('id')->all();
+        if (empty($tiendaIds) && $site->tienda_id) {
+            $tiendaIds = [$site->tienda_id];
+        }
+        if (empty($tiendaIds) && $site->plantilla) {
+            $tiendaIds = $site->plantilla->tiendas->pluck('id')->all();
+        }
+
+        $productosQuery = \App\Models\Producto::with(['categoria', 'subcategoria'])
+            ->where('activo', true);
+
+        if (!empty($tiendaIds)) {
+            $productosQuery->whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds));
+        }
+
+        $tipoFiltro = $catalogoConfig['tipo_filtro'] ?? 'todos';
+        if ($tipoFiltro === 'categoria' && !empty($catalogoConfig['categorias'])) {
+            $catIds = (array) $catalogoConfig['categorias'];
+            $productosQuery->whereIn('categoria_id', $catIds);
+        } elseif ($tipoFiltro === 'subcategoria' && !empty($catalogoConfig['subcategorias'])) {
+            $subCatIds = (array) $catalogoConfig['subcategorias'];
+            $productosQuery->whereIn('subcategoria_id', $subCatIds);
+        }
+
+        $productos = $productosQuery->orderBy('orden')->orderBy('nombre')->get();
+        $titulo = $catalogoConfig['titulo'] ?? 'Catálogo de Productos';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.catalogo', [
+            'site' => $site,
+            'titulo' => $titulo,
+            'productos' => $productos,
+        ]);
+
+        $filename = Str::slug($titulo) . '.pdf';
+        return $pdf->download($filename);
+    }
 }

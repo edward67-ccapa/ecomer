@@ -81,6 +81,111 @@ indexForm.head = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
 index.form = indexForm
 
 /**
+* @see \App\Http\Controllers\PlantillasController::descargarCatalogo
+* @see app/Http/Controllers/PlantillasController.php:155
+* @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
+*/
+export const descargarCatalogo = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: descargarCatalogo.url(args, options),
+    method: 'get',
+})
+
+descargarCatalogo.definition = {
+    methods: ["get","head"],
+    url: '/plantillas/{plantilla}/catalogo/descargar-pdf',
+} satisfies RouteDefinition<["get","head"]>
+
+/**
+* @see \App\Http\Controllers\PlantillasController::descargarCatalogo
+* @see app/Http/Controllers/PlantillasController.php:155
+* @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
+*/
+descargarCatalogo.url = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
+    if (typeof args === 'string' || typeof args === 'number') {
+        args = { plantilla: args }
+    }
+
+    if (typeof args === 'object' && !Array.isArray(args) && 'slug' in args) {
+        args = { plantilla: args.slug }
+    }
+
+    if (Array.isArray(args)) {
+        args = {
+            plantilla: args[0],
+        }
+    }
+
+    args = applyUrlDefaults(args)
+
+    const parsedArgs = {
+        plantilla: typeof args.plantilla === 'object'
+        ? args.plantilla.slug
+        : args.plantilla,
+    }
+
+    return descargarCatalogo.definition.url
+            .replace('{plantilla}', parsedArgs.plantilla.toString())
+            .replace(/\/+$/, '') + queryParams(options)
+}
+
+/**
+* @see \App\Http\Controllers\PlantillasController::descargarCatalogo
+* @see app/Http/Controllers/PlantillasController.php:155
+* @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
+*/
+descargarCatalogo.get = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
+    url: descargarCatalogo.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PlantillasController::descargarCatalogo
+* @see app/Http/Controllers/PlantillasController.php:155
+* @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
+*/
+descargarCatalogo.head = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
+    url: descargarCatalogo.url(args, options),
+    method: 'head',
+})
+
+/**
+* @see \App\Http\Controllers\PlantillasController::descargarCatalogo
+* @see app/Http/Controllers/PlantillasController.php:155
+* @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
+*/
+const descargarCatalogoForm = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: descargarCatalogo.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PlantillasController::descargarCatalogo
+* @see app/Http/Controllers/PlantillasController.php:155
+* @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
+*/
+descargarCatalogoForm.get = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: descargarCatalogo.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see \App\Http\Controllers\PlantillasController::descargarCatalogo
+* @see app/Http/Controllers/PlantillasController.php:155
+* @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
+*/
+descargarCatalogoForm.head = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: descargarCatalogo.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+descargarCatalogo.form = descargarCatalogoForm
+
+/**
 * @see \App\Http\Controllers\PlantillasController::preview
 * @see app/Http/Controllers/PlantillasController.php:39
 * @route '/plantillas/{plantilla}/{seccion?}'
@@ -184,6 +289,6 @@ previewForm.head = (args: { plantilla: string | { slug: string }, seccion?: stri
 
 preview.form = previewForm
 
-const PlantillasController = { index, preview }
+const PlantillasController = { index, descargarCatalogo, preview }
 
 export default PlantillasController

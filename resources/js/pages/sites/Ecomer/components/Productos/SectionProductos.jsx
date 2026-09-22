@@ -1,10 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DynamicIcon from '@/components/DynamicIcon';
 import { useProductosData } from './hooks/useProductosData';
 import { useCartStore } from '@/stores/useCartStore';
 
-export default function SectionProductos({ dominio, siteSlug, seccion, seccionesData, productos: initialProductos, onSeleccionarProducto }) {
+export default function SectionProductos({ dominio, siteSlug, seccion, seccionesData, productos: initialProductos, onSeleccionarProducto, estilos }) {
     const addItem = useCartStore((state) => state.addItem);
     const cartItems = useCartStore((state) => state.items);
 
@@ -88,10 +89,14 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
         setRangoPrecio([minPrecioAbsoluto, maxPrecioAbsoluto]);
     }, [minPrecioAbsoluto, maxPrecioAbsoluto]);
 
+    const { url: currentUrl } = usePage();
+    const isCatalogoMode = Boolean(currentUrl && currentUrl.includes('catalogo=1'));
+    const catalogoConfig = estilos?.catalogo || {};
+
     const getValor = (label) => seccionData?.contenido?.find((item) => item.label === label)?.valor;
 
-    const subTitulo = getValor('sub_titulo') || 'Catálogo Completo';
-    const titulo = getValor('titulo') || 'Nuestras Tortas y Creaciones';
+    const subTitulo = isCatalogoMode ? 'Catálogo Especial' : (getValor('sub_titulo') || 'Catálogo Completo');
+    const titulo = isCatalogoMode ? (catalogoConfig.titulo || 'Catálogo de Productos') : (getValor('titulo') || 'Nuestras Tortas y Creaciones');
     const icono = getValor('icono') || 'FaRegHeart';
 
     // Árbol jerárquico de Categorías -> Subcategorías para el desplegable dentro del desplegable
@@ -240,6 +245,34 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
 
             if (!coincideBusqueda) return false;
 
+            // Filtro especial de Catálogo (si se accedió vía enlace /productos?catalogo=1)
+            if (isCatalogoMode) {
+                const tipoFiltro = catalogoConfig.tipo_filtro || 'todos';
+                if (tipoFiltro === 'categoria') {
+                    const catIds = Array.isArray(catalogoConfig.categorias)
+                        ? catalogoConfig.categorias.map(String)
+                        : [];
+                    if (catIds.length > 0) {
+                        const prodCatId = prod.categoria_id != null ? String(prod.categoria_id) : null;
+                        const prodCatNombre = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
+                        if ((!prodCatId || !catIds.includes(prodCatId)) && (!prodCatNombre || !catIds.includes(prodCatNombre))) {
+                            return false;
+                        }
+                    }
+                } else if (tipoFiltro === 'subcategoria') {
+                    const subCatIds = Array.isArray(catalogoConfig.subcategorias)
+                        ? catalogoConfig.subcategorias.map(String)
+                        : [];
+                    if (subCatIds.length > 0) {
+                        const prodSubId = prod.subcategoria_id != null ? String(prod.subcategoria_id) : null;
+                        const prodSubNombre = typeof prod.subcategoria === 'object' ? prod.subcategoria?.nombre : prod.subcategoria;
+                        if ((!prodSubId || !subCatIds.includes(prodSubId)) && (!prodSubNombre || !subCatIds.includes(prodSubNombre))) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
             // Coincidencia por categoría
             const prodCat = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
             const catSeleccionadas = filtrosSeleccionados.categoria || [];
@@ -269,7 +302,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                 return valoresSeleccionados.includes(valProducto);
             });
         });
-    }, [productos, busqueda, filtrosSeleccionados, rangoPrecio]);
+    }, [productos, busqueda, filtrosSeleccionados, rangoPrecio, isCatalogoMode, catalogoConfig]);
 
     if (loading || cargandoPantalla) {
         return (
@@ -319,6 +352,40 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                             <DynamicIcon name={icono} className="h-5 w-5" style={{ color: 'var(--color-primario)' }} />
                             <div className="flex-1 max-w-20 h-px" style={{ background: 'linear-gradient(to left, transparent, var(--color-primario))' }} />
                         </div>
+                    )}
+
+                    {isCatalogoMode && (
+                        <>
+                            <style>{`
+                                @media print {
+                                    header, footer, nav, button, form, .print\\:hidden, [class*="whatsapp"], [class*="offcanvas"] {
+                                        display: none !important;
+                                    }
+                                    body, main {
+                                        background: #ffffff !important;
+                                        color: #000000 !important;
+                                        padding: 0 !important;
+                                        margin: 0 !important;
+                                    }
+                                    main {
+                                        padding-top: 20px !important;
+                                    }
+                                }
+                            `}</style>
+
+                            <div className="mt-4 flex justify-center print:hidden">
+                                <button
+                                    type="button"
+                                    onClick={() => window.print()}
+                                    className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-primario)] px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:opacity-90 transition cursor-pointer"
+                                >
+                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <span>Descargar Catálogo (PDF)</span>
+                                </button>
+                            </div>
+                        </>
                     )}
                 </div>
 

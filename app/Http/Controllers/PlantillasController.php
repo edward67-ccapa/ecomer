@@ -151,4 +151,53 @@ class PlantillasController extends Controller
             'serviciosSitio' => $serviciosSitio,
         ]);
     }
+
+    public function descargarCatalogo(Plantilla $plantilla)
+    {
+        $plantilla->load(['tiendas']);
+
+        $estilos = $plantilla->estilos ?? [];
+        $catalogoConfig = $estilos['catalogo'] ?? [];
+
+        if (!empty($catalogoConfig['enlace'])) {
+            $enlace = trim($catalogoConfig['enlace']);
+            if (str_starts_with($enlace, 'http://') || str_starts_with($enlace, 'https://')) {
+                return redirect()->away($enlace);
+            }
+            $cleanPath = preg_replace('/^\/?storage\//', '', $enlace);
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($cleanPath)) {
+                return response()->download(\Illuminate\Support\Facades\Storage::disk('public')->path($cleanPath));
+            }
+        }
+
+        $tiendaIds = $plantilla->tiendas->pluck('id')->all();
+
+        $productosQuery = \App\Models\Producto::with(['categoria', 'subcategoria'])
+            ->where('activo', true);
+
+        if (!empty($tiendaIds)) {
+            $productosQuery->whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds));
+        }
+
+        $tipoFiltro = $catalogoConfig['tipo_filtro'] ?? 'todos';
+        if ($tipoFiltro === 'categoria' && !empty($catalogoConfig['categorias'])) {
+            $catIds = (array) $catalogoConfig['categorias'];
+            $productosQuery->whereIn('categoria_id', $catIds);
+        } elseif ($tipoFiltro === 'subcategoria' && !empty($catalogoConfig['subcategorias'])) {
+            $subCatIds = (array) $catalogoConfig['subcategorias'];
+            $productosQuery->whereIn('subcategoria_id', $subCatIds);
+        }
+
+        $productos = $productosQuery->orderBy('orden')->orderBy('nombre')->get();
+        $titulo = $catalogoConfig['titulo'] ?? 'Catálogo de Productos';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.catalogo', [
+            'site' => (object) ['nombre' => $plantilla->nombre, 'imagen' => $plantilla->imagen],
+            'titulo' => $titulo,
+            'productos' => $productos,
+        ]);
+
+        $filename = \Illuminate\Support\Str::slug($titulo) . '.pdf';
+        return $pdf->download($filename);
+    }
 }
