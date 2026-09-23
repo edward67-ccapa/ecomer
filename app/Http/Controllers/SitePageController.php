@@ -61,13 +61,14 @@ class SitePageController extends Controller
             ->reject(fn ($s) => strtolower($s->slug) === 'nav');
 
         $targetSlug = strtolower(str_replace(['_', ' '], '-', $seccionSlug));
-        $seccion = $site->plantilla->secciones->first(function ($s) use ($targetSlug) {
+        $seccion = $seccionesNav->first(function ($s) use ($targetSlug) {
             $sSlug = strtolower(str_replace(['_', ' '], '-', $s->slug));
             $sNombre = strtolower(str_replace(['_', ' '], '-', $s->nombre));
+            if ($targetSlug === 'inicio' || $targetSlug === 'hero') {
+                return in_array($sSlug, ['inicio', 'hero']) || in_array($sNombre, ['inicio', 'hero']);
+            }
             return $sSlug === $targetSlug || $sNombre === $targetSlug || str_contains($sSlug, $targetSlug) || str_contains($targetSlug, $sSlug);
-        }) ?? $seccionesNav->first();
-
-        abort_unless($seccion instanceof Seccion, 404);
+        });
 
         $siteRespuestas = $site->respuestas->keyBy('pregunta_id')->all();
         $plantillaRespuestas = \App\Models\Respuesta::where('plantilla_id', $site->plantilla_id)->get()->keyBy('pregunta_id')->all();
@@ -81,6 +82,29 @@ class SitePageController extends Controller
                 'slug' => $s->slug,
                 'nombre' => $s->nombre,
                 'contenido' => self::formatearPreguntas($s->preguntas, $respuestas),
+            ];
+        }
+
+        if (!$seccion && in_array($targetSlug, ['inicio', 'hero', 'productos', 'tienda', 'tiendas', 'servicios', 'servicio', 'nosotros', 'sobre-nosotros', 'contacto', 'contactos'])) {
+            $canonicalSlug = in_array($targetSlug, ['productos', 'tienda', 'tiendas'])
+                ? 'productos'
+                : (in_array($targetSlug, ['servicios', 'servicio'])
+                    ? 'servicios'
+                    : (in_array($targetSlug, ['nosotros', 'sobre-nosotros'])
+                        ? 'nosotros'
+                        : (in_array($targetSlug, ['contacto', 'contactos']) ? 'contacto' : 'inicio')));
+            $seccionActiva = [
+                'slug' => $canonicalSlug,
+                'nombre' => ucfirst($canonicalSlug),
+                'contenido' => [],
+            ];
+        } else {
+            $seccion = $seccion ?? $seccionesNav->first();
+            abort_unless($seccion instanceof Seccion, 404);
+            $seccionActiva = $seccionesData[strtolower(str_replace(['_', ' '], '-', $seccion->slug))] ?? [
+                'slug' => $seccion->slug,
+                'nombre' => $seccion->nombre,
+                'contenido' => self::formatearPreguntas($seccion->preguntas, $respuestas),
             ];
         }
 
@@ -154,11 +178,7 @@ class SitePageController extends Controller
                     'nombre' => $s->nombre,
                 ])
                 ->values(),
-            'seccionActiva' => $seccionesData[strtolower(str_replace(['_', ' '], '-', $seccion->slug))] ?? [
-                'slug' => $seccion->slug,
-                'nombre' => $seccion->nombre,
-                'contenido' => self::formatearPreguntas($seccion->preguntas, $respuestas),
-            ],
+            'seccionActiva' => $seccionActiva,
             'seccionesData' => $seccionesData,
             'productos' => \App\Http\Resources\v1\ProductoResource::collection($productos)->resolve(),
             'productosDestacados' => \App\Http\Resources\v1\ProductoResource::collection($productosDestacados)->resolve(),
@@ -184,7 +204,20 @@ class SitePageController extends Controller
             });
         }
 
-        return $query->firstOrFail();
+        $site = $query->first();
+
+        if (!$site && in_array(strtolower($dominioOrSlug), ['productos', 'servicios', 'tienda', 'tiendas', 'servicio'])) {
+            $site = Site::query()
+                ->with(['plantilla.secciones.preguntas', 'dominio', 'respuestas', 'servicios.servicios'])
+                ->where('estado', 'publicado')
+                ->first();
+        }
+
+        if (!$site) {
+            abort(404);
+        }
+
+        return $site;
     }
 
     public static function paginaPlantilla(Plantilla|string $plantillaOrTipo): string
@@ -335,5 +368,66 @@ class SitePageController extends Controller
         }
 
         return $valor;
+    }
+
+    public function descargarCatalogo(string $param1, ?string $param2 = null)
+    {
+        $dominio = $param1;
+        $siteSlug = $param2;
+
+        $site = $this->findSite($dominio, $siteSlug);
+
+        $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
+        $catalogoConfig = $estilos['catalogo'] ?? [];
+
+        if (!empty($catalogoConfig['enlace'])) {
+            $enlace = trim($catalogoConfig['enlace']);
+            if (str_starts_with($enlace, 'http://') || str_starts_with($enlace, 'https://')) {
+                return redirect()->away($enlace);
+            }
+            $cleanPath = preg_replace('/^\/?storage\//', '', $enlace);
+            if (Storage::disk('public')->exists($cleanPath)) {
+                return response()->download(Storage::disk('public')->path($cleanPath));
+            }
+        }
+
+        $tiendaIds = $site->tiendas->pluck('id')->all();
+        if (empty($tiendaIds) && $site->tienda_id) {
+            $tiendaIds = [$site->tienda_id];
+        }
+        if (empty($tiendaIds) && $site->plantilla) {
+            $tiendaIds = $site->plantilla->tiendas->pluck('id')->all();
+        }
+
+        $productosQuery = \App\Models\Producto::with(['categoria', 'subcategoria'])
+            ->where('activo', true);
+
+        if (!empty($tiendaIds)) {
+            $productosQuery->whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds));
+        }
+
+        $tipoFiltro = $catalogoConfig['tipo_filtro'] ?? 'todos';
+        if ($tipoFiltro === 'categoria' && !empty($catalogoConfig['categorias'])) {
+            $catIds = (array) $catalogoConfig['categorias'];
+            $productosQuery->whereIn('categoria_id', $catIds);
+        } elseif ($tipoFiltro === 'subcategoria' && !empty($catalogoConfig['subcategorias'])) {
+            $subCatIds = (array) $catalogoConfig['subcategorias'];
+            $productosQuery->whereIn('subcategoria_id', $subCatIds);
+        }
+
+        $productos = $productosQuery->orderBy('orden')->orderBy('nombre')->get();
+        $titulo = $catalogoConfig['titulo'] ?? 'Catálogo de Productos';
+        $colorPrimario = $estilos['color_primario'] ?? '#F72F46';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.catalogo', [
+            'site' => $site,
+            'titulo' => $titulo,
+            'productos' => $productos,
+            'colorPrimario' => $colorPrimario,
+            'estilos' => $estilos,
+        ])->setOption('isGdEnabled', false)->setOption('isRemoteEnabled', true);
+
+        $filename = Str::slug($titulo) . '.pdf';
+        return $pdf->download($filename);
     }
 }

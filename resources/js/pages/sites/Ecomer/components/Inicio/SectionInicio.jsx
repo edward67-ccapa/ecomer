@@ -1,7 +1,12 @@
 import { useInicioData } from './hooks/useInicioData';
 import HeroSection from './subcomponents/HeroSection';
 import GaleriaSection from './subcomponents/GaleriaSection';
+import OfertasSection from './subcomponents/OfertasSection';
+import MarcasSection from './subcomponents/MarcasSection';
+import CategoriaSection from './subcomponents/CategoriaSection';
+import TikTokSection from './subcomponents/TikTokSection';
 import ProductosDestacadosSection from './subcomponents/ProductosDestacadosSection';
+import BanerPieSection from './subcomponents/BanerPieSection';
 
 export default function SectionInicio({
     dominio,
@@ -12,7 +17,6 @@ export default function SectionInicio({
     productos: initialProductos = [],
     onSeleccionarProducto,
 }) {
-    // Si productosDestacados viene con datos se usan esos, de lo contrario la lista general de productos
     const listaProductos =
         productosDestacados && productosDestacados.length > 0
             ? productosDestacados
@@ -21,6 +25,10 @@ export default function SectionInicio({
     const {
         inicio,
         galeria,
+        ofertas,
+        marcas,
+        tiktok,
+        banerpie,
         productosDestacados: productos,
         loading,
         error,
@@ -59,6 +67,24 @@ export default function SectionInicio({
                 productos={productos}
                 onSeleccionarProducto={onSeleccionarProducto}
             />
+            <OfertasSection
+                seccionData={ofertas}
+                productos={productos}
+                onSeleccionarProducto={onSeleccionarProducto}
+            />
+            <MarcasSection
+                seccionData={marcas}
+                productos={productos}
+                onSeleccionarProducto={onSeleccionarProducto}
+            />
+            <CategoriaSection
+                productos={productos}
+                dominio={dominio}
+                siteSlug={siteSlug}
+                onSeleccionarProducto={onSeleccionarProducto}
+            />
+            <TikTokSection seccionData={tiktok} />
+            <BanerPieSection seccionData={banerpie} />
         </main>
     );
 }

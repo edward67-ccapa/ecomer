@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Link } from '@inertiajs/react';
+import { Link, usePage } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
 import { useCartStore } from '@/stores/useCartStore';
 import CartOffcanvas from '@/components/CartOffcanvas';
 
-export default function Header({ site, dominio, siteSlug, secciones, seccionActiva, tieneTienda, productos, seccionesData }) {
+export default function Header({ site, dominio, siteSlug, secciones, seccionActiva, tieneTienda, productos, seccionesData, estilos }) {
+    const { url: currentUrl } = usePage();
     const [isScrolled, setIsScrolled] = useState(false);
 
     // --- SCROLL DETECTION ---
@@ -119,15 +120,48 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 const activeStyle = activa ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {};
 
                                 if (hasStandalonePage) {
+                                    const isProductos = slugLower === 'productos';
+                                    const catalogoConfig = estilos?.catalogo || {};
+                                    const isCatalogoActivo = Boolean(catalogoConfig.activo);
+                                    const catalogoTitulo = catalogoConfig.titulo || 'Catálogo';
+                                    const catalogoEnlace = catalogoConfig.enlace ? String(catalogoConfig.enlace).trim() : null;
+                                    const isCatalogoUrlActive = Boolean(currentUrl && currentUrl.includes('catalogo=1'));
+                                    const catalogoUrl = catalogoEnlace
+                                        ? catalogoEnlace
+                                        : (dominio === 'plantillas'
+                                            ? `/plantillas/${siteSlug}/productos?catalogo=1`
+                                            : (siteSlug ? `/${dominio}/${siteSlug}/productos?catalogo=1` : `/${dominio}/productos?catalogo=1`));
+
                                     return (
-                                        <Link
-                                            key={seccion.slug}
-                                            href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`}
-                                            className={linkClasses}
-                                            style={activeStyle}
-                                        >
-                                            {seccion.nombre}
-                                        </Link>
+                                        <React.Fragment key={seccion.slug}>
+                                            <Link
+                                                href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`}
+                                                className={linkClasses}
+                                                style={activeStyle}
+                                            >
+                                                {seccion.nombre}
+                                            </Link>
+                                            {isProductos && isCatalogoActivo && (
+                                                catalogoEnlace ? (
+                                                    <a
+                                                        href={catalogoEnlace}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 text-gray-800 hover:text-white hover:bg-[var(--color-primario)]/60"
+                                                    >
+                                                        {catalogoTitulo} ↗
+                                                    </a>
+                                                ) : (
+                                                    <Link
+                                                        href={catalogoUrl}
+                                                        className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 ${isCatalogoUrlActive ? 'text-white' : 'text-gray-800 hover:text-white'}`}
+                                                        style={isCatalogoUrlActive ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
+                                                    >
+                                                        {catalogoTitulo}
+                                                    </Link>
+                                                )
+                                            )}
+                                        </React.Fragment>
                                     );
                                 }
 

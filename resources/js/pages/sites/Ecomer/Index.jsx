@@ -6,12 +6,15 @@ import FloatingWhatsApp from './shared/FloatingWhatsApp';
 import SectionInicio from './components/Inicio/SectionInicio';
 import SectionProductos from './components/Productos/SectionProductos';
 import SectionServicios from './components/Servicios/SectionServicios';
+import SectionNosotros from './components/Nosotros/SectionNosotros';
+import SectionContacto from './components/Contacto/SectionContacto';
 import SectionProductoDetalle from './components/Productos/SectionProductoDetalle';
 
 export default function Ecomer({
     site,
     dominio,
     siteSlug,
+    tieneTienda,
     secciones,
     seccionActiva,
     seccionesData,
@@ -24,6 +27,9 @@ export default function Ecomer({
         if (typeof document !== 'undefined') {
             document.documentElement.classList.remove('dark');
             document.documentElement.style.colorScheme = 'light';
+        }
+        if (typeof window !== 'undefined' && window.location.hash) {
+            window.history.replaceState(null, '', window.location.pathname + window.location.search);
         }
     }, []);
 
@@ -59,6 +65,9 @@ export default function Ecomer({
                         p.nombre?.toLowerCase() === paramProd.toLowerCase()
                 );
                 setProductoSeleccionado(encontrado || null);
+                if (encontrado && typeof window !== 'undefined') {
+                    window.scrollTo(0, 0);
+                }
             } else {
                 setProductoSeleccionado(null);
             }
@@ -75,7 +84,7 @@ export default function Ecomer({
             if (prod) {
                 url.searchParams.set('producto', prod.slug || prod.id);
                 window.history.pushState({}, '', url.toString());
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                window.scrollTo(0, 0);
             } else {
                 url.searchParams.delete('producto');
                 window.history.pushState({}, '', url.toString());
@@ -105,6 +114,10 @@ export default function Ecomer({
         inicio: SectionInicio,
         productos: SectionProductos,
         servicios: SectionServicios,
+        nosotros: SectionNosotros,
+        'sobre-nosotros': SectionNosotros,
+        contacto: SectionContacto,
+        contactos: SectionContacto,
     };
 
     const slugLower = seccionActiva?.slug?.toLowerCase() || '';
@@ -143,6 +156,11 @@ export default function Ecomer({
                     secciones={secciones}
                     seccionActiva={seccionActiva}
                     seccionesData={seccionesData}
+                    tieneTienda={tieneTienda}
+                    productos={productos}
+                    serviciosSitio={serviciosSitio}
+                    estilos={estilos}
+                    esDetalleProducto={Boolean(productoSeleccionado)}
                 />
 
                 {productoSeleccionado ? (
@@ -153,6 +171,7 @@ export default function Ecomer({
                         productosRelacionados={productos}
                         site={site}
                         seccionesData={seccionesData}
+                        estilos={estilos}
                     />
                 ) : (
                     <ActiveComponent
@@ -165,6 +184,7 @@ export default function Ecomer({
                         productosDestacados={productosDestacados}
                         serviciosSitio={serviciosSitio}
                         styles={styles}
+                        estilos={estilos}
                         onSeleccionarProducto={handleSeleccionarProducto}
                     />
                 )}
@@ -176,9 +196,10 @@ export default function Ecomer({
                     secciones={secciones}
                     seccionActiva={seccionActiva}
                     seccionesData={seccionesData}
+                    estilos={estilos}
                 />
 
-                <FloatingWhatsApp site={site} dominio={dominio} siteSlug={siteSlug} seccionesData={seccionesData} />
+                <FloatingWhatsApp site={site} dominio={dominio} siteSlug={siteSlug} seccionesData={seccionesData} estilos={estilos} />
             </div>
         </>
     );

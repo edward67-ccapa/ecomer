@@ -1,11 +1,19 @@
 import { useState, useMemo, useEffect } from 'react';
+import { usePage } from '@inertiajs/react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DynamicIcon from '@/components/DynamicIcon';
 import { useProductosData } from './hooks/useProductosData';
 import { useCartStore } from '@/stores/useCartStore';
 
-export default function SectionProductos({ dominio, siteSlug, seccion, seccionesData, productos: initialProductos, onSeleccionarProducto }) {
+export default function SectionProductos({ dominio, siteSlug, seccion, seccionesData, productos: initialProductos, onSeleccionarProducto, estilos }) {
     const addItem = useCartStore((state) => state.addItem);
+    const cartItems = useCartStore((state) => state.items);
+
+    const isInCart = (prod) => {
+        const prodId = prod.id || prod.nombre;
+        return (cartItems || []).some((item) => (item.id || item.nombre) === prodId);
+    };
+
     const { seccionData, productos, loading, error } = useProductosData(
         dominio,
         siteSlug,
@@ -39,21 +47,97 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
         return {};
     });
     const [acordeonesAbiertos, setAcordeonesAbiertos] = useState({
+        precio: true,
         categoria: true,
         subcategoria: true,
         tags: true,
     });
+    const [subAcordeonesAbiertos, setSubAcordeonesAbiertos] = useState({});
     const [mostrarFiltrosMovil, setMostrarFiltrosMovil] = useState(false);
+
+    // Rango global de precios min y max calculados de la lista de productos
+    const { minPrecioAbsoluto, maxPrecioAbsoluto } = useMemo(() => {
+        if (!productos || productos.length === 0) {
+            return { minPrecioAbsoluto: 0, maxPrecioAbsoluto: 500 };
+        }
+        let minP = Infinity;
+        let maxP = -Infinity;
+
+        productos.forEach((prod) => {
+            const tieneOferta = Boolean(prod.precio_oferta || prod.precio_oferta_soles);
+            const p = tieneOferta
+                ? Number(prod.precio_oferta_soles || prod.precio_oferta)
+                : Number(prod.precio_soles || prod.precio || 0);
+            if (!isNaN(p) && p >= 0) {
+                if (p < minP) minP = p;
+                if (p > maxP) maxP = p;
+            }
+        });
+
+        if (minP === Infinity) minP = 0;
+        if (maxP === -Infinity) maxP = 500;
+
+        return {
+            minPrecioAbsoluto: Math.floor(minP),
+            maxPrecioAbsoluto: Math.ceil(maxP),
+        };
+    }, [productos]);
+
+    const [rangoPrecio, setRangoPrecio] = useState([minPrecioAbsoluto, maxPrecioAbsoluto]);
+
+    useEffect(() => {
+        setRangoPrecio([minPrecioAbsoluto, maxPrecioAbsoluto]);
+    }, [minPrecioAbsoluto, maxPrecioAbsoluto]);
+
+    const { url: currentUrl } = usePage();
+    const isCatalogoMode = Boolean(currentUrl && currentUrl.includes('catalogo=1'));
+    const catalogoConfig = estilos?.catalogo || {};
 
     const getValor = (label) => seccionData?.contenido?.find((item) => item.label === label)?.valor;
 
-    const subTitulo = getValor('sub_titulo') || 'Catálogo Completo';
-    const titulo = getValor('titulo') || 'Nuestras Tortas y Creaciones';
+    const subTitulo = isCatalogoMode ? 'Catálogo Especial' : (getValor('sub_titulo') || 'Catálogo Completo');
+    const titulo = isCatalogoMode ? (catalogoConfig.titulo || 'Catálogo de Productos') : (getValor('titulo') || 'Nuestras Tortas y Creaciones');
     const icono = getValor('icono') || 'FaRegHeart';
 
-    // Atributos dinámicos que se pueden usar para filtrar (se escanean automáticamente de los productos)
-    const gruposFiltros = useMemo(() => {
-        const clavesFiltro = ['categoria', 'subcategoria', 'tags', 'ocasion', 'marca'];
+    // Árbol jerárquico de Categorías -> Subcategorías para el desplegable dentro del desplegable
+    const categoriasArbol = useMemo(() => {
+        const catMap = new Map();
+
+        productos.forEach((prod) => {
+            const cat = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
+            const sub = typeof prod.subcategoria === 'object' ? prod.subcategoria?.nombre : prod.subcategoria;
+
+            if (!cat) return;
+
+            if (!catMap.has(cat)) {
+                catMap.set(cat, {
+                    nombre: cat,
+                    count: 0,
+                    subcategoriasMap: new Map(),
+                });
+            }
+
+            const catData = catMap.get(cat);
+            catData.count += 1;
+
+            if (sub) {
+                catData.subcategoriasMap.set(sub, (catData.subcategoriasMap.get(sub) || 0) + 1);
+            }
+        });
+
+        return Array.from(catMap.values()).map((catData) => ({
+            nombre: catData.nombre,
+            count: catData.count,
+            subcategorias: Array.from(catData.subcategoriasMap.entries()).map(([subNombre, subCount]) => ({
+                nombre: subNombre,
+                count: subCount,
+            })),
+        }));
+    }, [productos]);
+
+    // Grupos adicionales de filtros (tags, ocasión, marca, etc.)
+    const otrosGruposFiltros = useMemo(() => {
+        const clavesFiltro = ['tags', 'ocasion', 'marca'];
         const grupos = [];
 
         clavesFiltro.forEach((key) => {
@@ -114,26 +198,98 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
         }));
     };
 
+    const toggleSubAcordeon = (catNombre) => {
+        setSubAcordeonesAbiertos((prev) => ({
+            ...prev,
+            [catNombre]: !prev[catNombre],
+        }));
+    };
+
+    const isPrecioFiltrado = rangoPrecio[0] > minPrecioAbsoluto || rangoPrecio[1] < maxPrecioAbsoluto;
+
     const limpiarFiltros = () => {
         setFiltrosSeleccionados({});
         setBusqueda('');
+        setRangoPrecio([minPrecioAbsoluto, maxPrecioAbsoluto]);
     };
 
-    const totalFiltrosActivos = Object.values(filtrosSeleccionados).flat().length;
+    const totalFiltrosActivos = Object.values(filtrosSeleccionados).flat().length + (isPrecioFiltrado ? 1 : 0);
+
+    const minPercent = maxPrecioAbsoluto > minPrecioAbsoluto
+        ? Math.max(0, Math.min(100, ((rangoPrecio[0] - minPrecioAbsoluto) / (maxPrecioAbsoluto - minPrecioAbsoluto)) * 100))
+        : 0;
+
+    const maxPercent = maxPrecioAbsoluto > minPrecioAbsoluto
+        ? Math.max(0, Math.min(100, ((rangoPrecio[1] - minPrecioAbsoluto) / (maxPrecioAbsoluto - minPrecioAbsoluto)) * 100))
+        : 100;
 
     // Productos filtrados dinámicamente
     const productosFiltrados = useMemo(() => {
         return productos.filter((prod) => {
+            // Coincidencia por rango de precio
+            const tieneOferta = Boolean(prod.precio_oferta || prod.precio_oferta_soles);
+            const pEfectivo = tieneOferta
+                ? Number(prod.precio_oferta_soles || prod.precio_oferta)
+                : Number(prod.precio_soles || prod.precio || 0);
+
+            if (pEfectivo < rangoPrecio[0] || pEfectivo > rangoPrecio[1]) {
+                return false;
+            }
+
             // Coincidencia por búsqueda de texto
+            const busq = busqueda.trim().toLowerCase();
             const coincideBusqueda =
-                !busqueda.trim() ||
-                prod.nombre?.toLowerCase().includes(busqueda.toLowerCase()) ||
-                prod.descripcion?.toLowerCase().includes(busqueda.toLowerCase());
+                !busq ||
+                prod.nombre?.toLowerCase().includes(busq) ||
+                prod.descripcion?.toLowerCase().includes(busq);
 
             if (!coincideBusqueda) return false;
 
-            // Coincidencia por cada grupo de filtros seleccionado (AND entre grupos, OR dentro del mismo grupo)
+            // Filtro especial de Catálogo (si se accedió vía enlace /productos?catalogo=1)
+            if (isCatalogoMode) {
+                const tipoFiltro = catalogoConfig.tipo_filtro || 'todos';
+                if (tipoFiltro === 'categoria') {
+                    const catIds = Array.isArray(catalogoConfig.categorias)
+                        ? catalogoConfig.categorias.map(String)
+                        : [];
+                    if (catIds.length > 0) {
+                        const prodCatId = prod.categoria_id != null ? String(prod.categoria_id) : null;
+                        const prodCatNombre = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
+                        if ((!prodCatId || !catIds.includes(prodCatId)) && (!prodCatNombre || !catIds.includes(prodCatNombre))) {
+                            return false;
+                        }
+                    }
+                } else if (tipoFiltro === 'subcategoria') {
+                    const subCatIds = Array.isArray(catalogoConfig.subcategorias)
+                        ? catalogoConfig.subcategorias.map(String)
+                        : [];
+                    if (subCatIds.length > 0) {
+                        const prodSubId = prod.subcategoria_id != null ? String(prod.subcategoria_id) : null;
+                        const prodSubNombre = typeof prod.subcategoria === 'object' ? prod.subcategoria?.nombre : prod.subcategoria;
+                        if ((!prodSubId || !subCatIds.includes(prodSubId)) && (!prodSubNombre || !subCatIds.includes(prodSubNombre))) {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            // Coincidencia por categoría
+            const prodCat = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
+            const catSeleccionadas = filtrosSeleccionados.categoria || [];
+            if (catSeleccionadas.length > 0 && (!prodCat || !catSeleccionadas.includes(prodCat))) {
+                return false;
+            }
+
+            // Coincidencia por subcategoría
+            const prodSub = typeof prod.subcategoria === 'object' ? prod.subcategoria?.nombre : prod.subcategoria;
+            const subSeleccionadas = filtrosSeleccionados.subcategoria || [];
+            if (subSeleccionadas.length > 0 && (!prodSub || !subSeleccionadas.includes(prodSub))) {
+                return false;
+            }
+
+            // Coincidencia por cada otro grupo de filtros seleccionado
             return Object.entries(filtrosSeleccionados).every(([grupoKey, valoresSeleccionados]) => {
+                if (grupoKey === 'categoria' || grupoKey === 'subcategoria') return true;
                 if (!valoresSeleccionados || valoresSeleccionados.length === 0) return true;
 
                 const valProducto = prod[grupoKey];
@@ -146,9 +302,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                 return valoresSeleccionados.includes(valProducto);
             });
         });
-    }, [productos, busqueda, filtrosSeleccionados]);
-
-    const whatsappUrl = 'https://wa.me/51999999999';
+    }, [productos, busqueda, filtrosSeleccionados, rangoPrecio, isCatalogoMode, catalogoConfig]);
 
     if (loading || cargandoPantalla) {
         return (
@@ -199,7 +353,159 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                             <div className="flex-1 max-w-20 h-px" style={{ background: 'linear-gradient(to left, transparent, var(--color-primario))' }} />
                         </div>
                     )}
+
+                    {isCatalogoMode && (
+                        <>
+                            <style>{`
+                                @media print {
+                                    header, footer, nav, button, form, .print\\:hidden, [class*="whatsapp"], [class*="offcanvas"] {
+                                        display: none !important;
+                                    }
+                                    body, main {
+                                        background: #ffffff !important;
+                                        color: #000000 !important;
+                                        padding: 0 !important;
+                                        margin: 0 !important;
+                                    }
+                                    main {
+                                        padding-top: 20px !important;
+                                    }
+                                }
+                            `}</style>
+
+                            <div className="mt-4 flex justify-center print:hidden">
+                                <button
+                                    type="button"
+                                    onClick={() => window.print()}
+                                    className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-primario)] px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:opacity-90 transition cursor-pointer"
+                                >
+                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                    </svg>
+                                    <span>Descargar Catálogo (PDF)</span>
+                                </button>
+                            </div>
+                        </>
+                    )}
                 </div>
+
+                {/* SECCIÓN SUPERIOR: EXPLORAR POR CATEGORÍA ("Shop by Category") */}
+                {categoriasArbol.length > 0 && (
+                    <div className="mb-10">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2
+                                className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight"
+                                style={{ fontFamily: 'var(--tipografia-titulos)' }}
+                            >
+                                Explorar por Categoría
+                            </h2>
+                            <span className="text-xs font-semibold text-gray-400">
+                                {categoriasArbol.length} categorías disponibles
+                            </span>
+                        </div>
+
+                        {/* Tarjetas Visuales Negras / Dark Cards de Categorías */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                            {/* Opción 'Todas' */}
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setFiltrosSeleccionados((prev) => {
+                                        const copy = { ...prev };
+                                        delete copy.categoria;
+                                        delete copy.subcategoria;
+                                        return copy;
+                                    });
+                                }}
+                                className={`relative h-40 rounded-2xl transition-all duration-300 text-left group cursor-pointer overflow-hidden border ${(!filtrosSeleccionados.categoria || filtrosSeleccionados.categoria.length === 0)
+                                    ? 'border-[var(--color-primario)] ring-4 ring-[var(--color-primario)]/30 scale-[1.02] shadow-xl'
+                                    : 'border-gray-800 hover:border-gray-600 shadow-md hover:scale-[1.01]'
+                                    } bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 flex flex-col justify-between`}
+                            >
+                                <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-10" />
+
+                                <div className="relative z-20 flex items-center justify-between">
+                                    <span className="text-[10px] font-bold text-white/80 uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded border border-white/10">
+                                        Catálogo
+                                    </span>
+                                    <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${(!filtrosSeleccionados.categoria || filtrosSeleccionados.categoria.length === 0)
+                                        ? 'bg-[var(--color-primario)] text-white shadow-sm'
+                                        : 'bg-white/20 text-white backdrop-blur-md border border-white/10'
+                                        }`}>
+                                        {productos.length} items
+                                    </span>
+                                </div>
+
+                                <div className="relative z-20">
+                                    <h3 className="text-base sm:text-lg font-bold text-white group-hover:text-[var(--color-primario)] transition-colors tracking-tight">
+                                        Todas
+                                    </h3>
+                                    <p className="text-[11px] text-gray-300 font-medium">Ver todo el catálogo</p>
+                                </div>
+                            </button>
+
+                            {/* Tarjetas por Categoría */}
+                            {categoriasArbol.map((cat) => {
+                                const isSelected = (filtrosSeleccionados.categoria || []).includes(cat.nombre);
+                                const prodConImagen = productos.find((p) => {
+                                    const c = typeof p.categoria === 'object' ? p.categoria?.nombre : p.categoria;
+                                    return c === cat.nombre && p.imagen;
+                                });
+
+                                return (
+                                    <button
+                                        key={cat.nombre}
+                                        type="button"
+                                        onClick={() => toggleFiltro('categoria', cat.nombre)}
+                                        className={`relative h-40 rounded-2xl transition-all duration-300 text-left group cursor-pointer overflow-hidden border ${isSelected
+                                            ? 'border-[var(--color-primario)] ring-4 ring-[var(--color-primario)]/30 scale-[1.02] shadow-xl'
+                                            : 'border-gray-800 hover:border-gray-600 shadow-md hover:scale-[1.01]'
+                                            } bg-neutral-950 p-4 flex flex-col justify-between`}
+                                    >
+                                        {/* Imagen de Fondo Real del Producto con Nitidez */}
+                                        {prodConImagen?.imagen ? (
+                                            <img
+                                                src={prodConImagen.imagen}
+                                                alt={cat.nombre}
+                                                className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
+                                            />
+                                        ) : (
+                                            <div className="absolute inset-0 bg-gradient-to-br from-gray-900 to-black" />
+                                        )}
+
+                                        {/* Superposición Oscura Elegante */}
+                                        <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/30 group-hover:via-black/40 transition-colors z-10" />
+
+                                        {/* Contenido en la Tarjeta */}
+                                        <div className="relative z-20 flex items-center justify-between">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-white/90 bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-xs border border-white/10">
+                                                Categoría
+                                            </span>
+                                            <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${isSelected
+                                                ? 'bg-[var(--color-primario)] text-white shadow-sm'
+                                                : 'bg-white/20 text-white backdrop-blur-md border border-white/20'
+                                                }`}>
+                                                {cat.count}
+                                            </span>
+                                        </div>
+
+                                        <div className="relative z-20">
+                                            <h3 className={`text-base sm:text-lg font-bold transition-colors tracking-tight ${isSelected ? 'text-[var(--color-primario)]' : 'text-white group-hover:text-[var(--color-primario)]'
+                                                }`}>
+                                                {cat.nombre}
+                                            </h3>
+                                            <p className="text-[11px] text-gray-300 font-medium">
+                                                {cat.subcategorias.length > 0
+                                                    ? `${cat.subcategorias.length} subcategorías`
+                                                    : `${cat.count} ${cat.count === 1 ? 'producto' : 'productos'}`}
+                                            </p>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
 
                 {/* Botón Filtros para Móviles */}
                 <div className="lg:hidden mb-6 flex items-center justify-between gap-4">
@@ -247,69 +553,326 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                             )}
                         </div>
 
-                        {/* Acordeones Dinámicos de Filtros */}
-                        {gruposFiltros.length > 0 ? (
-                            <div className="space-y-4">
-                                {gruposFiltros.map((grupo) => {
-                                    const isOpen = acordeonesAbiertos[grupo.key] ?? true;
-                                    const seleccionadosGrupo = filtrosSeleccionados[grupo.key] || [];
+                        {/* Acordeones Dinámicos de Filtros (Categorías anidadas con subcategorías + otros grupos) */}
+                        <div className="space-y-4">
+                            {/* 0. RANGO DE PRECIO (SLIDER DOBLE) */}
+                            <div className="border-b border-gray-100 pb-4">
+                                <button
+                                    onClick={() => toggleAcordeon('precio')}
+                                    className="w-full flex items-center justify-between py-2 text-sm font-bold text-gray-800 hover:text-[var(--color-primario)] transition-colors cursor-pointer"
+                                    style={{ fontFamily: 'var(--tipografia-titulos)' }}
+                                >
+                                    <span>Rango de Precio</span>
+                                    <span className="text-xs text-gray-400">
+                                        {acordeonesAbiertos.precio ? '▲' : '▼'}
+                                    </span>
+                                </button>
 
-                                    return (
-                                        <div key={grupo.key} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
-                                            <button
-                                                onClick={() => toggleAcordeon(grupo.key)}
-                                                className="w-full flex items-center justify-between py-2 text-sm font-bold text-gray-800 hover:text-[var(--color-primario)] transition-colors"
-                                                style={{ fontFamily: 'var(--tipografia-titulos)' }}
+                                <AnimatePresence initial={false}>
+                                    {acordeonesAbiertos.precio && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            transition={{ duration: 0.2 }}
+                                            className="overflow-hidden pt-2 space-y-4"
+                                        >
+                                            {/* Valores Min y Max */}
+                                            <div className="flex items-center justify-between gap-2 text-xs font-semibold text-gray-700">
+                                                <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-lg">
+                                                    <span className="text-gray-400 font-normal">Min:</span>
+                                                    <span>S/ {rangoPrecio[0]}</span>
+                                                </div>
+                                                <span className="text-gray-400 font-bold">-</span>
+                                                <div className="flex items-center gap-1 bg-gray-50 border border-gray-200 px-2.5 py-1 rounded-lg">
+                                                    <span className="text-gray-400 font-normal">Max:</span>
+                                                    <span>S/ {rangoPrecio[1]}</span>
+                                                </div>
+                                            </div>
+
+                                            {/* Slider de Doble Rango */}
+                                            <div className="relative w-full h-6 flex items-center select-none">
+                                                {/* Barra de Fondo */}
+                                                <div className="absolute inset-x-0 h-2 rounded-full bg-gray-200 pointer-events-none" />
+
+                                                {/* Tramo Seleccionado */}
+                                                <div
+                                                    className="absolute h-2 rounded-full pointer-events-none transition-all duration-75"
+                                                    style={{
+                                                        left: `${minPercent}%`,
+                                                        right: `${100 - maxPercent}%`,
+                                                        backgroundColor: 'var(--color-primario)',
+                                                    }}
+                                                />
+
+                                                {/* Range Input Min */}
+                                                <input
+                                                    type="range"
+                                                    aria-label="Precio mínimo"
+                                                    min={minPrecioAbsoluto}
+                                                    max={maxPrecioAbsoluto}
+                                                    step={1}
+                                                    value={rangoPrecio[0]}
+                                                    onChange={(e) => {
+                                                        const val = Math.min(Number(e.target.value), rangoPrecio[1] - 1);
+                                                        setRangoPrecio([val, rangoPrecio[1]]);
+                                                    }}
+                                                    className="absolute inset-0 w-full h-2 appearance-none bg-transparent pointer-events-none z-20 cursor-pointer
+                                                    [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--color-primario)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:appearance-none
+                                                    [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[var(--color-primario)] [&::-moz-range-thumb]:shadow-md"
+                                                />
+
+                                                {/* Range Input Max */}
+                                                <input
+                                                    type="range"
+                                                    aria-label="Precio máximo"
+                                                    min={minPrecioAbsoluto}
+                                                    max={maxPrecioAbsoluto}
+                                                    step={1}
+                                                    value={rangoPrecio[1]}
+                                                    onChange={(e) => {
+                                                        const val = Math.max(Number(e.target.value), rangoPrecio[0] + 1);
+                                                        setRangoPrecio([rangoPrecio[0], val]);
+                                                    }}
+                                                    className="absolute inset-0 w-full h-2 appearance-none bg-transparent pointer-events-none z-30 cursor-pointer
+                                                    [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[var(--color-primario)] [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:appearance-none
+                                                    [&::-moz-range-thumb]:pointer-events-auto [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-white [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-[var(--color-primario)] [&::-moz-range-thumb]:shadow-md"
+                                                />
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+                            </div>
+
+                            {/* 1. GRUPO CATEGORÍAS CON DESPLEGABLES ANIDADOS */}
+                            {categoriasArbol.length > 0 && (
+                                <div className="border-b border-gray-100 pb-4">
+                                    <button
+                                        onClick={() => toggleAcordeon('categoria')}
+                                        className="w-full flex items-center justify-between py-2 text-sm font-bold text-gray-800 hover:text-[var(--color-primario)] transition-colors cursor-pointer"
+                                        style={{ fontFamily: 'var(--tipografia-titulos)' }}
+                                    >
+                                        <span>Categorías</span>
+                                        <span className="text-xs text-gray-400">
+                                            {acordeonesAbiertos.categoria ? '▲' : '▼'}
+                                        </span>
+                                    </button>
+
+                                    <AnimatePresence initial={false}>
+                                        {acordeonesAbiertos.categoria && (
+                                            <motion.div
+                                                initial={{ opacity: 0, height: 0 }}
+                                                animate={{ opacity: 1, height: 'auto' }}
+                                                exit={{ opacity: 0, height: 0 }}
+                                                transition={{ duration: 0.2 }}
+                                                className="overflow-hidden pt-2 space-y-2"
                                             >
-                                                <span>{grupo.titulo}</span>
-                                                <span className="text-xs text-gray-400">
-                                                    {isOpen ? '▲' : '▼'}
-                                                </span>
-                                            </button>
+                                                {categoriasArbol.map((cat) => {
+                                                    const hasSubcats = cat.subcategorias.length > 0;
+                                                    const isCatChecked = (filtrosSeleccionados.categoria || []).includes(cat.nombre);
+                                                    const autoOpenSub = isCatChecked || cat.subcategorias.some((sub) => (filtrosSeleccionados.subcategoria || []).includes(sub.nombre));
+                                                    const isSubOpen = subAcordeonesAbiertos[cat.nombre] ?? autoOpenSub;
 
-                                            <AnimatePresence initial={false}>
-                                                {isOpen && (
-                                                    <motion.div
-                                                        initial={{ opacity: 0, height: 0 }}
-                                                        animate={{ opacity: 1, height: 'auto' }}
-                                                        exit={{ opacity: 0, height: 0 }}
-                                                        transition={{ duration: 0.2 }}
-                                                        className="overflow-hidden pt-2 space-y-2"
-                                                    >
-                                                        {grupo.opciones.map((opcion) => {
-                                                            const isChecked = seleccionadosGrupo.includes(opcion.nombre);
-                                                            return (
-                                                                <label
-                                                                    key={opcion.nombre}
-                                                                    className="flex items-center justify-between text-xs text-gray-600 hover:text-gray-900 cursor-pointer group py-1"
-                                                                >
-                                                                    <div className="flex items-center gap-2.5">
+                                                    return (
+                                                        <div key={cat.nombre} className="space-y-1">
+                                                            {/* Fila Principal de la Categoría */}
+                                                            <div className="flex items-center justify-between text-xs text-gray-700 hover:text-gray-900 group py-1">
+                                                                <div className="flex items-center gap-1.5 flex-1 min-w-0">
+                                                                    {hasSubcats ? (
+                                                                        <button
+                                                                            type="button"
+                                                                            onClick={() => toggleSubAcordeon(cat.nombre)}
+                                                                            className="p-1 text-[10px] font-bold text-gray-500 hover:text-[var(--color-primario)] transition-colors rounded hover:bg-gray-100 cursor-pointer"
+                                                                            title={isSubOpen ? 'Ocultar subcategorías' : 'Ver subcategorías'}
+                                                                        >
+                                                                            {isSubOpen ? '▼' : '▶'}
+                                                                        </button>
+                                                                    ) : (
+                                                                        <span className="w-4 inline-block shrink-0" />
+                                                                    )}
+
+                                                                    <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
                                                                         <input
                                                                             type="checkbox"
-                                                                            checked={isChecked}
-                                                                            onChange={() => toggleFiltro(grupo.key, opcion.nombre)}
+                                                                            checked={isCatChecked}
+                                                                            onChange={() => toggleFiltro('categoria', cat.nombre)}
                                                                             className="rounded border-gray-300 text-[var(--color-primario)] focus:ring-[var(--color-primario)]"
                                                                         />
-                                                                        <span className={isChecked ? 'font-bold text-[var(--color-primario)]' : ''}>
-                                                                            {opcion.nombre}
+                                                                        <span className={`truncate ${isCatChecked ? 'font-bold text-[var(--color-primario)]' : ''}`}>
+                                                                            {cat.nombre}
                                                                         </span>
-                                                                    </div>
-                                                                    <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full font-medium">
-                                                                        {opcion.count}
+                                                                    </label>
+                                                                </div>
+
+                                                                <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0">
+                                                                    {cat.count}
+                                                                </span>
+                                                            </div>
+
+                                                            {/* Desplegable Anidado de Subcategorías */}
+                                                            {hasSubcats && (
+                                                                <AnimatePresence initial={false}>
+                                                                    {isSubOpen && (
+                                                                        <motion.div
+                                                                            initial={{ opacity: 0, height: 0 }}
+                                                                            animate={{ opacity: 1, height: 'auto' }}
+                                                                            exit={{ opacity: 0, height: 0 }}
+                                                                            transition={{ duration: 0.15 }}
+                                                                            className="overflow-hidden border-l-2 border-gray-200 ml-4 pl-3 space-y-1 py-1"
+                                                                        >
+                                                                            {cat.subcategorias.map((sub) => {
+                                                                                const isSubChecked = (filtrosSeleccionados.subcategoria || []).includes(sub.nombre);
+                                                                                return (
+                                                                                    <label
+                                                                                        key={sub.nombre}
+                                                                                        className="flex items-center justify-between text-xs text-gray-600 hover:text-gray-900 cursor-pointer group py-0.5"
+                                                                                    >
+                                                                                        <div className="flex items-center gap-2 min-w-0">
+                                                                                            <input
+                                                                                                type="checkbox"
+                                                                                                checked={isSubChecked}
+                                                                                                onChange={() => toggleFiltro('subcategoria', sub.nombre)}
+                                                                                                className="rounded border-gray-300 text-[var(--color-primario)] focus:ring-[var(--color-primario)]"
+                                                                                            />
+                                                                                            <span className={`truncate ${isSubChecked ? 'font-bold text-[var(--color-primario)]' : ''}`}>
+                                                                                                {sub.nombre}
+                                                                                            </span>
+                                                                                        </div>
+                                                                                        <span className="text-[9px] text-gray-400 bg-gray-50 px-1.5 py-0.5 rounded font-medium ml-2 shrink-0">
+                                                                                            {sub.count}
+                                                                                        </span>
+                                                                                    </label>
+                                                                                );
+                                                                            })}
+                                                                        </motion.div>
+                                                                    )}
+                                                                </AnimatePresence>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
+                                            </motion.div>
+                                        )}
+                                    </AnimatePresence>
+                                </div>
+                            )}
+
+                            {/* 2. OTROS GRUPOS DE FILTROS (TAGS, OCASIóN, MARCA) */}
+                            {otrosGruposFiltros.map((grupo) => {
+                                const isOpen = acordeonesAbiertos[grupo.key] ?? true;
+                                const seleccionadosGrupo = filtrosSeleccionados[grupo.key] || [];
+
+                                return (
+                                    <div key={grupo.key} className="border-b border-gray-100 pb-4 last:border-0 last:pb-0">
+                                        <button
+                                            onClick={() => toggleAcordeon(grupo.key)}
+                                            className="w-full flex items-center justify-between py-2 text-sm font-bold text-gray-800 hover:text-[var(--color-primario)] transition-colors cursor-pointer"
+                                            style={{ fontFamily: 'var(--tipografia-titulos)' }}
+                                        >
+                                            <span>{grupo.titulo}</span>
+                                            <span className="text-xs text-gray-400">
+                                                {isOpen ? '▲' : '▼'}
+                                            </span>
+                                        </button>
+
+                                        <AnimatePresence initial={false}>
+                                            {isOpen && (
+                                                <motion.div
+                                                    initial={{ opacity: 0, height: 0 }}
+                                                    animate={{ opacity: 1, height: 'auto' }}
+                                                    exit={{ opacity: 0, height: 0 }}
+                                                    transition={{ duration: 0.2 }}
+                                                    className="overflow-hidden pt-2 space-y-2"
+                                                >
+                                                    {grupo.opciones.map((opcion) => {
+                                                        const isChecked = seleccionadosGrupo.includes(opcion.nombre);
+                                                        return (
+                                                            <label
+                                                                key={opcion.nombre}
+                                                                className="flex items-center justify-between text-xs text-gray-600 hover:text-gray-900 cursor-pointer group py-1"
+                                                            >
+                                                                <div className="flex items-center gap-2.5 min-w-0">
+                                                                    <input
+                                                                        type="checkbox"
+                                                                        checked={isChecked}
+                                                                        onChange={() => toggleFiltro(grupo.key, opcion.nombre)}
+                                                                        className="rounded border-gray-300 text-[var(--color-primario)] focus:ring-[var(--color-primario)]"
+                                                                    />
+                                                                    <span className={`truncate ${isChecked ? 'font-bold text-[var(--color-primario)]' : ''}`}>
+                                                                        {opcion.nombre}
                                                                     </span>
-                                                                </label>
-                                                            );
-                                                        })}
-                                                    </motion.div>
-                                                )}
-                                            </AnimatePresence>
+                                                                </div>
+                                                                <span className="text-[10px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full font-medium ml-2 shrink-0">
+                                                                    {opcion.count}
+                                                                </span>
+                                                            </label>
+                                                        );
+                                                    })}
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* BANNER PRODUCTOS (Debajo del filtro, con el mismo ancho del panel de filtros) */}
+                        {(() => {
+                            if (!seccionesData) return null;
+                            const normalize = (str) =>
+                                String(str || '')
+                                    .toLowerCase()
+                                    .normalize('NFD')
+                                    .replace(/[\u0300-\u036f]/g, '')
+                                    .replace(/[-_ ]/g, '');
+
+                            const list = Array.isArray(seccionesData) ? seccionesData : Object.values(seccionesData);
+                            const banerObj = list.find((s) => {
+                                const norm = normalize(s?.slug || s?.nombre || '');
+                                return norm === 'banerproducto' || norm === 'banerproductos' || norm.includes('banerproducto');
+                            });
+
+                            if (!banerObj || !banerObj.contenido) return null;
+                            const itemImg = banerObj.contenido.find(
+                                (c) => c.label?.toLowerCase() === 'imagen' || c.tipo === 'imagen' || c.label?.toLowerCase() === 'img'
+                            );
+                            const val = itemImg?.valor;
+                            const imgUrl = Array.isArray(val) ? val[0] : (typeof val === 'string' ? val : null);
+                            const enlace = itemImg?.enlace || banerObj.enlace || null;
+
+                            if (!imgUrl) return null;
+
+                            return (
+                                <div className="mt-6 pt-6 border-t border-gray-100">
+                                    {enlace ? (
+                                        <a
+                                            href={enlace}
+                                            target={enlace.startsWith('http') ? '_blank' : '_self'}
+                                            rel="noopener noreferrer"
+                                            className="block overflow-hidden rounded-2xl shadow-xs hover:shadow-md transition-all group"
+                                        >
+                                            <img
+                                                src={imgUrl}
+                                                alt="Banner Producto"
+                                                className="w-full h-auto object-cover rounded-2xl group-hover:scale-102 transition-transform duration-300"
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
+                                        </a>
+                                    ) : (
+                                        <div className="overflow-hidden rounded-2xl shadow-xs">
+                                            <img
+                                                src={imgUrl}
+                                                alt="Banner Producto"
+                                                className="w-full h-auto object-cover rounded-2xl"
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
                                         </div>
-                                    );
-                                })}
-                            </div>
-                        ) : (
-                            <p className="text-xs text-gray-400 py-2">No hay filtros adicionales disponibles.</p>
-                        )}
+                                    )}
+                                </div>
+                            );
+                        })()}
                     </aside>
 
                     {/* COLUMNA DERECHA: Buscador + Grilla de Productos */}
@@ -335,96 +898,170 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
 
                         {/* Grilla de Productos */}
                         {productosFiltrados.length > 0 ? (
-                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
-                                {productosFiltrados.map((prod, idx) => (
-                                    <motion.div
-                                        key={prod.id || idx}
-                                        initial={{ opacity: 0, y: 20 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.4, delay: idx * 0.04 }}
-                                        onClick={() => {
-                                            if (onSeleccionarProducto) {
-                                                onSeleccionarProducto(prod);
-                                            } else if (typeof window !== 'undefined') {
-                                                const url = new URL(window.location.href);
-                                                url.searchParams.set('producto', prod.slug || prod.id);
-                                                window.history.pushState({}, '', url.toString());
-                                                window.dispatchEvent(new PopStateEvent('popstate'));
-                                            }
-                                        }}
-                                        className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 border border-gray-100 flex flex-col group cursor-pointer"
-                                        style={{ borderRadius: 'var(--radio-bordes)' }}
-                                    >
-                                        {/* Imagen del Producto */}
-                                        <div className="relative h-60 overflow-hidden bg-gray-50">
-                                            {prod.imagen ? (
-                                                <img
-                                                    src={prod.imagen}
-                                                    alt={prod.nombre}
-                                                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                                                />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center text-gray-300 text-4xl">
-                                                    🎂
-                                                </div>
-                                            )}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+                                {productosFiltrados.map((prod, idx) => {
+                                    const inCart = isInCart(prod);
+                                    const tieneOferta = Boolean(prod.precio_oferta || prod.precio_oferta_soles);
+                                    const precioRegular = Number(prod.precio_soles || prod.precio || 0);
+                                    const precioOferta = tieneOferta
+                                        ? Number(prod.precio_oferta_soles || prod.precio_oferta)
+                                        : null;
 
-                                            {prod.categoria && (
-                                                <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm text-xs font-semibold px-3 py-1 rounded-full shadow-sm text-gray-700">
-                                                    {prod.categoria}
-                                                </span>
-                                            )}
-                                        </div>
+                                    // Cálculo de descuentos
+                                    const descOferta = tieneOferta && precioRegular > 0
+                                        ? Math.round(((precioRegular - precioOferta) / precioRegular) * 100)
+                                        : null;
+                                    const descRegular = descOferta ? Math.max(5, Math.round(descOferta * 0.75)) : null;
+                                    const precioListaReferencial = Math.round(precioRegular * 1.3);
 
-                                        {/* Contenido Card */}
-                                        <div className="p-5 flex-1 flex flex-col justify-between">
-                                            <div>
-                                                <h3
-                                                    className="text-lg font-bold mb-2 group-hover:text-[var(--color-primario)] transition-colors"
-                                                    style={{ fontFamily: 'var(--tipografia-titulos)', color: '#1a1a2e' }}
-                                                >
-                                                    {prod.nombre}
-                                                </h3>
+                                    const categoriaTexto = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
 
-                                                {prod.descripcion && (
-                                                    <p
-                                                        className="text-xs text-gray-500 line-clamp-3 mb-4 leading-relaxed"
-                                                        style={{ fontFamily: 'var(--tipografia-texto)' }}
+                                    return (
+                                        <motion.div
+                                            key={prod.id || idx}
+                                            initial={{ opacity: 0, y: 20 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.4, delay: idx * 0.04 }}
+                                            onClick={() => {
+                                                if (onSeleccionarProducto) {
+                                                    onSeleccionarProducto(prod);
+                                                } else if (typeof window !== 'undefined') {
+                                                    const url = new URL(window.location.href);
+                                                    url.searchParams.set('producto', prod.slug || prod.id);
+                                                    window.history.pushState({}, '', url.toString());
+                                                    window.dispatchEvent(new PopStateEvent('popstate'));
+                                                    window.scrollTo(0, 0);
+                                                }
+                                            }}
+                                            className="bg-white border border-gray-200 rounded-xl p-3.5 sm:p-4 flex flex-col justify-between h-full relative cursor-pointer hover:shadow-lg transition-all duration-300 group"
+                                        >
+                                            {/* Imagen del Producto */}
+                                            <div className="relative aspect-square w-full mb-3 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden" style={{ aspectRatio: '1/1', width: '100%', maxHeight: '280px' }}>
+
+                                                {/* Badge OFERTA arriba a la derecha */}
+                                                {tieneOferta && (
+                                                    <span
+                                                        className="absolute top-2.5 right-2.5 z-10 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white shadow-md"
+                                                        style={{
+                                                            backgroundColor: 'var(--color-primario)',
+                                                            fontFamily: 'var(--tipografia-titulos)',
+                                                        }}
                                                     >
-                                                        {prod.descripcion}
-                                                    </p>
+                                                        <DynamicIcon name="FaFire" className="h-2.5 w-2.5" />
+                                                        <span>OFERTA</span>
+                                                        {descOferta && <span className="ml-0.5 font-bold">-{descOferta}%</span>}
+                                                    </span>
+                                                )}
+
+                                                {prod.imagen ? (
+                                                    <img
+                                                        src={prod.imagen}
+                                                        alt={prod.nombre}
+                                                        width={400}
+                                                        height={400}
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        className="w-full h-full max-w-full max-h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                        style={{ maxWidth: '100%', maxHeight: '280px', width: '100%', height: '100%', objectFit: 'cover', aspectRatio: '1/1' }}
+                                                    />
+                                                ) : (
+                                                    <div className="flex flex-col items-center justify-center text-gray-300 gap-1.5">
+                                                        <DynamicIcon name="FaBoxOpen" className="h-12 w-12 text-gray-300" />
+                                                        <span className="text-[11px] text-gray-400">Sin imagen</span>
+                                                    </div>
                                                 )}
                                             </div>
 
-                                            <div className="pt-3 border-t border-gray-100 flex items-center justify-between mt-auto">
-                                                <div>
-                                                    <span className="text-[10px] text-gray-400 block font-medium">Precio</span>
-                                                    <span
-                                                        className="text-lg font-extrabold"
-                                                        style={{ color: 'var(--color-primario)', fontFamily: 'var(--tipografia-titulos)' }}
-                                                    >
-                                                        {prod.precio_soles ? `S/ ${prod.precio_soles}` : (prod.precio_dolares ? `$ ${prod.precio_dolares}` : `S/ ${prod.precio}`)}
-                                                    </span>
-                                                </div>
+                                            {/* Nombre del Producto */}
+                                            <h3
+                                                className="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-[var(--color-primario)] transition-colors line-clamp-2 min-h-[2.4rem] leading-snug mb-1.5"
+                                                title={prod.nombre}
+                                                style={{ fontFamily: 'var(--tipografia-titulos)' }}
+                                            >
+                                                {prod.nombre}
+                                            </h3>
 
-                                                <div className="flex items-center gap-2">
-                                                    <button
-                                                        type="button"
-                                                        onClick={(e) => {
-                                                            e.stopPropagation();
-                                                            addItem(prod);
-                                                        }}
-                                                        className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-xs font-semibold text-gray-800 bg-gray-100 hover:bg-gray-200 transition shadow-xs cursor-pointer active:scale-95"
-                                                        style={{ borderRadius: 'var(--radio-bordes)', background: 'var(--color-primario)' }}
-                                                        title="Agregar al carrito"
-                                                    >
-                                                        <DynamicIcon name="FaCartShopping" className="h-3.5 w-3.5 text-white" />
-                                                    </button>
-                                                </div>
+                                            {/* Descripción Corta */}
+                                            {(prod.descripcion_corta || prod.descripcion) && (
+                                                <p
+                                                    className="text-[11px] text-gray-500 line-clamp-2 min-h-[2rem] leading-relaxed mb-3"
+                                                    title={prod.descripcion_corta || prod.descripcion}
+                                                    style={{ fontFamily: 'var(--tipografia-texto)' }}
+                                                >
+                                                    {prod.descripcion_corta || prod.descripcion}
+                                                </p>
+                                            )}
+
+                                            {/* Bloque de Precios */}
+                                            <div className="mt-auto pt-2">
+                                                {tieneOferta ? (
+                                                    <>
+                                                        {/* Precio Principal */}
+                                                        <div className="flex items-baseline gap-1.5 mb-1 flex-wrap">
+                                                            <span className="text-xs font-black text-[#0089CF]">S/</span>
+                                                            <span className="text-2xl sm:text-3xl font-black text-[#0089CF] tracking-tight leading-none">
+                                                                {precioOferta.toFixed(0)}
+                                                            </span>
+                                                            {descOferta && (
+                                                                <span className="bg-[#0089CF] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-xs leading-none">
+                                                                    -{descOferta}%
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Precio Regular Secundario */}
+                                                        <div className="flex items-baseline gap-1.5 mb-0.5">
+                                                            <span className="text-xs font-bold text-gray-900">S/</span>
+                                                            <span className="text-lg font-extrabold text-gray-900 leading-none">
+                                                                {precioRegular.toFixed(0)}
+                                                            </span>
+                                                            {descRegular && (
+                                                                <span
+                                                                    className="text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-xs leading-none"
+                                                                    style={{ backgroundColor: 'var(--color-primario)' }}
+                                                                >
+                                                                    -{descRegular}%
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Precio Lista Tachado */}
+                                                        <div className="text-[11px] text-gray-400 line-through leading-none mb-2">
+                                                            s/ {precioListaReferencial}
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="mb-3">
+                                                        <div className="flex items-baseline gap-1.5">
+                                                            <span className="text-xs font-black text-gray-900">S/</span>
+                                                            <span className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight leading-none">
+                                                                {precioRegular.toFixed(0)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Botón 'Agregar' */}
+                                                <button
+                                                    type="button"
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        addItem(prod);
+                                                    }}
+                                                    className="w-full py-2.5 px-4 rounded-full font-bold text-xs sm:text-sm tracking-wide cursor-pointer active:scale-98 border-2 transition-all"
+                                                    style={{
+                                                        backgroundColor: inCart ? 'var(--color-primario)' : '#ffffff',
+                                                        borderColor: 'var(--color-primario)',
+                                                        color: inCart ? '#ffffff' : 'var(--color-primario)',
+                                                        fontFamily: 'var(--tipografia-titulos)',
+                                                    }}
+                                                >
+                                                    {inCart ? 'Agregado ✓' : 'Agregar'}
+                                                </button>
                                             </div>
-                                        </div>
-                                    </motion.div>
-                                ))}
+                                        </motion.div>
+                                    );
+                                })}
                             </div>
                         ) : (
                             <div className="bg-white rounded-2xl p-12 text-center text-gray-400 border border-gray-100 shadow-sm">

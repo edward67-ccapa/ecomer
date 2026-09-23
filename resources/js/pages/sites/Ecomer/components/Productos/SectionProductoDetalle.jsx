@@ -13,6 +13,7 @@ export default function SectionProductoDetalle({
     productosRelacionados = [],
     site = {},
     seccionesData = {},
+    estilos = {},
 }) {
     const addItem = useCartStore((state) => state.addItem);
     const cartItems = useCartStore((state) => state.items);
@@ -43,7 +44,7 @@ export default function SectionProductoDetalle({
     });
     const [agregadoAnim, setAgregadoAnim] = useState(false);
 
-    // Resetear al cambiar de producto
+    // Resetear al cambiar de producto y posicionar arriba
     useEffect(() => {
         if (producto?.variantes && producto.variantes.length > 0) {
             const defaultVar = producto.variantes.find((v) => v.activa !== false) || producto.variantes[0];
@@ -53,7 +54,11 @@ export default function SectionProductoDetalle({
         }
         setCantidad(1);
         setImagenActivaIdx(0);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        window.scrollTo(0, 0);
+        const timer = setTimeout(() => {
+            window.scrollTo(0, 0);
+        }, 50);
+        return () => clearTimeout(timer);
     }, [producto?.id]);
 
     if (!producto) return null;
@@ -112,8 +117,30 @@ export default function SectionProductoDetalle({
         setTimeout(() => setAgregadoAnim(false), 2000);
     };
 
+    const getWhatsAppNumber = () => {
+        const rawCmsNavActions = seccionesData?.nav?.contenido?.find((c) => c.label === 'accion_nav')?.valor;
+        const cmsNavActions = Array.isArray(rawCmsNavActions) ? rawCmsNavActions : [];
+        const globalActions = Array.isArray(estilos?.acciones_nav) ? estilos.acciones_nav : [];
+        const combinedNavActions = [...globalActions, ...cmsNavActions];
+        const accionesNav = combinedNavActions.filter((item, index, self) =>
+            index === self.findIndex((t) => (t.texto || t.Texto) === (item.texto || item.Texto) && (t.icono || t.icon) === (item.icono || item.icon))
+        );
+
+        const waItem = accionesNav.find((a) => {
+            const ico = (a.icono || a.icon || '').toLowerCase();
+            const txt = (a.texto || a.Texto || '').toLowerCase();
+            return ico.includes('whatsapp') || ico.includes('phone') || txt.includes('wa.me');
+        });
+
+        const rawWa = waItem?.texto || waItem?.Texto || '';
+        const firstLineWa = String(rawWa).split(/\r?\n/).map((s) => s.trim()).filter(Boolean)[0] || '';
+        const cleanDigits = firstLineWa.replace(/\D/g, '');
+        return cleanDigits ? (cleanDigits.length === 9 ? '51' + cleanDigits : cleanDigits) : '';
+    };
+
     const handleWhatsApp = () => {
-        const tel = '51999999999';
+        const tel = getWhatsAppNumber();
+        if (!tel) return;
         const varTexto = varianteSeleccionada ? ` - Variante: ${varianteSeleccionada.nombre}` : '';
         const msg = `¡Hola! Me interesa comprar *${producto.nombre}${varTexto}* (Cantidad: ${cantidad}) por ${simboloMoneda} ${(precioActual * cantidad).toFixed(2)}. ¿Tienen disponibilidad?`;
         window.open(`https://wa.me/${tel}?text=${encodeURIComponent(msg)}`, '_blank');
@@ -128,7 +155,7 @@ export default function SectionProductoDetalle({
         .slice(0, 8);
 
     return (
-        <main className="min-h-screen bg-[#F8F9FA] pt-28 pb-16">
+        <main className="min-h-screen bg-[#F8F9FA] pt-40 pb-16">
             <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-8">
                 {/* 1. Breadcrumbs y Botón Volver */}
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-3 border-b border-gray-200 text-xs sm:text-sm">
@@ -184,16 +211,19 @@ export default function SectionProductoDetalle({
                                         key={idx}
                                         type="button"
                                         onClick={() => setImagenActivaIdx(idx)}
-                                        className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${
-                                            imagenActivaIdx === idx
-                                                ? 'border-[var(--color-primario)] shadow-md ring-2 ring-[var(--color-primario)]/20'
-                                                : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-300'
-                                        }`}
+                                        className={`relative w-16 h-16 sm:w-20 sm:h-20 rounded-xl overflow-hidden border-2 transition-all shrink-0 cursor-pointer ${imagenActivaIdx === idx
+                                            ? 'border-[var(--color-primario)] shadow-md ring-2 ring-[var(--color-primario)]/20'
+                                            : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-gray-300'
+                                            }`}
                                     >
                                         <img
                                             src={img}
                                             alt={`${producto.nombre} vista ${idx + 1}`}
-                                            className="w-full h-full object-cover"
+                                            width={100}
+                                            height={100}
+                                            loading="lazy"
+                                            decoding="async"
+                                            className="w-full h-full max-w-full max-h-full object-cover"
                                         />
                                     </button>
                                 ))}
@@ -215,11 +245,14 @@ export default function SectionProductoDetalle({
                             {tieneOferta && (
                                 <span
                                     className="absolute top-4 right-4 z-10 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider text-white shadow-lg"
-                                    style={{ backgroundColor: 'var(--color-primario)' }}
+                                    style={{
+                                        backgroundColor: 'var(--color-primario)',
+                                        fontFamily: 'var(--tipografia-titulos)',
+                                    }}
                                 >
-                                    <DynamicIcon name="FaFire" className="h-3 w-3" />
+                                    <DynamicIcon name="FaFire" className="h-3.5 w-3.5" />
                                     <span>OFERTA</span>
-                                    {descOferta && <span>-{descOferta}%</span>}
+                                    {descOferta && <span className="ml-0.5 font-bold">-{descOferta}%</span>}
                                 </span>
                             )}
 
@@ -227,7 +260,13 @@ export default function SectionProductoDetalle({
                                 <img
                                     src={imagenPrincipal}
                                     alt={producto.nombre}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                                    width={600}
+                                    height={600}
+                                    loading="lazy"
+                                    decoding="async"
+                                    style={{ maxWidth: '100%', maxHeight: '100%', width: '100%', height: '100%', objectFit: 'cover' }}
+                                    className="w-full h-full max-w-full max-h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in"
+                                    onClick={() => setModalFotoAbierto(true)}
                                 />
                             ) : (
                                 <div className="flex flex-col items-center justify-center text-gray-300 gap-2">
@@ -380,11 +419,10 @@ export default function SectionProductoDetalle({
                                                             if (idx !== -1) setImagenActivaIdx(idx);
                                                         }
                                                     }}
-                                                    className={`flex items-center gap-2.5 py-2 px-3.5 rounded-xl border-2 transition-all cursor-pointer ${
-                                                        activo
-                                                            ? 'border-[var(--color-primario)] bg-[var(--color-primario)]/5 shadow-xs ring-2 ring-[var(--color-primario)]/20'
-                                                            : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
-                                                    }`}
+                                                    className={`flex items-center gap-2.5 py-2 px-3.5 rounded-xl border-2 transition-all cursor-pointer ${activo
+                                                        ? 'border-[var(--color-primario)] bg-[var(--color-primario)]/5 shadow-xs ring-2 ring-[var(--color-primario)]/20'
+                                                        : 'border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50'
+                                                        }`}
                                                 >
                                                     {varImg && (
                                                         <img
@@ -454,11 +492,10 @@ export default function SectionProductoDetalle({
                                     <button
                                         type="button"
                                         onClick={() => setEsFavorito(!esFavorito)}
-                                        className={`w-12 h-12 rounded-full border flex items-center justify-center transition cursor-pointer ${
-                                            esFavorito
-                                                ? 'border-red-400 bg-red-50 text-red-500'
-                                                : 'border-gray-200 text-gray-400 hover:text-red-500 hover:border-gray-300 bg-white'
-                                        }`}
+                                        className={`w-12 h-12 rounded-full border flex items-center justify-center transition cursor-pointer ${esFavorito
+                                            ? 'border-red-400 bg-red-50 text-red-500'
+                                            : 'border-gray-200 text-gray-400 hover:text-red-500 hover:border-gray-300 bg-white'
+                                            }`}
                                         aria-label="Guardar en favoritos"
                                     >
                                         <DynamicIcon name={esFavorito ? 'FaHeart' : 'FaRegHeart'} className="h-5 w-5" />
@@ -652,67 +689,162 @@ export default function SectionProductoDetalle({
                             className="pb-4"
                         >
                             {relacionados.map((relProd, idx) => {
+                                const relInCart = cartItems.some((item) => (item.id || item.nombre) === (relProd.id || relProd.nombre));
                                 const relTieneOferta = Boolean(relProd.precio_oferta || relProd.precio_oferta_soles);
                                 const relPrecioRegular = Number(relProd.precio_soles || relProd.precio || 0);
                                 const relPrecioOferta = relTieneOferta
                                     ? Number(relProd.precio_oferta_soles || relProd.precio_oferta)
                                     : null;
-                                const relDesc = relTieneOferta && relPrecioRegular > 0
+
+                                const descOferta = relTieneOferta && relPrecioRegular > 0
                                     ? Math.round(((relPrecioRegular - relPrecioOferta) / relPrecioRegular) * 100)
                                     : null;
+                                const descRegular = descOferta ? Math.max(5, Math.round(descOferta * 0.75)) : null;
+                                const precioListaReferencial = Math.round(relPrecioRegular * 1.3);
+
+                                const categoriaTexto = typeof relProd.categoria === 'object' ? relProd.categoria?.nombre : relProd.categoria;
 
                                 return (
                                     <SwiperSlide key={relProd.id || idx} className="h-auto">
                                         <div
                                             onClick={() => onSeleccionarProducto && onSeleccionarProducto(relProd)}
-                                            className="bg-white border border-gray-200 hover:border-gray-300 rounded-xl p-3.5 transition-all duration-200 hover:shadow-lg flex flex-col justify-between h-full group relative cursor-pointer"
+                                            className="bg-white border border-gray-200 rounded-xl p-3.5 sm:p-4 flex flex-col justify-between h-full relative cursor-pointer hover:shadow-lg transition-all duration-300 group"
                                         >
-                                            <div className="relative aspect-square w-full mb-3 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
-                                                {relProd.categoria && (
-                                                    <span className="absolute top-2 left-2 z-10 text-[9px] font-bold uppercase tracking-wide bg-white/90 px-2 py-0.5 rounded shadow-xs text-gray-700">
-                                                        {relProd.categoria}
+                                            {/* Imagen del Producto */}
+                                            <div className="relative aspect-square w-full mb-3 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden" style={{ aspectRatio: '1/1', width: '100%', maxHeight: '280px' }}>
+                                                {/* Badge Categoría Premium arriba a la izquierda */}
+                                                {categoriaTexto && (
+                                                    <span
+                                                        className="absolute top-2.5 left-2.5 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-white/95 backdrop-blur-md shadow-xs border border-gray-100 text-gray-800"
+                                                        style={{ fontFamily: 'var(--tipografia-texto)' }}
+                                                    >
+                                                        <span
+                                                            className="w-1.5 h-1.5 rounded-full"
+                                                            style={{ backgroundColor: 'var(--color-primario)' }}
+                                                        />
+                                                        <span>{categoriaTexto}</span>
                                                     </span>
                                                 )}
+
+                                                {/* Badge OFERTA arriba a la derecha */}
                                                 {relTieneOferta && (
                                                     <span
-                                                        className="absolute top-2 right-2 z-10 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded leading-none"
-                                                        style={{ backgroundColor: 'var(--color-primario)' }}
+                                                        className="absolute top-2.5 right-2.5 z-10 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider text-white shadow-md"
+                                                        style={{
+                                                            backgroundColor: 'var(--color-primario)',
+                                                            fontFamily: 'var(--tipografia-titulos)',
+                                                        }}
                                                     >
-                                                        -{relDesc}%
+                                                        <DynamicIcon name="FaFire" className="h-2.5 w-2.5" />
+                                                        <span>OFERTA</span>
+                                                        {descOferta && <span className="ml-0.5 font-bold">-{descOferta}%</span>}
                                                     </span>
                                                 )}
+
                                                 {relProd.imagen ? (
                                                     <img
                                                         src={relProd.imagen}
                                                         alt={relProd.nombre}
-                                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                                        width={400}
+                                                        height={400}
+                                                        loading="lazy"
+                                                        decoding="async"
+                                                        className="w-full h-full max-w-full max-h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                                        style={{ maxWidth: '100%', maxHeight: '280px', width: '100%', height: '100%', objectFit: 'cover', aspectRatio: '1/1' }}
                                                     />
                                                 ) : (
-                                                    <DynamicIcon name="FaBoxOpen" className="h-10 w-10 text-gray-300" />
+                                                    <div className="flex flex-col items-center justify-center text-gray-300 gap-1.5">
+                                                        <DynamicIcon name="FaBoxOpen" className="h-12 w-12 text-gray-300" />
+                                                        <span className="text-[11px] text-gray-400">Sin imagen</span>
+                                                    </div>
                                                 )}
                                             </div>
 
-                                            <h3 className="text-xs font-semibold text-gray-900 line-clamp-2 min-h-[2rem] leading-snug mb-1 group-hover:text-[var(--color-primario)] transition-colors">
+                                            {/* Nombre del Producto */}
+                                            <h3
+                                                className="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-[var(--color-primario)] transition-colors line-clamp-2 min-h-[2.4rem] leading-snug mb-1.5"
+                                                title={relProd.nombre}
+                                                style={{ fontFamily: 'var(--tipografia-titulos)' }}
+                                            >
                                                 {relProd.nombre}
                                             </h3>
 
-                                            <div className="mt-auto pt-2 flex items-baseline justify-between">
-                                                <span
-                                                    className="text-base font-black"
-                                                    style={{ color: 'var(--color-primario)', fontFamily: 'var(--tipografia-titulos)' }}
+                                            {/* Descripción Corta */}
+                                            {(relProd.descripcion_corta || relProd.descripcion) && (
+                                                <p
+                                                    className="text-[11px] text-gray-500 line-clamp-2 min-h-[2rem] leading-relaxed mb-3"
+                                                    title={relProd.descripcion_corta || relProd.descripcion}
+                                                    style={{ fontFamily: 'var(--tipografia-texto)' }}
                                                 >
-                                                    {simboloMoneda} {(relTieneOferta ? relPrecioOferta : relPrecioRegular).toFixed(0)}
-                                                </span>
+                                                    {relProd.descripcion_corta || relProd.descripcion}
+                                                </p>
+                                            )}
+
+                                            {/* Bloque de Precios */}
+                                            <div className="mt-auto pt-2">
+                                                {relTieneOferta ? (
+                                                    <>
+                                                        {/* Precio Principal */}
+                                                        <div className="flex items-baseline gap-1.5 mb-1 flex-wrap">
+                                                            <span className="text-xs font-black text-[#0089CF]">S/</span>
+                                                            <span className="text-2xl sm:text-3xl font-black text-[#0089CF] tracking-tight leading-none">
+                                                                {relPrecioOferta.toFixed(0)}
+                                                            </span>
+                                                            {descOferta && (
+                                                                <span className="bg-[#0089CF] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-xs leading-none">
+                                                                    -{descOferta}%
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Precio Regular Secundario */}
+                                                        <div className="flex items-baseline gap-1.5 mb-0.5">
+                                                            <span className="text-xs font-bold text-gray-900">S/</span>
+                                                            <span className="text-lg font-extrabold text-gray-900 leading-none">
+                                                                {relPrecioRegular.toFixed(0)}
+                                                            </span>
+                                                            {descRegular && (
+                                                                <span
+                                                                    className="text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-xs leading-none"
+                                                                    style={{ backgroundColor: 'var(--color-primario)' }}
+                                                                >
+                                                                    -{descRegular}%
+                                                                </span>
+                                                            )}
+                                                        </div>
+
+                                                        {/* Precio Lista Tachado */}
+                                                        <div className="text-[11px] text-gray-400 line-through leading-none mb-2">
+                                                            s/ {precioListaReferencial}
+                                                        </div>
+                                                    </>
+                                                ) : (
+                                                    <div className="mb-3">
+                                                        <div className="flex items-baseline gap-1.5">
+                                                            <span className="text-xs font-black text-gray-900">S/</span>
+                                                            <span className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight leading-none">
+                                                                {relPrecioRegular.toFixed(0)}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                )}
+
+                                                {/* Botón 'Agregar' */}
                                                 <button
                                                     type="button"
                                                     onClick={(e) => {
                                                         e.stopPropagation();
                                                         addItem(relProd);
                                                     }}
-                                                    className="p-1.5 rounded-full border border-[var(--color-primario)] text-[var(--color-primario)] hover:bg-[var(--color-primario)] hover:text-white transition cursor-pointer text-xs"
-                                                    title="Agregar al carrito"
+                                                    className="w-full py-2.5 px-4 rounded-full font-bold text-xs sm:text-sm tracking-wide cursor-pointer active:scale-98 border-2 transition-all"
+                                                    style={{
+                                                        backgroundColor: relInCart ? 'var(--color-primario)' : '#ffffff',
+                                                        borderColor: 'var(--color-primario)',
+                                                        color: relInCart ? '#ffffff' : 'var(--color-primario)',
+                                                        fontFamily: 'var(--tipografia-titulos)',
+                                                    }}
                                                 >
-                                                    <DynamicIcon name="FaCartPlus" className="h-3.5 w-3.5" />
+                                                    {relInCart ? 'Agregado ✓' : 'Agregar'}
                                                 </button>
                                             </div>
                                         </div>

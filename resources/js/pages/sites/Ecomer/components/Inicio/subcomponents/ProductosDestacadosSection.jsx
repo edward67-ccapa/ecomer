@@ -40,6 +40,7 @@ export default function ProductosDestacadosSection({
             url.searchParams.set('producto', prod.slug || prod.id);
             window.history.pushState({}, '', url.toString());
             window.dispatchEvent(new PopStateEvent('popstate'));
+            window.scrollTo(0, 0);
         }
     };
 
@@ -78,9 +79,9 @@ export default function ProductosDestacadosSection({
                         }}
                         speed={700}
                         breakpoints={{
-                            480: { slidesPerView: 2, spaceBetween: 14 },
-                            768: { slidesPerView: 3, spaceBetween: 16 },
-                            1024: { slidesPerView: 4, spaceBetween: 18 },
+                            480: { slidesPerView: 3, spaceBetween: 14 },
+                            768: { slidesPerView: 4, spaceBetween: 16 },
+                            1024: { slidesPerView: 5, spaceBetween: 18 },
                         }}
                         className="pb-4"
                     >
@@ -102,13 +103,13 @@ export default function ProductosDestacadosSection({
                             const categoriaTexto = prod.categoria || 'REPOSTERÍA';
 
                             return (
-                                <SwiperSlide key={prod.id || idx} className="h-auto">
+                                <SwiperSlide key={prod.id || idx} className="h-auto" style={{ width: '20%', flexShrink: 0 }}>
                                     <div
                                         onClick={() => handleCardClick(prod)}
                                         className="bg-white border border-gray-200 rounded-xl p-3.5 sm:p-4 flex flex-col justify-between h-full relative cursor-pointer"
                                     >
                                         {/* Imagen del Producto (estática sin hover) */}
-                                        <div className="relative aspect-square w-full mb-3 flex items-center justify-center bg-white rounded-lg overflow-hidden">
+                                        <div className="relative aspect-square w-full mb-3 flex items-center justify-center bg-white rounded-lg overflow-hidden" style={{ aspectRatio: '1/1', width: '100%', maxHeight: '280px' }}>
                                             {/* Badge Categoría Premium arriba a la izquierda */}
                                             {categoriaTexto && (
                                                 <span
@@ -142,9 +143,12 @@ export default function ProductosDestacadosSection({
                                                 <img
                                                     src={prod.imagen}
                                                     alt={prod.nombre}
+                                                    width={400}
+                                                    height={400}
                                                     loading="lazy"
                                                     decoding="async"
-                                                    className="w-full h-full object-cover"
+                                                    className="w-full h-full max-w-full max-h-full object-cover"
+                                                    style={{ maxWidth: '100%', maxHeight: '280px', width: '100%', height: '100%', objectFit: 'cover', aspectRatio: '1/1' }}
                                                 />
                                             ) : (
                                                 <div className="flex flex-col items-center justify-center text-gray-300 gap-1.5">

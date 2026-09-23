@@ -10,11 +10,14 @@ use App\Models\User;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\MultiSelect;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
-use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
@@ -104,6 +107,44 @@ class SiteForm
                                                 ->columnSpanFull(),
                                         ]),
 
+                                        Section::make('Datos de Contacto Globales')
+                                            ->icon('heroicon-o-phone')
+                                            ->description('Define números de WhatsApp, correos electrónicos y horarios globales del sitio.')
+                                            ->collapsible()
+                                            ->schema([
+                                                Repeater::make('estilos.acciones_nav')
+                                                    ->label('WhatsApp, Correos y Contacto')
+                                                    ->schema([
+                                                        Grid::make(3)->schema([
+                                                            Select::make('icono')
+                                                                ->label('Tipo / Ícono')
+                                                                ->options([
+                                                                    'FaWhatsapp' => 'WhatsApp',
+                                                                    'FaEnvelope' => 'Correo Electrónico',
+                                                                    'FaBriefcase' => 'Correo de Trabajo / Maletín',
+                                                                    'FaPhone' => 'Teléfono Fijo / Móvil',
+                                                                    'FaClock' => 'Horario de Atención',
+                                                                    'FaLocationDot' => 'Ubicación / Dirección',
+                                                                ])
+                                                                ->default('FaWhatsapp')
+                                                                ->required(),
+                                                            TextInput::make('Label')
+                                                                ->label('Etiqueta')
+                                                                ->placeholder('Ej. WhatsApp Ventas, Correo, Horario')
+                                                                ->required(),
+                                                            Textarea::make('texto')
+                                                                ->label('Número(s) o Correo(s)')
+                                                                ->placeholder("Ej. 987654321 o correo@gmail.com\n(Soporta múltiples líneas)")
+                                                                ->rows(2)
+                                                                ->required(),
+                                                        ]),
+                                                    ])
+                                                    ->collapsible()
+                                                    ->itemLabel(fn (array $state): ?string => ($state['Label'] ?? '') ? ($state['Label'] . ': ' . ($state['texto'] ?? '')) : null)
+                                                    ->columnSpanFull(),
+                                            ])
+                                            ->columnSpanFull(),
+
                                         Section::make('Tiendas')
                                             ->icon('heroicon-o-shopping-bag')
                                             ->collapsible()
@@ -125,6 +166,63 @@ class SiteForm
                                                     ->relationship('servicios', 'nombre')
                                                     ->searchable()
                                                     ->preload(),
+                                            ])
+                                            ->columnSpanFull(),
+
+                                        Section::make('Catálogo de Productos')
+                                            ->icon('heroicon-o-book-open')
+                                            ->description('Configura la disponibilidad del catálogo, enlace directo PDF o catálogo dinámico.')
+                                            ->collapsible()
+                                            ->schema([
+                                                Toggle::make('estilos.catalogo.activo')
+                                                    ->label('Activar Catálogo en la Navegación')
+                                                    ->helperText('Muestra el enlace de Catálogo en el menú superior, menú móvil y footer.')
+                                                    ->default(false)
+                                                    ->live(),
+
+                                                Grid::make(2)->schema([
+                                                    TextInput::make('estilos.catalogo.titulo')
+                                                        ->label('Título en el Menú')
+                                                        ->placeholder('Ej: Catálogo, Ver Catálogo, Catálogo PDF')
+                                                        ->default('Catálogo')
+                                                        ->visible(fn (Get $get) => (bool) $get('estilos.catalogo.activo')),
+
+                                                    TextInput::make('estilos.catalogo.enlace')
+                                                        ->label('Enlace Externo o PDF (Opcional)')
+                                                        ->placeholder('https://ejemplo.com/catalogo.pdf')
+                                                        ->helperText('Si ingresas un enlace, el botón abrirá este archivo/URL. Si lo dejas vacío, cargará el catálogo dinámico de productos.')
+                                                        ->visible(fn (Get $get) => (bool) $get('estilos.catalogo.activo'))
+                                                        ->live(onBlur: true),
+                                                ]),
+
+                                                Section::make('Filtro de Productos para el Catálogo')
+                                                    ->description('Aplica cuando no se proporciona enlace externo.')
+                                                    ->visible(fn (Get $get) => (bool) $get('estilos.catalogo.activo') && blank($get('estilos.catalogo.enlace')))
+                                                    ->schema([
+                                                        Select::make('estilos.catalogo.tipo_filtro')
+                                                            ->label('Incluir en el catálogo')
+                                                            ->options([
+                                                                'todos' => 'Todos los productos',
+                                                                'categoria' => 'Por Categoría',
+                                                                'subcategoria' => 'Por Subcategoría',
+                                                            ])
+                                                            ->default('todos')
+                                                            ->live(),
+
+                                                        MultiSelect::make('estilos.catalogo.categorias')
+                                                            ->label('Categorías a incluir')
+                                                            ->options(fn () => \App\Models\Categoria::pluck('nombre', 'id'))
+                                                            ->searchable()
+                                                            ->preload()
+                                                            ->visible(fn (Get $get) => $get('estilos.catalogo.tipo_filtro') === 'categoria'),
+
+                                                        MultiSelect::make('estilos.catalogo.subcategorias')
+                                                            ->label('Subcategorías a incluir')
+                                                            ->options(fn () => \App\Models\Subcategoria::with('categoria')->get()->mapWithKeys(fn ($sub) => [$sub->id => ($sub->categoria ? $sub->categoria->nombre . ' > ' : '') . $sub->nombre]))
+                                                            ->searchable()
+                                                            ->preload()
+                                                            ->visible(fn (Get $get) => $get('estilos.catalogo.tipo_filtro') === 'subcategoria'),
+                                                    ]),
                                             ])
                                             ->columnSpanFull(),
                                     ]),

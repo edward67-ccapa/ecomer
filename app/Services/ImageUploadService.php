@@ -21,10 +21,14 @@ class ImageUploadService
             $realPath = self::getAbsoluteFilePath($file);
 
             if ($realPath && file_exists($realPath) && is_file($realPath) && filesize($realPath) > 0) {
+                // Optimizar la imagen temporal a max 900px de ancho y <= 120 KB
+                ImageOptimizerService::optimizeImage($realPath, 900, 120);
+
                 $tmpWebp = sys_get_temp_dir() . '/' . Str::random(40) . '.webp';
 
-                if (self::convertToWebp($realPath, $tmpWebp, 82)) {
+                if (self::convertToWebp($realPath, $tmpWebp, 80)) {
                     if (file_exists($tmpWebp) && is_file($tmpWebp) && filesize($tmpWebp) > 0) {
+                        ImageOptimizerService::optimizeImage($tmpWebp, 900, 120);
                         $contents = @file_get_contents($tmpWebp);
                         if (is_string($contents) && strlen($contents) > 0) {
                             $filename = Str::random(40) . '.webp';
@@ -66,6 +70,7 @@ class ImageUploadService
             try {
                 $sourcePath = Storage::disk($disk)->path($storedPath);
                 if (file_exists($sourcePath) && is_file($sourcePath)) {
+                    ImageOptimizerService::optimizeImage($sourcePath, 900, 120);
                     $contents = @file_get_contents($sourcePath);
                     if (is_string($contents) && strlen($contents) > 0) {
                         self::syncToPublicPath($storedPath, $contents);

@@ -32,6 +32,8 @@ class ProductoResource extends JsonResource
             'imagenes' => is_array($this->imagenes)
                 ? array_map(fn (string $img) => asset('storage/'.$img), $this->imagenes)
                 : [],
+            'categoria_id' => $this->categoria_id,
+            'subcategoria_id' => $this->subcategoria_id,
             'categoria' => $this->categoria?->nombre,
             'subcategoria' => $this->subcategoria?->nombre,
             'variantes' => $this->whenLoaded('variantes'),

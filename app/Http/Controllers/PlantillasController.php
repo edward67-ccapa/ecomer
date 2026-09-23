@@ -42,27 +42,57 @@ class PlantillasController extends Controller
 
         $seccionesNav = $plantilla->secciones->where('activa', true);
 
+        $targetSlug = filled($seccion) ? strtolower(str_replace(['_', ' '], '-', $seccion)) : null;
+
         $seccionModel = $plantilla->secciones
-            ->when(filled($seccion), function ($items) use ($seccion) {
-                $target = strtolower(str_replace(['_', ' '], '-', $seccion));
-                return $items->filter(fn ($s) => strtolower(str_replace(['_', ' '], '-', $s->slug)) === $target);
+            ->reject(fn ($s) => strtolower($s->slug) === 'nav')
+            ->when(filled($seccion), function ($items) use ($targetSlug) {
+                return $items->filter(function ($s) use ($targetSlug) {
+                    $sSlug = strtolower(str_replace(['_', ' '], '-', $s->slug));
+                    $sNombre = strtolower(str_replace(['_', ' '], '-', $s->nombre));
+                    if ($targetSlug === 'inicio' || $targetSlug === 'hero') {
+                        return in_array($sSlug, ['inicio', 'hero']) || in_array($sNombre, ['inicio', 'hero']);
+                    }
+                    return $sSlug === $targetSlug || $sNombre === $targetSlug;
+                });
             })
             ->first();
 
-        if (filled($seccion) && ! $seccionModel) {
-            abort(404);
-        }
-
-        $seccionModel ??= $plantilla->secciones
-            ->where('activa', true)
-            ->reject(fn ($s) => strtolower($s->slug) === 'nav')
-            ->first() ?? $seccionesNav->first();
-
-        abort_unless($seccionModel instanceof Seccion, 404);
-
         $respuestas = $plantilla->respuestas->keyBy('pregunta_id');
 
-        $contenido = SitePageController::formatearPreguntas($seccionModel->preguntas, $respuestas);
+        if (filled($seccion) && !$seccionModel && in_array($targetSlug, ['inicio', 'hero', 'productos', 'tienda', 'tiendas', 'servicios', 'servicio', 'nosotros', 'sobre-nosotros', 'contacto', 'contactos'])) {
+            $canonicalSlug = in_array($targetSlug, ['productos', 'tienda', 'tiendas'])
+                ? 'productos'
+                : (in_array($targetSlug, ['servicios', 'servicio'])
+                    ? 'servicios'
+                    : (in_array($targetSlug, ['nosotros', 'sobre-nosotros'])
+                        ? 'nosotros'
+                        : (in_array($targetSlug, ['contacto', 'contactos']) ? 'contacto' : 'inicio')));
+            $seccionActiva = [
+                'slug' => $canonicalSlug,
+                'nombre' => ucfirst($canonicalSlug),
+                'contenido' => [],
+            ];
+        } else {
+            if (filled($seccion) && ! $seccionModel) {
+                abort(404);
+            }
+
+            $seccionModel ??= $plantilla->secciones
+                ->where('activa', true)
+                ->reject(fn ($s) => strtolower($s->slug) === 'nav')
+                ->first() ?? $seccionesNav->first();
+
+            abort_unless($seccionModel instanceof Seccion, 404);
+
+            $contenido = SitePageController::formatearPreguntas($seccionModel->preguntas, $respuestas);
+
+            $seccionActiva = [
+                'slug' => $seccionModel->slug,
+                'nombre' => $seccionModel->nombre,
+                'contenido' => $contenido,
+            ];
+        }
 
         $seccionesData = [];
         foreach ($plantilla->secciones as $s) {
@@ -114,16 +144,64 @@ class PlantillasController extends Controller
                     'nombre' => $s->nombre,
                 ])
                 ->values(),
-            'seccionActiva' => [
-                'slug' => $seccionModel->slug,
-                'nombre' => $seccionModel->nombre,
-                'contenido' => $contenido,
-            ],
+            'seccionActiva' => $seccionActiva,
             'seccionesData' => $seccionesData,
             'productos' => ProductoResource::collection($productos)->resolve(),
             'productosDestacados' => ProductoResource::collection($productosDestacados)->resolve(),
             'estilos' => $plantilla->estilos,
             'serviciosSitio' => $serviciosSitio,
         ]);
+    }
+
+    public function descargarCatalogo(Plantilla $plantilla)
+    {
+        $plantilla->load(['tiendas']);
+
+        $estilos = $plantilla->estilos ?? [];
+        $catalogoConfig = $estilos['catalogo'] ?? [];
+
+        if (!empty($catalogoConfig['enlace'])) {
+            $enlace = trim($catalogoConfig['enlace']);
+            if (str_starts_with($enlace, 'http://') || str_starts_with($enlace, 'https://')) {
+                return redirect()->away($enlace);
+            }
+            $cleanPath = preg_replace('/^\/?storage\//', '', $enlace);
+            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($cleanPath)) {
+                return response()->download(\Illuminate\Support\Facades\Storage::disk('public')->path($cleanPath));
+            }
+        }
+
+        $tiendaIds = $plantilla->tiendas->pluck('id')->all();
+
+        $productosQuery = \App\Models\Producto::with(['categoria', 'subcategoria'])
+            ->where('activo', true);
+
+        if (!empty($tiendaIds)) {
+            $productosQuery->whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds));
+        }
+
+        $tipoFiltro = $catalogoConfig['tipo_filtro'] ?? 'todos';
+        if ($tipoFiltro === 'categoria' && !empty($catalogoConfig['categorias'])) {
+            $catIds = (array) $catalogoConfig['categorias'];
+            $productosQuery->whereIn('categoria_id', $catIds);
+        } elseif ($tipoFiltro === 'subcategoria' && !empty($catalogoConfig['subcategorias'])) {
+            $subCatIds = (array) $catalogoConfig['subcategorias'];
+            $productosQuery->whereIn('subcategoria_id', $subCatIds);
+        }
+
+        $productos = $productosQuery->orderBy('orden')->orderBy('nombre')->get();
+        $titulo = $catalogoConfig['titulo'] ?? 'Catálogo de Productos';
+        $colorPrimario = $estilos['color_primario'] ?? '#F72F46';
+
+        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.catalogo', [
+            'site' => (object) ['nombre' => $plantilla->nombre, 'imagen' => $plantilla->imagen, 'estilos' => $estilos],
+            'titulo' => $titulo,
+            'productos' => $productos,
+            'colorPrimario' => $colorPrimario,
+            'estilos' => $estilos,
+        ])->setOption('isGdEnabled', false)->setOption('isRemoteEnabled', true);
+
+        $filename = \Illuminate\Support\Str::slug($titulo) . '.pdf';
+        return $pdf->download($filename);
     }
 }

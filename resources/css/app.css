@@ -13,3 +13,24 @@ html {
     scroll-padding-top: 80px;
 }
 
+img, svg, video, canvas {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Swiper critical fallback rules to prevent image pop on F5 refresh */
+.swiper {
+    width: 100%;
+    overflow: hidden;
+    display: block;
+}
+.swiper-wrapper {
+    display: flex;
+    width: 100%;
+}
+.swiper-slide {
+    flex-shrink: 0;
+    box-sizing: border-box;
+}
+
+

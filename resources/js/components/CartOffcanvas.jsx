@@ -19,43 +19,72 @@ export default function CartOffcanvas() {
     const count = getItemCount();
     const total = getTotal();
 
-    // Obtener número de WhatsApp dinámico desde la API
+    // Obtener número de WhatsApp dinámico desde Datos de Contacto Globales o API
     useEffect(() => {
         if (typeof window !== 'undefined') {
+            const processRawVal = (rawVal) => {
+                if (!rawVal) return false;
+                const firstLine = String(rawVal).split(/\r?\n/).map((s) => s.trim()).filter(Boolean)[0] || rawVal;
+                if (firstLine.startsWith('http')) {
+                    setWhatsappUrl(firstLine);
+                    return true;
+                }
+                const cleanNum = firstLine.replace(/\D/g, '');
+                if (cleanNum) {
+                    const finalNum = cleanNum.length === 9 ? `51${cleanNum}` : cleanNum;
+                    setWhatsappUrl(`https://wa.me/${finalNum}`);
+                    return true;
+                }
+                return false;
+            };
+
+            // 1. Priorizar lectura desde props de Inertia (Datos de Contacto Globales + CMS)
+            if (window.__page__?.props) {
+                const pageProps = window.__page__.props;
+                const globalActions = Array.isArray(pageProps.estilos?.acciones_nav) ? pageProps.estilos.acciones_nav : [];
+                const cmsNavActions = Array.isArray(pageProps.seccionesData?.nav?.contenido?.find((c) => c.label === 'accion_nav')?.valor)
+                    ? pageProps.seccionesData.nav.contenido.find((c) => c.label === 'accion_nav').valor
+                    : [];
+                const combined = [...globalActions, ...cmsNavActions];
+
+                const waNav = combined.find((a) => {
+                    const ico = (a.icon || a.icono || '').toLowerCase();
+                    const txt = (a.texto || a.Texto || '').toLowerCase();
+                    return ico.includes('whatsapp') || ico.includes('phone') || txt.includes('wa.me');
+                });
+
+                if (waNav && processRawVal(waNav.texto || waNav.Texto)) {
+                    return;
+                }
+            }
+
+            // 2. Fallback por API
             const pathParts = window.location.pathname.split('/').filter(Boolean);
             if (pathParts.length >= 2) {
                 const dom = pathParts[0];
                 const slug = pathParts[1];
-                Promise.allSettled([
-                    fetchSectionData(dom, slug, 'nav'),
-                    fetchSectionData(dom, slug, 'contacto'),
-                ]).then(([navRes, contactosRes]) => {
-                    const nav = navRes.status === 'fulfilled' ? (navRes.value?.seccionActiva || navRes.value) : null;
-                    const contactos = contactosRes.status === 'fulfilled' ? (contactosRes.value?.seccionActiva || contactosRes.value) : null;
 
-                    const accionesNav = nav?.contenido?.find((c) => c.label === 'accion_nav')?.valor || [];
-                    const waNav = accionesNav.find((a) => a.icon?.toLowerCase() === 'fawhatsapp')?.texto;
-                    const itemContacto = contactos?.contenido?.find(
-                        (c) => c.label?.toLowerCase() === 'whatsap' || c.label?.toLowerCase() === 'whatsapp'
-                    );
+                fetchSectionData(dom, slug, 'nav')
+                    .then((navRes) => {
+                        const nav = navRes?.seccionActiva || navRes;
+                        const contenido = nav?.contenido || [];
+                        const accionesNav =
+                            contenido.find((c) => c.label?.toLowerCase() === 'accion')?.valor ||
+                            contenido.find((c) => c.label?.toLowerCase() === 'acciones')?.valor ||
+                            contenido.find((c) => c.label?.toLowerCase() === 'accion_nav')?.valor || [];
 
-                    const rawVal = waNav || itemContacto?.enlace || (Array.isArray(itemContacto?.valor) ? itemContacto.valor[0]?.texto : null);
+                        const waNav = Array.isArray(accionesNav)
+                            ? accionesNav.find((a) => (a.icon || a.icono)?.toLowerCase() === 'fawhatsapp' || (a.icon || a.icono)?.toLowerCase() === 'whatsapp' || (typeof a.texto === 'string' && a.texto.includes('wa.me')))
+                            : null;
 
-                    if (rawVal) {
-                        if (rawVal.startsWith('http')) {
-                            setWhatsappUrl(rawVal);
-                        } else {
-                            const cleanNum = rawVal.replace(/\D/g, '');
-                            if (cleanNum) {
-                                const finalNum = cleanNum.length === 9 ? `51${cleanNum}` : cleanNum;
-                                setWhatsappUrl(`https://wa.me/${finalNum}`);
-                            }
+                        if (waNav) {
+                            processRawVal(waNav.texto || waNav.Texto || waNav.url);
                         }
-                    }
-                });
+                    })
+                    .catch(() => null);
             }
         }
-    }, []);
+    }, [isOpen]);
 
     const handleEnviarWhatsApp = (e) => {
         e.preventDefault();

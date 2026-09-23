@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
 
-export default function Footer({ site, dominio, siteSlug, secciones, seccionActiva, seccionesData }) {
+export default function Footer({ site, dominio, siteSlug, secciones, seccionActiva, seccionesData, estilos }) {
     const activeNav = seccionesData?.nav || seccionesData?.['nav'] || null;
     const activeContacto = seccionesData?.contacto || seccionesData?.['contacto'] || null;
 
@@ -10,10 +10,17 @@ export default function Footer({ site, dominio, siteSlug, secciones, seccionActi
     const mensajeFooter = activeNav?.contenido?.find((c) => c.label === 'mensaje_footer')?.valor
         || 'Hacemos realidad la torta de tus sueños. Postres artesanales y diseños personalizados preparados con los mejores ingredientes para tus momentos especiales.';
 
-    const accionesNav = activeNav?.contenido?.find((c) => c.label === 'accion_nav')?.valor || [];
-    const waNavTexto = accionesNav.find((a) => a.icon?.toLowerCase() === 'fawhatsapp')?.texto;
-    const phoneNavTexto = accionesNav.find((a) => a.icon?.toLowerCase() === 'faphone')?.texto;
-    const emailNavTexto = accionesNav.find((a) => a.icon?.toLowerCase() === 'faenvelope')?.texto;
+    const rawCmsNavActions = activeNav?.contenido?.find((c) => c.label === 'accion_nav')?.valor;
+    const cmsNavActions = Array.isArray(rawCmsNavActions) ? rawCmsNavActions : [];
+    const globalActions = Array.isArray(estilos?.acciones_nav) ? estilos.acciones_nav : [];
+    const combinedNavActions = [...globalActions, ...cmsNavActions];
+    const accionesNav = combinedNavActions.filter((item, index, self) =>
+        index === self.findIndex((t) => (t.texto || t.Texto) === (item.texto || item.Texto) && (t.icono || t.icon) === (item.icono || item.icon))
+    );
+
+    const waNavTexto = accionesNav.find((a) => (a.icon || a.icono)?.toLowerCase() === 'fawhatsapp')?.texto;
+    const phoneNavTexto = accionesNav.find((a) => (a.icon || a.icono)?.toLowerCase() === 'faphone')?.texto;
+    const emailNavTexto = accionesNav.find((a) => (a.icon || a.icono)?.toLowerCase() === 'faenvelope' || (a.icon || a.icono)?.toLowerCase() === 'fabriefcase')?.texto;
 
     // Extraer redes o datos de contacto si existen en la API
     const redes = activeContacto?.contenido?.find((c) => c.label === 'redes')?.valor || [];
@@ -21,12 +28,14 @@ export default function Footer({ site, dominio, siteSlug, secciones, seccionActi
     const direccion = activeContacto?.contenido?.find((c) => c.label === 'direccion')?.valor?.[0]?.texto
         || 'Av. Gran Chimú N°680, San Juan de Lurigancho';
 
-    const rawWa = waNavTexto || activeContacto?.contenido?.find((c) => c.label === 'whatsap' || c.label === 'whatsapp')?.enlace || '916628409';
-    const whatsappNum = rawWa.startsWith('http')
-        ? rawWa
-        : `https://wa.me/${rawWa.replace(/\D/g, '').length === 9 ? '51' + rawWa.replace(/\D/g, '') : rawWa.replace(/\D/g, '')}`;
+    const rawWa = waNavTexto || activeContacto?.contenido?.find((c) => c.label === 'whatsap' || c.label === 'whatsapp')?.enlace || null;
+    const whatsappNum = rawWa
+        ? (rawWa.startsWith('http')
+            ? rawWa
+            : `https://wa.me/${rawWa.replace(/\D/g, '').length === 9 ? '51' + rawWa.replace(/\D/g, '') : rawWa.replace(/\D/g, '')}`)
+        : null;
 
-    const PAGE_SECTIONS = ['inicio', 'productos'];
+    const PAGE_SECTIONS = ['inicio', 'productos', 'servicios', 'nosotros', 'sobre-nosotros'];
     const isInicioPage = !seccionActiva || seccionActiva.slug?.toLowerCase() === 'inicio';
     const mainPageSlug = secciones?.[0]?.slug || 'inicio';
 
@@ -82,18 +91,45 @@ export default function Footer({ site, dominio, siteSlug, secciones, seccionActi
                                     const anchorId = slugLower === 'contactos' ? 'contacto' : slugLower;
                                     const hasStandalonePage = PAGE_SECTIONS.includes(slugLower);
 
-                                    if (hasStandalonePage) {
-                                        return (
-                                            <li key={seccion.slug}>
-                                                <Link
-                                                    href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`}
-                                                    className="transition-colors hover:text-[var(--color-primario)] font-medium text-gray-700 hover:underline"
-                                                >
-                                                    {seccion.nombre}
-                                                </Link>
-                                            </li>
-                                        );
-                                    }
+                                     if (hasStandalonePage) {
+                                         const isProductos = slugLower === 'productos' || slugLower === 'tienda' || slugLower === 'tiendas';
+                                         const catalogoConfig = estilos?.catalogo || {};
+                                         const isCatalogoActivo = Boolean(catalogoConfig.activo);
+                                         const catalogoTitulo = catalogoConfig.titulo || 'Catálogo';
+                                         const catalogoEnlace = catalogoConfig.enlace ? String(catalogoConfig.enlace).trim() : null;
+                                         const downloadUrl = catalogoEnlace
+                                             ? catalogoEnlace
+                                             : (dominio === 'plantillas'
+                                                 ? `/plantillas/${siteSlug}/catalogo/descargar-pdf`
+                                                 : (siteSlug ? `/${dominio}/${siteSlug}/catalogo/descargar-pdf` : `/${dominio}/catalogo/descargar-pdf`));
+
+                                         return (
+                                             <React.Fragment key={seccion.slug}>
+                                                 <li>
+                                                     <Link
+                                                         href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`}
+                                                         className="transition-colors hover:text-[var(--color-primario)] font-medium text-gray-700 hover:underline"
+                                                     >
+                                                         {seccion.nombre}
+                                                     </Link>
+                                                 </li>
+                                                 {isProductos && isCatalogoActivo && (
+                                                     <li key="catalogo-footer">
+                                                         <a
+                                                             href={downloadUrl}
+                                                             onClick={(e) => {
+                                                                 if (e && e.preventDefault) e.preventDefault();
+                                                                 window.location.href = downloadUrl;
+                                                             }}
+                                                             className="transition-colors hover:text-[var(--color-primario)] font-medium text-gray-700 hover:underline cursor-pointer"
+                                                         >
+                                                             {catalogoTitulo}
+                                                         </a>
+                                                     </li>
+                                                 )}
+                                             </React.Fragment>
+                                         );
+                                     }
 
                                     const anchorHref = isInicioPage
                                         ? `#${anchorId}`
@@ -174,7 +210,6 @@ export default function Footer({ site, dominio, siteSlug, secciones, seccionActi
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="flex h-9 w-9 items-center justify-center rounded-full bg-white border border-gray-200 text-gray-600 transition hover:bg-[var(--color-primario)] hover:text-white hover:border-transparent shadow-xs"
-                                            title={red.nombre || 'Red social'}
                                         >
                                             <DynamicIcon name={red.icono || 'FaShareNodes'} className="h-4 w-4" />
                                         </a>
