@@ -45,6 +45,7 @@ class PlantillasController extends Controller
         $targetSlug = filled($seccion) ? strtolower(str_replace(['_', ' '], '-', $seccion)) : null;
 
         $seccionModel = $plantilla->secciones
+            ->reject(fn ($s) => strtolower($s->slug) === 'nav')
             ->when(filled($seccion), function ($items) use ($targetSlug) {
                 return $items->filter(function ($s) use ($targetSlug) {
                     $sSlug = strtolower(str_replace(['_', ' '], '-', $s->slug));
@@ -190,12 +191,15 @@ class PlantillasController extends Controller
 
         $productos = $productosQuery->orderBy('orden')->orderBy('nombre')->get();
         $titulo = $catalogoConfig['titulo'] ?? 'Catálogo de Productos';
+        $colorPrimario = $estilos['color_primario'] ?? '#F72F46';
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.catalogo', [
-            'site' => (object) ['nombre' => $plantilla->nombre, 'imagen' => $plantilla->imagen],
+            'site' => (object) ['nombre' => $plantilla->nombre, 'imagen' => $plantilla->imagen, 'estilos' => $estilos],
             'titulo' => $titulo,
             'productos' => $productos,
-        ]);
+            'colorPrimario' => $colorPrimario,
+            'estilos' => $estilos,
+        ])->setOption('isGdEnabled', false)->setOption('isRemoteEnabled', true);
 
         $filename = \Illuminate\Support\Str::slug($titulo) . '.pdf';
         return $pdf->download($filename);

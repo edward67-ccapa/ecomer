@@ -61,7 +61,7 @@ class SitePageController extends Controller
             ->reject(fn ($s) => strtolower($s->slug) === 'nav');
 
         $targetSlug = strtolower(str_replace(['_', ' '], '-', $seccionSlug));
-        $seccion = $site->plantilla->secciones->first(function ($s) use ($targetSlug) {
+        $seccion = $seccionesNav->first(function ($s) use ($targetSlug) {
             $sSlug = strtolower(str_replace(['_', ' '], '-', $s->slug));
             $sNombre = strtolower(str_replace(['_', ' '], '-', $s->nombre));
             if ($targetSlug === 'inicio' || $targetSlug === 'hero') {
@@ -417,12 +417,15 @@ class SitePageController extends Controller
 
         $productos = $productosQuery->orderBy('orden')->orderBy('nombre')->get();
         $titulo = $catalogoConfig['titulo'] ?? 'Catálogo de Productos';
+        $colorPrimario = $estilos['color_primario'] ?? '#F72F46';
 
         $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.catalogo', [
             'site' => $site,
             'titulo' => $titulo,
             'productos' => $productos,
-        ]);
+            'colorPrimario' => $colorPrimario,
+            'estilos' => $estilos,
+        ])->setOption('isGdEnabled', false)->setOption('isRemoteEnabled', true);
 
         $filename = Str::slug($titulo) . '.pdf';
         return $pdf->download($filename);

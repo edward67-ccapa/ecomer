@@ -266,20 +266,9 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
         (!seccionActiva ||
             activeSlug === 'inicio' ||
             activeSlug === 'hero' ||
-            activeSlug === 'nosotros' ||
-            activeSlug === 'sobre-nosotros' ||
-            activeSlug === 'contacto' ||
-            activeSlug === 'contactos' ||
-            activeSlug === 'servicios' ||
-            activeSlug === 'servicio' ||
+            activeSlug === 'nav' ||
             activeNombre === 'inicio' ||
             activeNombre === 'hero' ||
-            activeNombre === 'nosotros' ||
-            activeNombre === 'sobre nosotros' ||
-            activeNombre === 'contacto' ||
-            activeNombre === 'contactos' ||
-            activeNombre === 'servicios' ||
-            activeNombre === 'servicio' ||
             activeSlug === '');
     const isTransparentMode = isHeroPage && !isScrolled;
 

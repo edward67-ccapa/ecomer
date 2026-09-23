@@ -82,7 +82,7 @@ index.form = indexForm
 
 /**
 * @see \App\Http\Controllers\PlantillasController::descargarCatalogo
-* @see app/Http/Controllers/PlantillasController.php:155
+* @see app/Http/Controllers/PlantillasController.php:156
 * @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
 */
 export const descargarCatalogo = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -97,7 +97,7 @@ descargarCatalogo.definition = {
 
 /**
 * @see \App\Http\Controllers\PlantillasController::descargarCatalogo
-* @see app/Http/Controllers/PlantillasController.php:155
+* @see app/Http/Controllers/PlantillasController.php:156
 * @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
 */
 descargarCatalogo.url = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions) => {
@@ -130,7 +130,7 @@ descargarCatalogo.url = (args: { plantilla: string | { slug: string } } | [plant
 
 /**
 * @see \App\Http\Controllers\PlantillasController::descargarCatalogo
-* @see app/Http/Controllers/PlantillasController.php:155
+* @see app/Http/Controllers/PlantillasController.php:156
 * @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
 */
 descargarCatalogo.get = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
@@ -140,7 +140,7 @@ descargarCatalogo.get = (args: { plantilla: string | { slug: string } } | [plant
 
 /**
 * @see \App\Http\Controllers\PlantillasController::descargarCatalogo
-* @see app/Http/Controllers/PlantillasController.php:155
+* @see app/Http/Controllers/PlantillasController.php:156
 * @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
 */
 descargarCatalogo.head = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
@@ -150,7 +150,7 @@ descargarCatalogo.head = (args: { plantilla: string | { slug: string } } | [plan
 
 /**
 * @see \App\Http\Controllers\PlantillasController::descargarCatalogo
-* @see app/Http/Controllers/PlantillasController.php:155
+* @see app/Http/Controllers/PlantillasController.php:156
 * @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
 */
 const descargarCatalogoForm = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -160,7 +160,7 @@ const descargarCatalogoForm = (args: { plantilla: string | { slug: string } } | 
 
 /**
 * @see \App\Http\Controllers\PlantillasController::descargarCatalogo
-* @see app/Http/Controllers/PlantillasController.php:155
+* @see app/Http/Controllers/PlantillasController.php:156
 * @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
 */
 descargarCatalogoForm.get = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
@@ -170,7 +170,7 @@ descargarCatalogoForm.get = (args: { plantilla: string | { slug: string } } | [p
 
 /**
 * @see \App\Http\Controllers\PlantillasController::descargarCatalogo
-* @see app/Http/Controllers/PlantillasController.php:155
+* @see app/Http/Controllers/PlantillasController.php:156
 * @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
 */
 descargarCatalogoForm.head = (args: { plantilla: string | { slug: string } } | [plantilla: string | { slug: string } ] | string | { slug: string }, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
