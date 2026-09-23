@@ -159,7 +159,7 @@ export default function MarcasSection({
                                             alt={`Marca ${idx + 1}`}
                                             width={300}
                                             height={150}
-                                            className="max-h-full max-w-full object-contain filter grayscale opacity-75 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                                            className="max-h-full max-w-full object-contain group-hover:scale-105 transition-all duration-300"
                                             loading="lazy"
                                             decoding="async"
                                         />

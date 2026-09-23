@@ -197,6 +197,7 @@ export default function Ecomer({
                     seccionActiva={seccionActiva}
                     seccionesData={seccionesData}
                     estilos={estilos}
+                    productos={productos}
                 />
 
                 <FloatingWhatsApp site={site} dominio={dominio} siteSlug={siteSlug} seccionesData={seccionesData} estilos={estilos} />

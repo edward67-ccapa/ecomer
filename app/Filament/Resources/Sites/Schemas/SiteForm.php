@@ -96,6 +96,18 @@ class SiteForm
                                             TextInput::make('slug')
                                                 ->required()
                                                 ->maxLength(255),
+                                            TextInput::make('estilos.direccion')
+                                                ->label('Dirección de la tienda / negocio')
+                                                ->placeholder('Ej: Av. Gran Chimú N°680, San Juan de Lurigancho')
+                                                ->prefixIcon('heroicon-m-map-pin')
+                                                ->helperText('Dirección física visible en pie de página, cabecera y sección de contacto.')
+                                                ->columnSpan(2),
+                                            TextInput::make('estilos.mapa_url')
+                                                ->label('Enlace o Ubicación de Google Maps (Opcional)')
+                                                ->placeholder('https://maps.google.com/?q=... o enlace de compartir')
+                                                ->prefixIcon('heroicon-m-globe-alt')
+                                                ->helperText('Opcional. Si se deja en blanco, el mapa se generará automáticamente a partir de la dirección.')
+                                                ->columnSpan(2),
                                             FileUpload::make('imagen')
                                                 ->label('Logo / imagen')
                                                 ->webp5Mb(fn (Get $get, ?\Illuminate\Database\Eloquent\Model $record) => 'sites/' . (Str::slug($get('slug') ?? $record?->slug) ?: 'general'), 'public')
@@ -245,6 +257,8 @@ class SiteForm
                                                 ->placeholder('1rem'),
                                         ]),
                                     ]),
+                                PlantillaForm::redesSocialesSection(),
+                                PlantillaForm::metodosPagoSection(),
                             ]),
 
                         Tab::make('Respuestas / Contenido')

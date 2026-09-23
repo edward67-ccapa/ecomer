@@ -1,12 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import DynamicIcon from '@/components/DynamicIcon';
 
-export default function ContactoSection({ seccionData }) {
-    if (!seccionData || !seccionData.contenido) {
-        return null;
-    }
-
-    const contenido = seccionData.contenido || [];
+export default function ContactoSection({ seccionData, site, estilos }) {
+    const contenido = seccionData?.contenido || [];
 
     // Helper para buscar items por label (insensible a mayúsculas)
     const findItem = (label) => {
@@ -27,17 +23,47 @@ export default function ContactoSection({ seccionData }) {
         : 'Cuéntanos y haremos realidad la torta de tus sueños';
     const imagenUrl = imagenItem ? imagenItem.valor : null;
 
-    // Extraer datos de WhatsApp
-    const whatsapVal = Array.isArray(whatsapItem?.valor) ? whatsapItem.valor[0] : null;
-    const whatsapTexto = whatsapVal?.texto || 'Pedir por WhatsApp';
-    const whatsapIcono = whatsapVal?.Icono || 'FaWhatsapp';
-    const whatsapEnlace = whatsapItem?.enlace || 'https://wa.me/';
+    // Redes Sociales y WhatsApp desde General (estilos.redes_sociales)
+    const redesConfig = estilos?.redes_sociales || site?.estilos?.redes_sociales || {};
+    const globalActions = Array.isArray(estilos?.acciones_nav)
+        ? estilos.acciones_nav
+        : (Array.isArray(site?.estilos?.acciones_nav) ? site.estilos.acciones_nav : []);
 
-    // Extraer datos de Dirección
+    const waAction = globalActions.find((a) => (a.icono || a.icon || '').toLowerCase().includes('whatsapp'));
+    const whatsapVal = Array.isArray(whatsapItem?.valor) ? whatsapItem.valor[0] : null;
+
+    const rawWa = redesConfig.whatsapp || waAction?.texto || whatsapVal?.texto || whatsapItem?.enlace || '';
+    const cleanDigits = String(rawWa).replace(/\D/g, '');
+    const waNum = cleanDigits ? (cleanDigits.length === 9 ? '51' + cleanDigits : cleanDigits) : null;
+
+    // Dirección desde General (estilos.direccion)
     const direccionVal = Array.isArray(direccionItem?.valor) ? direccionItem.valor[0] : null;
-    const direccionTexto = direccionVal?.texto || 'Av. Gran Chimú N°680, San Juan de Lurigancho 15401';
-    const direccionIcono = direccionVal?.Icono || 'FaLocationDot';
-    const direccionEnlace = direccionItem?.enlace || 'https://maps.google.com';
+    const direccionTexto = estilos?.direccion
+        || site?.estilos?.direccion
+        || direccionVal?.texto
+        || null;
+    const direccionIcono = 'FaLocationDot';
+    const direccionEnlace = estilos?.mapa_url
+        || site?.estilos?.mapa_url
+        || direccionItem?.enlace
+        || (direccionTexto ? `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccionTexto)}` : null);
+
+    // Redes Sociales oficiales
+    const formatSocialUrl = (val, prefix = '') => {
+        if (!val) return null;
+        const str = String(val).trim();
+        if (!str) return null;
+        if (str.startsWith('http://') || str.startsWith('https://')) return str;
+        if (str.startsWith('@')) return `${prefix}${str.slice(1)}`;
+        return `${prefix}${str}`;
+    };
+
+    const redesSociales = [];
+    if (redesConfig.facebook) redesSociales.push({ nombre: 'Facebook', icono: 'FaFacebook', url: formatSocialUrl(redesConfig.facebook, 'https://facebook.com/') });
+    if (redesConfig.instagram) redesSociales.push({ nombre: 'Instagram', icono: 'FaInstagram', url: formatSocialUrl(redesConfig.instagram, 'https://instagram.com/') });
+    if (redesConfig.tiktok) redesSociales.push({ nombre: 'TikTok', icono: 'FaTiktok', url: formatSocialUrl(redesConfig.tiktok, 'https://tiktok.com/@') });
+    if (redesConfig.youtube) redesSociales.push({ nombre: 'YouTube', icono: 'FaYoutube', url: formatSocialUrl(redesConfig.youtube, 'https://youtube.com/@') });
+    if (redesConfig.twitter) redesSociales.push({ nombre: 'X (Twitter)', icono: 'FaXTwitter', url: formatSocialUrl(redesConfig.twitter, 'https://x.com/') });
 
     // Estado del formulario
     const [nombre, setNombre] = useState('');
@@ -53,20 +79,13 @@ export default function ContactoSection({ seccionData }) {
     const handleEnviarWhatsApp = (e) => {
         e.preventDefault();
 
-        let mensaje = `¡Hola!\n`;
-        if (nombre) mensaje += `*Nombre:* ${nombre}\n`;
-        if (numero) mensaje += `*Teléfono / WhatsApp:* ${numero}\n`;
-        if (fecha) mensaje += `*Fecha del evento:* ${fecha}\n`;
-        if (idea) mensaje += `*Idea / Detalles:* ${idea}\n`;
+        let mensaje = `¡Hola! Me comunico desde la web.\n\n`;
+        if (nombre) mensaje += `👤 *Nombre:* ${nombre}\n`;
+        if (numero) mensaje += `📱 *Teléfono / WhatsApp:* ${numero}\n`;
+        if (fecha) mensaje += `📅 *Fecha del evento:* ${fecha}\n`;
+        if (idea) mensaje += `💬 *Idea / Detalles:* ${idea}\n`;
 
-        let urlBase = whatsapEnlace || 'https://wa.me/';
-        if (!urlBase.includes('wa.me') && !urlBase.includes('whatsapp.com')) {
-            urlBase = 'https://wa.me/';
-        }
-
-        const separator = urlBase.includes('?') ? '&' : '?';
-        const finalUrl = `${urlBase}${separator}text=${encodeURIComponent(mensaje)}`;
-
+        const finalUrl = `https://wa.me/${waNum}?text=${encodeURIComponent(mensaje)}`;
         window.open(finalUrl, '_blank', 'noopener,noreferrer');
     };
 
@@ -101,7 +120,7 @@ export default function ContactoSection({ seccionData }) {
                             {/* Tarjeta Dirección */}
                             {direccionTexto && (
                                 <a
-                                    href={direccionEnlace ? (direccionEnlace.startsWith('http') ? direccionEnlace : `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccionTexto)}`) : '#'}
+                                    href={direccionEnlace}
                                     target="_blank"
                                     rel="noopener noreferrer"
                                     className="flex items-center gap-4 p-4 bg-white border border-rose-100 shadow-sm hover:shadow-md transition-all duration-200 group"
@@ -124,6 +143,56 @@ export default function ContactoSection({ seccionData }) {
                                         <span className="block text-sm font-semibold text-gray-800 line-clamp-2">{direccionTexto}</span>
                                     </div>
                                 </a>
+                            )}
+
+                            {/* Tarjeta WhatsApp */}
+                            {waNum && (
+                                <a
+                                    href={`https://wa.me/${waNum}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-4 p-4 bg-white border border-emerald-100 shadow-sm hover:shadow-md transition-all duration-200 group"
+                                    style={{
+                                        borderRadius: 'var(--radio-bordes)',
+                                        fontFamily: 'var(--tipografia-texto)',
+                                    }}
+                                >
+                                    <div
+                                        className="w-12 h-12 text-white flex items-center justify-center shrink-0 bg-emerald-500 group-hover:scale-105 transition-transform"
+                                        style={{
+                                            borderRadius: 'var(--radio-bordes)',
+                                        }}
+                                    >
+                                        {renderIcon('FaWhatsapp', 'w-6 h-6 text-white')}
+                                    </div>
+                                    <div className="overflow-hidden">
+                                        <span className="block text-xs font-bold uppercase tracking-wider text-emerald-600">WhatsApp Oficial</span>
+                                        <span className="block text-sm font-semibold text-gray-800 line-clamp-1">+{waNum}</span>
+                                    </div>
+                                </a>
+                            )}
+
+                            {/* Botones de Redes Sociales Oficiales */}
+                            {redesSociales.length > 0 && (
+                                <div className="pt-2">
+                                    <span className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-2.5">
+                                        Síguenos en Redes
+                                    </span>
+                                    <div className="flex flex-wrap items-center gap-2.5">
+                                        {redesSociales.map((red, idx) => (
+                                            <a
+                                                key={idx}
+                                                href={red.url}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title={red.nombre}
+                                                className="w-10 h-10 rounded-full bg-rose-50 text-rose-600 hover:bg-[var(--color-primario)] hover:text-white transition-all flex items-center justify-center shadow-xs"
+                                            >
+                                                {renderIcon(red.icono, 'w-4 h-4')}
+                                            </a>
+                                        ))}
+                                    </div>
+                                </div>
                             )}
                         </div>
                     </div>

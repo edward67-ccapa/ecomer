@@ -11,21 +11,20 @@ import subcategorias from './subcategorias'
 import tallas from './tallas'
 import tiendas from './tiendas'
 import users from './users'
-
 const resources = {
     categorias: Object.assign(categorias, categorias),
-    colores: Object.assign(colores, colores),
-    dominios: Object.assign(dominios, dominios),
-    monedas: Object.assign(monedas, monedas),
-    plantillas: Object.assign(plantillas, plantillas),
-    productos: Object.assign(productos, productos),
-    shield: Object.assign(shield, shield),
-    servicios: Object.assign(servicios, servicios),
-    sites: Object.assign(sites, sites),
-    subcategorias: Object.assign(subcategorias, subcategorias),
-    tallas: Object.assign(tallas, tallas),
-    tiendas: Object.assign(tiendas, tiendas),
-    users: Object.assign(users, users),
+colores: Object.assign(colores, colores),
+dominios: Object.assign(dominios, dominios),
+monedas: Object.assign(monedas, monedas),
+plantillas: Object.assign(plantillas, plantillas),
+productos: Object.assign(productos, productos),
+shield: Object.assign(shield, shield),
+servicios: Object.assign(servicios, servicios),
+sites: Object.assign(sites, sites),
+subcategorias: Object.assign(subcategorias, subcategorias),
+tallas: Object.assign(tallas, tallas),
+tiendas: Object.assign(tiendas, tiendas),
+users: Object.assign(users, users),
 }
 
 export default resources

@@ -27,6 +27,21 @@ export default function FloatingWhatsApp({ site, dominio, siteSlug, seccionesDat
         });
 
         const list = [];
+
+        // 1. Prioridad: WhatsApp oficial configurado en Redes Sociales (General)
+        const redesWa = estilos?.redes_sociales?.whatsapp || site?.estilos?.redes_sociales?.whatsapp;
+        if (redesWa) {
+            const cleanNum = String(redesWa).replace(/\D/g, '');
+            const finalNum = cleanNum ? (cleanNum.length === 9 ? '51' + cleanNum : cleanNum) : '';
+            const url = String(redesWa).startsWith('http') ? String(redesWa) : `https://wa.me/${finalNum}`;
+            list.push({
+                label: 'WhatsApp Oficial',
+                numero: redesWa,
+                cleanNum: finalNum,
+                url,
+            });
+        }
+
         waItems.forEach((item) => {
             const rawText = item.texto || item.Texto || '';
             const lines = String(rawText).split(/\r?\n/).map((s) => s.trim()).filter(Boolean);

@@ -23,9 +23,18 @@ class AppServiceProvider extends ServiceProvider
     {
         \Illuminate\Support\Facades\View::share('errors', new \Illuminate\Support\ViewErrorBag);
 
-        $tmpPath = storage_path('app/livewire-tmp');
-        if (! file_exists($tmpPath)) {
-            @mkdir($tmpPath, 0777, true);
+        // Asegurar que las carpetas de subida temporal de Livewire existan y tengan permisos
+        $tmpDirectories = [
+            storage_path('app/livewire-tmp'),
+            storage_path('app/public/livewire-tmp'),
+            storage_path('app/private/livewire-tmp'),
+            storage_path('app/public'),
+            storage_path('app/private'),
+        ];
+        foreach ($tmpDirectories as $dir) {
+            if (! file_exists($dir)) {
+                @mkdir($dir, 0777, true);
+            }
         }
 
         \Filament\Support\Facades\FilamentView::registerRenderHook(
@@ -62,9 +71,9 @@ class AppServiceProvider extends ServiceProvider
             /** @var \Filament\Forms\Components\FileUpload $this */
             $component = $this
                 ->image()
-                ->maxSize(2048) // 2MB max limit (2048 KB)
+                ->maxSize(5120) // 5MB max limit (5120 KB)
                 ->validationMessages([
-                    'max' => 'El archivo excede el tamaño máximo permitido de 2MB.',
+                    'max' => 'El archivo excede el tamaño máximo permitido de 5MB.',
                 ]);
 
             if ($directory !== null) {

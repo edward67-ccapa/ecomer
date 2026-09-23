@@ -7,6 +7,7 @@ use App\Models\Pregunta;
 use App\Models\Site;
 use App\Filament\Forms\Components\IconPicker;
 use App\Filament\Forms\Components\LinkPicker;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\MultiSelect;
@@ -74,6 +75,18 @@ class PlantillaForm
                                                                         ->required(),
                                                                     Toggle::make('activa')
                                                                         ->default(true),
+                                                                    TextInput::make('estilos.direccion')
+                                                                        ->label('Dirección de la tienda / negocio')
+                                                                        ->placeholder('Ej: Av. Gran Chimú N°680, San Juan de Lurigancho')
+                                                                        ->prefixIcon('heroicon-m-map-pin')
+                                                                        ->helperText('Dirección física visible en pie de página, cabecera y sección de contacto.')
+                                                                        ->columnSpan(2),
+                                                                    TextInput::make('estilos.mapa_url')
+                                                                        ->label('Enlace o Ubicación de Google Maps (Opcional)')
+                                                                        ->placeholder('https://maps.google.com/?q=... o enlace de compartir')
+                                                                        ->prefixIcon('heroicon-m-globe-alt')
+                                                                        ->helperText('Opcional. Si se deja en blanco, el mapa se generará automáticamente a partir de la dirección.')
+                                                                        ->columnSpan(2),
                                                                 ]),
                                                                 Textarea::make('descripcion')
                                                                     ->rows(2),
@@ -234,6 +247,10 @@ class PlantillaForm
                                                             ->columnSpanFull(),
                                                     ])
                                                     ->columnSpanFull(),
+
+                                                self::redesSocialesSection(),
+
+                                                self::metodosPagoSection(),
                                             ]),
 
                                         Tab::make('Secciones & Preguntas')
@@ -769,6 +786,79 @@ class PlantillaForm
                 'MdOutlineSupportAgent' => 'MdOutlineSupportAgent (Agente de Soporte)',
             ]
         ];
+    }
+
+    public static function redesSocialesSection(): Section
+    {
+        return Section::make('Redes Sociales')
+            ->icon('heroicon-o-share')
+            ->description('Enlaces a los perfiles oficiales de redes sociales para el pie de página y cabecera.')
+            ->collapsible()
+            ->schema([
+                Grid::make(3)->schema([
+                    TextInput::make('estilos.redes_sociales.facebook')
+                        ->label('Facebook')
+                        ->prefixIcon('heroicon-m-globe-alt')
+                        ->placeholder('https://facebook.com/tu-pagina'),
+                    TextInput::make('estilos.redes_sociales.instagram')
+                        ->label('Instagram')
+                        ->prefixIcon('heroicon-m-camera')
+                        ->placeholder('https://instagram.com/tu-usuario'),
+                    TextInput::make('estilos.redes_sociales.tiktok')
+                        ->label('TikTok')
+                        ->prefixIcon('heroicon-m-video-camera')
+                        ->placeholder('https://tiktok.com/@tu-usuario'),
+                    TextInput::make('estilos.redes_sociales.whatsapp')
+                        ->label('WhatsApp (Número o Enlace)')
+                        ->prefixIcon('heroicon-m-chat-bubble-left-right')
+                        ->placeholder('916628409 o https://wa.me/...'),
+                    TextInput::make('estilos.redes_sociales.youtube')
+                        ->label('YouTube')
+                        ->prefixIcon('heroicon-m-play-circle')
+                        ->placeholder('https://youtube.com/@tu-canal'),
+                    TextInput::make('estilos.redes_sociales.twitter')
+                        ->label('X (Twitter)')
+                        ->prefixIcon('heroicon-m-hashtag')
+                        ->placeholder('https://x.com/tu-usuario'),
+                ]),
+            ])
+            ->columnSpanFull();
+    }
+
+    public static function metodosPagoSection(): Section
+    {
+        return Section::make('Métodos de Pago')
+            ->icon('heroicon-o-credit-card')
+            ->description('Selecciona las insignias de medios de pago y billeteras digitales que se mostrarán en el pie de página.')
+            ->collapsible()
+            ->schema([
+                CheckboxList::make('estilos.metodos_pago')
+                    ->label('Insignias de pago aceptadas')
+                    ->options([
+                        'visa' => 'Visa',
+                        'mastercard' => 'Mastercard',
+                        'amex' => 'American Express',
+                        'diners' => 'Diners Club',
+                        'discover' => 'Discover',
+                        'paypal' => 'PayPal',
+                        'apple_pay' => 'Apple Pay',
+                        'google_pay' => 'Google Pay',
+                        'amazon_pay' => 'Amazon Pay',
+                        'shop_pay' => 'Shop Pay',
+                        'yape' => 'Yape',
+                        'plin' => 'Plin',
+                        'efectivo' => 'Pago Contraentrega / Efectivo',
+                        'transferencia' => 'Transferencia Bancaria',
+                    ])
+                    ->columns([
+                        'default' => 2,
+                        'sm' => 3,
+                        'md' => 4,
+                        'lg' => 6,
+                    ])
+                    ->default(['visa', 'mastercard', 'amex', 'paypal', 'apple_pay', 'google_pay', 'yape', 'plin']),
+            ])
+            ->columnSpanFull();
     }
 }
 

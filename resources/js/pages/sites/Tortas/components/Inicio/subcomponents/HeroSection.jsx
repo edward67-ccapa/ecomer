@@ -43,7 +43,7 @@ export default function HeroSection({ seccionData }) {
     };
 
     return (
-        <section id="inicio" className="scroll-mt-10 relative min-h-[100vh] overflow-hidden">
+        <section id="inicio" className="scroll-mt-10 relative min-h-[480px] sm:min-h-[580px] lg:min-h-[90vh] overflow-hidden">
             {imgHero && (
                 <>
                     <motion.img
@@ -56,13 +56,13 @@ export default function HeroSection({ seccionData }) {
                         decoding="async"
                         loading="eager"
                         className="absolute inset-0 h-full w-full object-cover"
-                        style={{ objectPosition: 'bottom' }}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom' }}
                     />
                     <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/60 to-transparent" />
                 </>
             )}
 
-            <div className="relative mx-auto flex min-h-[85vh] max-w-7xl flex-col justify-end px-6 pb-20 pt-32">
+            <div className="relative mx-auto flex min-h-[420px] sm:min-h-[500px] lg:min-h-[80vh] max-w-7xl flex-col justify-end px-6 pb-20 pt-32">
                 <motion.div
                     initial={{ y: 40, opacity: 0 }}
                     animate={{ y: 0, opacity: 1 }}

@@ -11,6 +11,8 @@ export default function SectionNosotros({
     seccionesData,
     dominio,
     siteSlug,
+    site,
+    estilos,
 }) {
     const {
         portada,
@@ -32,7 +34,14 @@ export default function SectionNosotros({
     return (
         <main className="flex-1">
             {/* Seccion 1: Portada (Sobre Nosotros) */}
-            <PortadaSection seccionData={portada} />
+            <PortadaSection
+                seccionData={portada}
+                site={site}
+                estilos={estilos}
+                dominio={dominio}
+                siteSlug={siteSlug}
+                seccionesData={seccionesData}
+            />
 
             {/* Seccion 2: Historia (Línea de tiempo cronológica) */}
             <HistoriaSection seccionData={historia} />
@@ -44,7 +53,14 @@ export default function SectionNosotros({
             <ElegirnosSection seccionData={elegirnos} />
 
             {/* Seccion 5: Acción (Llamado a la acción de cierre) */}
-            <AccionSection seccionData={accion} />
+            <AccionSection
+                seccionData={accion}
+                site={site}
+                estilos={estilos}
+                dominio={dominio}
+                siteSlug={siteSlug}
+                seccionesData={seccionesData}
+            />
         </main>
     );
 }

@@ -1,9 +1,9 @@
 @php
-    $primaryColor = $colorPrimario ?? $site->estilos['color_primario'] ?? '#2563EB';
+    $primaryColor = $colorPrimario ?? $site->estilos['color_primario'] ?? '#ff8da2';
 
     $getDomPdfImageSrc = function ($prod) {
         if (!$prod) return null;
-        
+
         $imagePath = is_string($prod) ? $prod : ($prod->imagen ?? null);
         if (empty($imagePath)) {
             $imgs = $prod->imagenes ?? null;
@@ -30,41 +30,67 @@
             }
         }
 
-        $jpgPath = sys_get_temp_dir() . '/' . md5($fullPath . '_white_v2') . '.jpg';
-        if (!file_exists($jpgPath)) {
-            $cmd = sprintf(
-                "python3 -c \"from PIL import Image; im = Image.open(%s); bg = Image.new('RGB', im.size, (255, 255, 255)); im = im.convert('RGBA') if im.mode == 'P' else im; bg.paste(im, (0, 0), im) if 'A' in im.mode else bg.paste(im, (0, 0)); bg.save(%s, 'JPEG', quality=95)\"",
-                escapeshellarg($fullPath),
-                escapeshellarg($jpgPath)
-            );
-            @exec($cmd);
+        // Si es WebP, convertir a JPEG usando GD para compatibilidad con DomPDF
+        $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
+        if ($ext === 'webp' || (function_exists('mime_content_type') && @mime_content_type($fullPath) === 'image/webp')) {
+            $jpgPath = sys_get_temp_dir() . '/' . md5($fullPath . '_dompdf_v3') . '.jpg';
+            if (!file_exists($jpgPath)) {
+                if (function_exists('imagecreatefromwebp')) {
+                    $im = @imagecreatefromwebp($fullPath);
+                    if ($im) {
+                        $w = imagesx($im);
+                        $h = imagesy($im);
+                        $bg = imagecreatetruecolor($w, $h);
+                        $white = imagecolorallocate($bg, 255, 255, 255);
+                        imagefilledrectangle($bg, 0, 0, $w, $h, $white);
+                        imagecopy($bg, $im, 0, 0, 0, 0, $w, $h);
+                        imagejpeg($bg, $jpgPath, 92);
+                        imagedestroy($im);
+                        imagedestroy($bg);
+                    }
+                }
+            }
+            if (file_exists($jpgPath)) {
+                return 'data:image/jpeg;base64,' . base64_encode(file_get_contents($jpgPath));
+            }
         }
 
-        if (file_exists($jpgPath)) {
-            return 'data:image/jpeg;base64,' . base64_encode(file_get_contents($jpgPath));
+        $mime = 'image/jpeg';
+        if ($ext === 'png') {
+            $mime = 'image/png';
         }
 
-        return 'data:image/jpeg;base64,' . base64_encode(file_get_contents($fullPath));
+        return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($fullPath));
     };
 
     $logoSrc = $getDomPdfImageSrc($site->imagen ?? $site->logo_nav ?? null);
 
-    $renderSpecs = function($desc) {
-        if (empty($desc)) return '';
-        $lines = preg_split('/[\r\n]+/', trim($desc));
-        if (count($lines) === 1 && str_contains($desc, ',')) {
-            $lines = explode(',', $desc);
-        }
-        $html = '<ul class="spec-list">';
-        foreach ($lines as $line) {
-            $line = trim($line);
-            if ($line) {
-                $html .= '<li><span class="bullet">•</span> ' . e($line) . '</li>';
-            }
-        }
-        $html .= '</ul>';
-        return $html;
-    };
+    // SVG Decorativo Triángulo Esquina Superior Derecha con Puntos
+    $svgTriangle = '<svg xmlns="http://www.w3.org/2000/svg" width="130" height="130" viewBox="0 0 130 130">
+        <polygon points="0,0 130,0 130,130" fill="' . $primaryColor . '" />
+        <circle cx="82" cy="28" r="2.5" fill="#ffffff" />
+        <circle cx="97" cy="28" r="2.5" fill="#ffffff" />
+        <circle cx="112" cy="28" r="2.5" fill="#ffffff" />
+        <circle cx="82" cy="43" r="2.5" fill="#ffffff" />
+        <circle cx="97" cy="43" r="2.5" fill="#ffffff" />
+        <circle cx="112" cy="43" r="2.5" fill="#ffffff" />
+    </svg>';
+    $triangleBase64 = 'data:image/svg+xml;base64,' . base64_encode($svgTriangle);
+
+    // SVG Decorativo Línea de Chevrons
+    $chevronsPath = '';
+    for ($i = 0; $i < 32; $i++) {
+        $x1 = 7 + ($i * 7);
+        $x2 = 1 + ($i * 7);
+        $chevronsPath .= "M{$x1} 1 L{$x2} 6 L{$x1} 11 ";
+    }
+    $svgChevrons = '<svg xmlns="http://www.w3.org/2000/svg" width="235" height="12" viewBox="0 0 235 12">
+        <path d="' . $chevronsPath . '" stroke="' . $primaryColor . '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.45" fill="none" />
+    </svg>';
+    $chevronsBase64 = 'data:image/svg+xml;base64,' . base64_encode($svgChevrons);
+
+    $chunks = $productos->chunk(12);
+    $totalChunks = $chunks->count();
 @endphp
 <!DOCTYPE html>
 <html lang="es">
@@ -73,7 +99,11 @@
     <title>{{ $titulo }}</title>
     <style>
         @page {
-            margin: 15px;
+            margin: 12px;
+            size: a4 portrait;
+        }
+        * {
+            box-sizing: border-box;
         }
         body {
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
@@ -83,64 +113,47 @@
             background-color: #ffffff;
         }
 
-        .page {
+        .page-frame {
             position: relative;
-            box-sizing: border-box;
             border: none;
-            padding: 15px;
-            min-height: 980px;
+            padding: 10px 10px 6px 10px;
+            box-sizing: border-box;
             background-color: #ffffff;
-            overflow: hidden;
         }
 
         .page-break {
             page-break-after: always;
         }
 
-        /* Decorative Corner Triangles */
-        .corner-triangle-top-right {
+        .corner-triangle {
             position: absolute;
             top: 0;
             right: 0;
-            width: 0;
-            height: 0;
-            border-top: 90px solid {{ $primaryColor }};
-            border-left: 90px solid transparent;
-            z-index: 1;
-        }
-        .corner-dots {
-            position: absolute;
-            top: 6px;
-            right: 6px;
-            color: #ffffff;
-            font-size: 8px;
-            z-index: 2;
-            letter-spacing: 2px;
-            line-height: 10px;
+            width: 120px;
+            height: 120px;
+            z-index: 10;
         }
 
-        /* Header Bar */
+        /* Cabecera */
         .header-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 12px;
-            position: relative;
-            z-index: 3;
+            margin-bottom: 8px;
         }
         .header-logo-td {
-            width: 50%;
+            width: 55%;
             vertical-align: middle;
             text-align: left;
         }
         .header-chevrons-td {
-            width: 50%;
+            width: 45%;
             vertical-align: middle;
             text-align: right;
-            padding-right: 50px;
+            padding-right: 90px;
         }
         .site-logo {
-            max-height: 48px;
-            max-width: 190px;
+            max-height: 42px;
+            max-width: 180px;
             object-fit: contain;
         }
         .site-name-text {
@@ -148,166 +161,151 @@
             font-weight: 800;
             color: {{ $primaryColor }};
             margin: 0;
-        }
-        .chevrons {
-            font-size: 20px;
-            font-weight: bold;
-            color: {{ $primaryColor }};
-            opacity: 0.35;
-            letter-spacing: -2px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
 
-        /* Product Card Box */
-        .product-card {
+        /* Grilla de Productos (2 columnas) */
+        .grid-table {
             width: 100%;
-            border: none;
-            background-color: transparent;
-            padding: 2px 0;
-            margin-bottom: 6px;
-            box-sizing: border-box;
-            box-shadow: none;
+            border-collapse: separate;
+            border-spacing: 8px 6px;
+            table-layout: fixed;
+        }
+        .grid-td {
+            width: 50%;
+            vertical-align: top;
+            padding: 0;
         }
 
-        .product-table {
+        /* Tarjeta de Producto */
+        .product-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 9px;
+            background-color: #ffffff;
+            padding: 6px 8px;
+            height: 108px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        .card-inner-table {
             width: 100%;
             border-collapse: collapse;
+            height: 100%;
         }
-        .prod-col-img {
-            width: 42%;
+        .card-img-td {
+            width: 80px;
             vertical-align: middle;
             text-align: center;
-            padding: 2px;
+            padding-right: 8px;
         }
-        .prod-col-info {
-            vertical-align: middle;
-            text-align: left;
-            padding: 2px 10px;
-        }
-
         .prod-img {
-            max-width: 100%;
-            max-height: 175px;
-            object-fit: contain;
-            border-radius: 10px;
+            width: 76px;
+            height: 76px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #f1f5f9;
+            display: block;
+        }
+        .card-img-placeholder {
+            width: 78px;
+            height: 78px;
+            background-color: #fce7f3;
+            border-radius: 8px;
+            border: 1px solid #fbcfe8;
+            line-height: 78px;
+            text-align: center;
+            color: {{ $primaryColor }};
+            font-size: 8px;
+            font-weight: bold;
+        }
+        .card-info-td {
+            vertical-align: top;
+            text-align: left;
         }
 
-        .prod-title {
-            font-size: 19px;
+        /* Etiquetas y Textos */
+        .badge-discount {
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 7.5px;
             font-weight: 800;
-            color: #0f172a;
-            margin: 2px 0 5px 0;
-            line-height: 1.2;
-        }
-
-        .category-badge {
+            padding: 1.5px 6px;
+            border-radius: 6px;
             display: inline-block;
-            font-size: 10px;
+            margin-bottom: 2px;
+            text-transform: uppercase;
+        }
+        .category-tag {
+            font-size: 8px;
             font-weight: 800;
             color: #7c3aed;
             text-transform: uppercase;
             letter-spacing: 0.5px;
+            display: block;
             margin-bottom: 1px;
         }
-
-        .badge-discount {
-            background-color: #ef4444;
-            color: #ffffff;
-            font-size: 9px;
+        .prod-name {
+            font-size: 11.5px;
             font-weight: 800;
-            padding: 2px 8px;
-            border-radius: 10px;
-            display: inline-block;
-            margin-bottom: 4px;
-        }
-
-        .spec-list {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 6px 0;
-        }
-        .spec-list li {
-            font-size: 11px;
-            color: #64748b;
+            color: #111827;
+            line-height: 1.15;
             margin-bottom: 2px;
-            line-height: 1.3;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
-        .spec-list .bullet {
-            color: {{ $primaryColor }};
-            font-weight: bold;
-            margin-right: 4px;
-        }
-
-        /* Dotted Separator above Prices */
-        .price-section {
-            border-top: 1.5px dotted #cbd5e1;
-            margin-top: 6px;
-            padding-top: 6px;
+        .prod-desc {
+            font-size: 7.8px;
+            color: #64748b;
+            line-height: 1.2;
+            margin-bottom: 3px;
+            height: 20px;
+            overflow: hidden;
         }
 
-        .price-row-soles {
-            font-size: 18px;
+        /* Precios */
+        .price-box {
+            margin-top: 2px;
+        }
+        .price-soles {
+            font-size: 12px;
             font-weight: 800;
-            color: #0f172a;
+            color: #111827;
         }
         .price-soles-offer {
-            font-size: 18px;
+            font-size: 12px;
             font-weight: 800;
             color: #ef4444;
         }
-
         .price-striked {
-            font-size: 13px;
-            text-decoration: line-through;
+            font-size: 9.5px;
             color: #94a3b8;
-            margin-right: 5px;
+            text-decoration: line-through;
+            margin-right: 4px;
             font-weight: 600;
         }
-
-        .price-row-dolares {
-            font-size: 13px;
+        .price-usd {
+            font-size: 9.5px;
             font-weight: 700;
             color: #0d9488;
-            margin-top: 2px;
+            margin-top: 1px;
         }
-
-        .price-row-euros {
-            font-size: 13px;
+        .price-euros {
+            font-size: 9.5px;
             font-weight: 700;
             color: #2563eb;
-            margin-top: 2px;
-        }
-
-        /* Middle Divider Line with block */
-        .divider-table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 6px 0 10px 0;
-        }
-        .divider-line {
-            border-bottom: 2px solid {{ $primaryColor }};
-            width: 42%;
-        }
-        .divider-block {
-            width: 16%;
-            height: 8px;
-            background-color: {{ $primaryColor }};
-            border-radius: 3px;
+            margin-top: 1px;
         }
     </style>
 </head>
 <body>
-    @php
-        $chunks = $productos->chunk(3);
-        $totalChunks = $chunks->count();
-    @endphp
-
     @foreach($chunks as $chunkIndex => $pageProducts)
-        <div class="page {{ $chunkIndex < $totalChunks - 1 ? 'page-break' : '' }}">
-            <!-- Top Right Corner Triangle Accent -->
-            <div class="corner-triangle-top-right"></div>
-            <div class="corner-dots">:::<br>:::</div>
+        <div class="page-frame {{ $chunkIndex < $totalChunks - 1 ? 'page-break' : '' }}">
+            <!-- Triángulo decorativo en esquina superior derecha con puntos -->
+            <img src="{{ $triangleBase64 }}" class="corner-triangle" alt="" />
 
-            <!-- Header Bar -->
+            <!-- Barra Superior (Logo / Nombre y Línea de Chevrons) -->
             <table class="header-table">
                 <tr>
                     <td class="header-logo-td">
@@ -318,187 +316,130 @@
                         @endif
                     </td>
                     <td class="header-chevrons-td">
-                        <span class="chevrons">«««««««««««««««««</span>
+                        <img src="{{ $chevronsBase64 }}" style="height: 12px; vertical-align: middle;" alt="" />
                     </td>
                 </tr>
             </table>
 
-            @foreach($pageProducts->values() as $prodIndex => $prod)
+            <!-- Grilla de Tarjetas (2 columnas) -->
+            <table class="grid-table">
                 @php
-                    $imgSrc = $getDomPdfImageSrc($prod);
-
-                    // Soles
-                    $precioSoles = (float) ($prod->precio_soles ?? $prod->precio ?? 0);
-                    $precioOfertaSoles = $prod->precio_oferta_soles ?? $prod->precio_oferta;
-                    $precioOfertaSoles = $precioOfertaSoles !== null ? (float) $precioOfertaSoles : null;
-                    $tieneOfertaSoles = $precioOfertaSoles !== null && $precioOfertaSoles < $precioSoles;
-
-                    // Dólares
-                    $precioDolares = ($prod->precio_dolares !== null && (float)$prod->precio_dolares > 0) ? (float) $prod->precio_dolares : null;
-                    $precioOfertaDolares = ($prod->precio_oferta_dolares !== null && (float)$prod->precio_oferta_dolares > 0) ? (float) $prod->precio_oferta_dolares : null;
-                    $tieneOfertaDolares = $precioDolares !== null && $precioOfertaDolares !== null && $precioOfertaDolares < $precioDolares;
-
-                    // Euros
-                    $precioEuros = ($prod->precio_euros !== null && (float)$prod->precio_euros > 0) ? (float) $prod->precio_euros : null;
-                    $precioOfertaEuros = ($prod->precio_oferta_euros !== null && (float)$prod->precio_oferta_euros > 0) ? (float) $prod->precio_oferta_euros : null;
-                    $tieneOfertaEuros = $precioEuros !== null && $precioOfertaEuros !== null && $precioOfertaEuros < $precioEuros;
-
-                    // Descuento %
-                    $descuentoPorcentaje = ($tieneOfertaSoles && $precioSoles > 0)
-                        ? round((($precioSoles - $precioOfertaSoles) / $precioSoles) * 100)
-                        : null;
-
-                    // Alternar posición de imagen: Producto 1 (imagen a la izquierda), Producto 2 (imagen a la derecha), Producto 3 (imagen a la izquierda)
-                    $imageOnLeft = ($prodIndex % 2 === 0);
+                    $rows = $pageProducts->chunk(2);
                 @endphp
+                @foreach($rows as $row)
+                    <tr>
+                        @foreach($row as $prod)
+                            @php
+                                $imgSrc = $getDomPdfImageSrc($prod);
 
-                <div class="product-card">
-                    <table class="product-table">
-                        <tr>
-                            @if($imageOnLeft)
-                                {{-- Imagen a la Izquierda --}}
-                                @if($imgSrc)
-                                    <td class="prod-col-img">
-                                        <img src="{{ $imgSrc }}" class="prod-img">
-                                    </td>
-                                @endif
-                                <td class="prod-col-info" style="width: {{ $imgSrc ? '58%' : '100%' }};">
-                                    @if($descuentoPorcentaje)
-                                        <div><span class="badge-discount">-{{ $descuentoPorcentaje }}% DESCUENTO</span></div>
-                                    @endif
+                                // Soles
+                                $precioSoles = (float) ($prod->precio_soles ?? $prod->precio ?? 0);
+                                $precioOfertaSoles = $prod->precio_oferta_soles ?? $prod->precio_oferta;
+                                $precioOfertaSoles = $precioOfertaSoles !== null ? (float) $precioOfertaSoles : null;
+                                $tieneOfertaSoles = $precioOfertaSoles !== null && $precioOfertaSoles < $precioSoles;
 
-                                    @if($prod->categoria)
-                                        <div class="category-badge">{{ $prod->categoria->nombre }}</div>
-                                    @endif
+                                // Dólares
+                                $precioDolares = ($prod->precio_dolares !== null && (float)$prod->precio_dolares > 0) ? (float) $prod->precio_dolares : null;
+                                $precioOfertaDolares = ($prod->precio_oferta_dolares !== null && (float)$prod->precio_oferta_dolares > 0) ? (float) $prod->precio_oferta_dolares : null;
+                                $tieneOfertaDolares = $precioDolares !== null && $precioOfertaDolares !== null && $precioOfertaDolares < $precioDolares;
 
-                                    <div class="prod-title">{{ $prod->nombre }}</div>
+                                // Euros
+                                $precioEuros = ($prod->precio_euros !== null && (float)$prod->precio_euros > 0) ? (float) $prod->precio_euros : null;
+                                $precioOfertaEuros = ($prod->precio_oferta_euros !== null && (float)$prod->precio_oferta_euros > 0) ? (float) $prod->precio_oferta_euros : null;
+                                $tieneOfertaEuros = $precioEuros !== null && $precioOfertaEuros !== null && $precioOfertaEuros < $precioEuros;
 
-                                    @if(!empty($prod->descripcion_corta))
-                                        {!! $renderSpecs($prod->descripcion_corta) !!}
-                                    @endif
+                                // Descuento %
+                                $descuentoPorcentaje = ($tieneOfertaSoles && $precioSoles > 0)
+                                    ? round((($precioSoles - $precioOfertaSoles) / $precioSoles) * 100)
+                                    : null;
+                            @endphp
 
-                                    <div class="price-section">
-                                        {{-- Soles --}}
-                                        <div class="price-row-soles">
-                                            @if($tieneOfertaSoles)
-                                                <span class="price-striked">S/ {{ number_format($precioSoles, 2) }}</span>
-                                                <span class="price-soles-offer">S/ {{ number_format($precioOfertaSoles, 2) }}</span>
-                                            @else
-                                                <span>S/ {{ number_format($precioSoles, 2) }}</span>
-                                            @endif
-                                        </div>
-
-                                        {{-- Dólares --}}
-                                        @if($precioDolares)
-                                            <div class="price-row-dolares">
-                                                @if($tieneOfertaDolares)
-                                                    <span class="price-striked">$ {{ number_format($precioDolares, 2) }}</span>
-                                                    <span>$ {{ number_format($precioOfertaDolares, 2) }} USD</span>
+                            <td class="grid-td">
+                                <div class="product-card">
+                                    <table class="card-inner-table">
+                                        <tr>
+                                            <td class="card-img-td">
+                                                @if($imgSrc)
+                                                    <img src="{{ $imgSrc }}" class="prod-img" alt="{{ $prod->nombre }}">
                                                 @else
-                                                    <span>$ {{ number_format($precioDolares, 2) }} USD</span>
+                                                    <div class="card-img-placeholder">
+                                                        {{ strtoupper(substr($prod->nombre, 0, 6)) }}
+                                                    </div>
                                                 @endif
-                                            </div>
-                                        @endif
-
-                                        {{-- Euros --}}
-                                        @if($precioEuros)
-                                            <div class="price-row-euros">
-                                                @if($tieneOfertaEuros)
-                                                    <span class="price-striked">€ {{ number_format($precioEuros, 2) }}</span>
-                                                    <span>€ {{ number_format($precioOfertaEuros, 2) }} EUR</span>
-                                                @else
-                                                    <span>€ {{ number_format($precioEuros, 2) }} EUR</span>
+                                            </td>
+                                            <td class="card-info-td">
+                                                @if($descuentoPorcentaje)
+                                                    <span class="badge-discount">-{{ $descuentoPorcentaje }}% DESCUENTO</span>
                                                 @endif
-                                            </div>
-                                        @endif
-                                    </div>
-                                </td>
-                            @else
-                                {{-- Imagen a la Derecha --}}
-                                <td class="prod-col-info" style="width: {{ $imgSrc ? '58%' : '100%' }};">
-                                    @if($descuentoPorcentaje)
-                                        <div><span class="badge-discount">-{{ $descuentoPorcentaje }}% DESCUENTO</span></div>
-                                    @endif
 
-                                    @if($prod->categoria)
-                                        <div class="category-badge">{{ $prod->categoria->nombre }}</div>
-                                    @endif
-
-                                    <div class="prod-title">{{ $prod->nombre }}</div>
-
-                                    @if(!empty($prod->descripcion_corta))
-                                        {!! $renderSpecs($prod->descripcion_corta) !!}
-                                    @endif
-
-                                    <div class="price-section">
-                                        {{-- Soles --}}
-                                        <div class="price-row-soles">
-                                            @if($tieneOfertaSoles)
-                                                <span class="price-striked">S/ {{ number_format($precioSoles, 2) }}</span>
-                                                <span class="price-soles-offer">S/ {{ number_format($precioOfertaSoles, 2) }}</span>
-                                            @else
-                                                <span>S/ {{ number_format($precioSoles, 2) }}</span>
-                                            @endif
-                                        </div>
-
-                                        {{-- Dólares --}}
-                                        @if($precioDolares)
-                                            <div class="price-row-dolares">
-                                                @if($tieneOfertaDolares)
-                                                    <span class="price-striked">$ {{ number_format($precioDolares, 2) }}</span>
-                                                    <span>$ {{ number_format($precioOfertaDolares, 2) }} USD</span>
-                                                @else
-                                                    <span>$ {{ number_format($precioDolares, 2) }} USD</span>
+                                                @if($prod->categoria)
+                                                    <span class="category-tag">{{ $prod->categoria->nombre }}</span>
                                                 @endif
-                                            </div>
-                                        @endif
 
-                                        {{-- Euros --}}
-                                        @if($precioEuros)
-                                            <div class="price-row-euros">
-                                                @if($tieneOfertaEuros)
-                                                    <span class="price-striked">€ {{ number_format($precioEuros, 2) }}</span>
-                                                    <span>€ {{ number_format($precioOfertaEuros, 2) }} EUR</span>
-                                                @else
-                                                    <span>€ {{ number_format($precioEuros, 2) }} EUR</span>
+                                                <div class="prod-name" title="{{ $prod->nombre }}">{{ $prod->nombre }}</div>
+
+                                                @if(!empty($prod->descripcion_corta))
+                                                    <div class="prod-desc">{{ \Illuminate\Support\Str::limit(strip_tags($prod->descripcion_corta), 75) }}</div>
                                                 @endif
-                                            </div>
-                                        @endif
-                                    </div>
-                                </td>
-                                @if($imgSrc)
-                                    <td class="prod-col-img">
-                                        <img src="{{ $imgSrc }}" class="prod-img">
-                                    </td>
-                                @endif
-                            @endif
-                        </tr>
-                    </table>
-                </div>
 
-                @if($prodIndex < $pageProducts->count() - 1)
-                    <!-- Separator Line between products on the same page -->
-                    <table class="divider-table">
-                        <tr>
-                            <td class="divider-line"></td>
-                            <td class="divider-block"></td>
-                            <td class="divider-line"></td>
-                        </tr>
-                    </table>
-                @endif
-            @endforeach
+                                                <div class="price-box">
+                                                    {{-- Soles --}}
+                                                    @if($tieneOfertaSoles)
+                                                        <span class="price-striked">S/ {{ number_format($precioSoles, 2) }}</span>
+                                                        <span class="price-soles-offer">S/ {{ number_format($precioOfertaSoles, 2) }}</span>
+                                                    @else
+                                                        <span class="price-soles">S/ {{ number_format($precioSoles, 2) }}</span>
+                                                    @endif
+
+                                                    {{-- Dólares --}}
+                                                    @if($precioDolares)
+                                                        <div class="price-usd">
+                                                            @if($tieneOfertaDolares)
+                                                                <span class="price-striked">$ {{ number_format($precioDolares, 2) }}</span>
+                                                                <span>$ {{ number_format($precioOfertaDolares, 2) }} USD</span>
+                                                            @else
+                                                                <span>$ {{ number_format($precioDolares, 2) }} USD</span>
+                                                            @endif
+                                                        </div>
+                                                    @endif
+
+                                                    {{-- Euros --}}
+                                                    @if($precioEuros)
+                                                        <div class="price-euros">
+                                                            @if($tieneOfertaEuros)
+                                                                <span class="price-striked">€ {{ number_format($precioEuros, 2) }}</span>
+                                                                <span>€ {{ number_format($precioOfertaEuros, 2) }} EUR</span>
+                                                            @else
+                                                                <span>€ {{ number_format($precioEuros, 2) }} EUR</span>
+                                                            @endif
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        @endforeach
+
+                        @if($row->count() === 1)
+                            <td class="grid-td"></td>
+                        @endif
+                    </tr>
+                @endforeach
+            </table>
         </div>
     @endforeach
 
-    <!-- DomPDF Script for Page Numbering (Página X de Y) -->
+    <!-- Script de DomPDF para número de página -->
     <script type="text/php">
         if (isset($pdf)) {
             $font = $fontMetrics->get_font("Helvetica", "bold");
-            $size = 9;
-            $color = array(0.4, 0.4, 0.4);
+            $size = 8;
+            $color = array(0.5, 0.5, 0.5);
             $text = "Página {PAGE_NUM} de {PAGE_COUNT}";
             $x = ($pdf->get_width() - $fontMetrics->get_text_width($text, $font, $size)) / 2;
-            $y = $pdf->get_height() - 25;
+            $y = $pdf->get_height() - 20;
             $pdf->page_text($x, $y, $text, $font, $size, $color);
         }
     </script>

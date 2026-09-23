@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
 import { useCartStore } from '@/stores/useCartStore';
@@ -25,8 +25,15 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
 
     // --- DATA EXTRACTION ---
     const activeNav = seccionesData?.nav || seccionesData?.['nav'] || null;
-    const logoNav = activeNav?.contenido?.find((c) => c.label === 'logo_nav')?.valor;
-    const accionesNav = activeNav?.contenido?.find((c) => c.label === 'accion_nav')?.valor || [];
+    const rawCmsNavActions = activeNav?.contenido?.find((c) => c.label === 'accion_nav')?.valor || [];
+    const cmsNavActions = Array.isArray(rawCmsNavActions) ? rawCmsNavActions : [];
+    const globalActions = Array.isArray(estilos?.acciones_nav)
+        ? estilos.acciones_nav
+        : (Array.isArray(site?.estilos?.acciones_nav) ? site.estilos.acciones_nav : []);
+    const combined = [...globalActions, ...cmsNavActions];
+    const accionesNav = combined.filter((item, index, self) =>
+        index === self.findIndex((t) => (t.texto || t.Texto) === (item.texto || item.Texto) && (t.icono || t.icon) === (item.icono || item.icon))
+    );
 
     // --- STYLES BASED ON SCROLL ---
     const headerBg = isScrolled
@@ -133,7 +140,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                             : (siteSlug ? `/${dominio}/${siteSlug}/productos?catalogo=1` : `/${dominio}/productos?catalogo=1`));
 
                                     return (
-                                        <React.Fragment key={seccion.slug}>
+                                        <Fragment key={seccion.slug}>
                                             <Link
                                                 href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`}
                                                 className={linkClasses}
@@ -161,7 +168,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                     </Link>
                                                 )
                                             )}
-                                        </React.Fragment>
+                                        </Fragment>
                                     );
                                 }
 

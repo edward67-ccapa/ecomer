@@ -7,7 +7,7 @@ import ProductosDestacadosSection from './subcomponents/ProductosDestacadosSecti
 import PorQueElegirnosSection from './subcomponents/PorQueElegirnosSection';
 import ContactoSection from './subcomponents/ContactoSection';
 
-export default function SectionInicio({ dominio, siteSlug, seccion, seccionesData, productosDestacados, serviciosSitio = [] }) {
+export default function SectionInicio({ dominio, siteSlug, seccion, seccionesData, productosDestacados, serviciosSitio = [], site, estilos }) {
     const { inicio, categorias, servicios, somos, tortasDestacadas, porQueElegirnos, contacto, productosDestacados: productos, loading, error } = useInicioData(
         dominio,
         siteSlug,
@@ -48,7 +48,7 @@ export default function SectionInicio({ dominio, siteSlug, seccion, seccionesDat
             <SomosSection seccionData={somos} />
             <ProductosDestacadosSection seccionData={tortasDestacadas} productos={productos} />
             <PorQueElegirnosSection seccionData={porQueElegirnos} />
-            <ContactoSection seccionData={contacto} />
+            <ContactoSection seccionData={contacto} site={site} estilos={estilos} />
         </main>
     );
 }

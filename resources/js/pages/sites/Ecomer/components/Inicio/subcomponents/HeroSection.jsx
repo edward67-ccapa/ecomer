@@ -108,7 +108,7 @@ export default function HeroSection({ seccionData }) {
     };
 
     return (
-        <section id="inicio" className="scroll-mt-10 relative min-h-[100vh] flex items-center overflow-hidden bg-slate-950">
+        <section id="inicio" className="scroll-mt-10 relative h-[100vh] min-h-[100vh] w-full flex items-center overflow-hidden bg-slate-950">
             {/* Contenedor de fondo para imágenes / carrusel */}
             <div className="absolute inset-0 h-full w-full overflow-hidden z-0">
                 {imagesList.length > 1 ? (
@@ -120,63 +120,71 @@ export default function HeroSection({ seccionData }) {
                         autoplay={{ delay: 4500, disableOnInteraction: false }}
                         pagination={{ clickable: true }}
                         className="hero-swiper h-full w-full"
+                        style={{ height: '100%', width: '100%' }}
                     >
                         {imagesList.map((imgUrl, idx) => (
-                            <SwiperSlide key={idx} className="relative h-full w-full overflow-hidden bg-slate-950">
+                            <SwiperSlide key={idx} className="relative h-full w-full overflow-hidden bg-slate-950" style={{ height: '100%', width: '100%' }}>
                                 <img
                                     src={imgUrl}
                                     alt={`Hero slide ${idx + 1}`}
                                     fetchPriority={idx === 0 ? "high" : "low"}
                                     decoding="async"
                                     loading={idx === 0 ? "eager" : "lazy"}
-                                    className="h-full w-full object-cover object-center brightness-105"
+                                    className="h-full w-full object-cover brightness-105"
+                                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom' }}
                                 />
                             </SwiperSlide>
                         ))}
                     </Swiper>
                 ) : imgHero ? (
                     <motion.img
-                        initial={{ scale: 1.08 }}
-                        animate={{ scale: 1 }}
-                        transition={{ duration: 1.1, ease: 'easeOut' }}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        transition={{ duration: 0.6, ease: 'easeOut' }}
                         src={imgHero}
                         alt="Hero background"
                         fetchPriority="high"
                         decoding="async"
                         loading="eager"
-                        className="h-full w-full object-cover object-center brightness-105"
+                        className="h-full w-full object-cover brightness-105"
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom' }}
                     />
                 ) : null}
 
-                {/* Capa oscura más suave para dar mayor claridad a la imagen de fondo */}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-r from-black/20 via-black/30 to-transparent z-10" />
-
-                {imagesList.length > 1 && (
-                    <style>{`
-                        .hero-swiper .swiper-pagination {
-                            bottom: 2rem !important;
-                            z-index: 20;
-                        }
-                        .hero-swiper .swiper-pagination-bullet {
-                            background: #ffffff !important;
-                            opacity: 0.4;
-                            width: 10px;
-                            height: 10px;
-                            margin: 0 4px !important;
-                            transition: all 0.3s ease;
-                        }
-                        .hero-swiper .swiper-pagination-bullet-active {
-                            opacity: 1;
-                            width: 26px;
-                            border-radius: 9999px;
-                            background: var(--color-primario, #F72F46) !important;
-                        }
-                    `}</style>
-                )}
+                <style>{`
+                    .hero-swiper, .hero-swiper .swiper-wrapper, .hero-swiper .swiper-slide {
+                        height: 100% !important;
+                        width: 100% !important;
+                    }
+                    .hero-swiper img {
+                        height: 100% !important;
+                        width: 100% !important;
+                        object-fit: cover !important;
+                        object-position: center bottom !important;
+                    }
+                    .hero-swiper .swiper-pagination {
+                        bottom: 2rem !important;
+                        z-index: 20;
+                    }
+                    .hero-swiper .swiper-pagination-bullet {
+                        background: #ffffff !important;
+                        opacity: 0.4;
+                        width: 10px;
+                        height: 10px;
+                        margin: 0 4px !important;
+                        transition: all 0.3s ease;
+                    }
+                    .hero-swiper .swiper-pagination-bullet-active {
+                        opacity: 1;
+                        width: 26px;
+                        border-radius: 9999px;
+                        background: var(--color-primario, #F72F46) !important;
+                    }
+                `}</style>
             </div>
 
             {/* Contenedor centrado verticalmente en el medio a la izquierda */}
-            <div className="relative z-20 mx-auto flex min-h-[550px] sm:min-h-[85vh] lg:min-h-[90vh] w-full max-w-7xl items-center justify-start px-5 sm:px-8 lg:px-12 py-12 sm:py-16">
+            <div className="relative z-20 mx-auto flex h-[100vh] min-h-[100vh] w-full max-w-7xl items-center justify-start px-5 sm:px-8 lg:px-12 pt-28 pb-12 sm:pt-32 sm:pb-16">
                 <div className="max-w-xl lg:max-w-2xl text-left">
                     {tituloHero && (
                         <h1

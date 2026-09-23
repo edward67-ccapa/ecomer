@@ -1,5 +1,7 @@
 <?php
 
+@ini_set('memory_limit', '512M');
+
 use App\Http\Middleware\ForceUnescapedUnicodeResponse;
 use App\Http\Middleware\HandleAppearance;
 use App\Http\Middleware\HandleInertiaRequests;

@@ -1,9 +1,16 @@
 import React from 'react';
+import { usePage } from '@inertiajs/react';
 import { motion } from 'framer-motion';
 import DynamicIcon from '@/components/DynamicIcon';
 
-export default function PortadaSection({ seccionData }) {
+export default function PortadaSection({ seccionData, site, estilos, dominio, siteSlug, seccionesData }) {
     if (!seccionData) return null;
+
+    const { props } = usePage();
+    const activeDominio = dominio || props?.dominio;
+    const activeSiteSlug = siteSlug || props?.siteSlug;
+    const activeEstilos = estilos || props?.estilos || props?.site?.estilos || {};
+    const activeSite = site || props?.site || {};
 
     // Normalizar los datos del valor de la sección
     const rawValor = seccionData?.valor;
@@ -12,8 +19,36 @@ export default function PortadaSection({ seccionData }) {
     const sub = data?.sub || 'SOBRE NOSOTROS';
     const titulo = data?.Titulo || 'Mas de 15 años /*equipando al Perú*/';
     const parrafo = data?.Parrafo || '';
-    const boton1 = data?.Boton1 || 'Ver Catálogo';
-    const boton2 = data?.Boton2 || 'Venta Empresa';
+
+    // --- CONFIGURACIÓN EXACTA DE CATÁLOGO (IGUAL AL NAV / HEADER) ---
+    const catalogoConfig = activeEstilos?.catalogo || activeSite?.estilos?.catalogo || {};
+    const isCatalogoActivo = Boolean(catalogoConfig.activo);
+    const catalogoTitulo = catalogoConfig.titulo || 'Catálogo';
+    const catalogoEnlace = catalogoConfig.enlace ? String(catalogoConfig.enlace).trim() : null;
+
+    const downloadUrl = catalogoEnlace
+        ? catalogoEnlace
+        : (activeDominio === 'plantillas'
+            ? `/plantillas/${activeSiteSlug}/catalogo/descargar-pdf`
+            : (activeSiteSlug ? `/${activeDominio}/${activeSiteSlug}/catalogo/descargar-pdf` : `/${activeDominio}/catalogo/descargar-pdf`));
+
+    const handleDescargarCatalogo = (e) => {
+        if (e && e.preventDefault) e.preventDefault();
+        window.location.href = downloadUrl;
+    };
+
+    const boton1 = data?.Boton1 || data?.boton1 || (isCatalogoActivo ? catalogoTitulo : 'Ver Catálogo');
+    const boton2 = data?.Boton2 || data?.boton2 || 'Contactar WhatsApp';
+
+    // 2. WhatsApp con mensaje predeterminado: "Hola, en que podemos ayudarte"
+    const redesSociales = activeEstilos?.redes_sociales || activeSite?.estilos?.redes_sociales || {};
+    const navActions = activeEstilos?.acciones_nav || activeSite?.estilos?.acciones_nav || [];
+    const waFromActions = navActions.find(a => (a.icono || a.icon || '').toLowerCase().includes('whatsapp') || (a.texto || a.Texto || '').toLowerCase().includes('wa.me'));
+    const rawWaNum = redesSociales.whatsapp || waFromActions?.texto || waFromActions?.Texto || '';
+    const cleanWa = String(rawWaNum).replace(/\D/g, '');
+    const finalWaNumber = cleanWa ? (cleanWa.length === 9 ? `51${cleanWa}` : cleanWa) : null;
+    const whatsappMsg = encodeURIComponent('Hola, en que podemos ayudarte');
+    const whatsappUrl = finalWaNumber ? `https://wa.me/${finalWaNumber}?text=${whatsappMsg}` : '#contacto';
 
     // Normalizar Imagen (string o array)
     const rawImagen = data?.Imagen;
@@ -113,15 +148,18 @@ export default function PortadaSection({ seccionData }) {
                         <div className="flex flex-wrap items-center gap-4">
                             {boton1 && (
                                 <a
-                                    href="#productos"
-                                    className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primario)] px-8 py-4 text-base font-bold text-white shadow-xl shadow-[var(--color-primario)]/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-[var(--color-primario)]/45 focus:outline-none focus:ring-2 focus:ring-[var(--color-primario)] focus:ring-offset-2 active:translate-y-0"
+                                    href={downloadUrl}
+                                    onClick={handleDescargarCatalogo}
+                                    className="inline-flex items-center justify-center rounded-xl bg-[var(--color-primario)] px-8 py-4 text-base font-bold text-white shadow-xl shadow-[var(--color-primario)]/30 transition-all duration-300 hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-[var(--color-primario)]/45 focus:outline-none focus:ring-2 focus:ring-[var(--color-primario)] focus:ring-offset-2 active:translate-y-0 cursor-pointer"
                                 >
                                     {boton1}
                                 </a>
                             )}
                             {boton2 && (
                                 <a
-                                    href="#contacto"
+                                    href={whatsappUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
                                     className="inline-flex items-center justify-center rounded-xl border border-white/30 bg-white/10 px-8 py-4 text-base font-semibold text-white backdrop-blur-md shadow-lg transition-all duration-300 hover:-translate-y-0.5 hover:bg-white/20 hover:border-white/50 focus:outline-none focus:ring-2 focus:ring-white/50 active:translate-y-0"
                                 >
                                     {boton2}

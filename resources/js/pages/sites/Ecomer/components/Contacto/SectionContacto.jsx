@@ -10,34 +10,84 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
     const rawValor = contacto?.valor || contacto?.contenido?.find((c) => (c.label || '').toLowerCase() === 'contacto')?.valor;
     const data = Array.isArray(rawValor) ? rawValor[0] : (rawValor || {});
 
-    const titulo = data?.Titulo || data?.titulo || 'Contacto';
-    const descripcion = data?.Descripcion || data?.descripcion || 'Ponte en contacto con nosotros. Envíanos tu mensaje o consulta y te responderemos a la brevedad.';
-    const mapaDireccion = data?.Mapa || data?.mapa;
-    const redes = Array.isArray(data?.Redes) ? data.Redes : (Array.isArray(data?.redes) ? data.redes : []);
+    // Soporte para preguntas directas en la sección o dentro de grupo 'contacto'
+    const directTitulo = contacto?.contenido?.find((c) => (c.label || '').toLowerCase() === 'titulo')?.valor;
+    const directDesc = contacto?.contenido?.find((c) => {
+        const l = (c.label || '').toLowerCase();
+        return l === 'descripcion' || l === 'descripción' || l === 'subtitulo';
+    })?.valor;
 
-    // Imagen principal de la cabecera (CMS o fallback de alta calidad)
-    const imagenHero = data?.Imagen || data?.imagen || data?.Foto || data?.foto || seccion?.imagen || site?.imagen || 'https://images.unsplash.com/photo-1423666639041-f56000c27a9a?q=80&w=1600&auto=format&fit=crop';
+    const titulo = data?.Titulo || data?.titulo || (typeof directTitulo === 'string' ? directTitulo : null) || 'Contacto';
+    const descripcion = data?.Descripcion || data?.descripcion || (typeof directDesc === 'string' ? directDesc : null) || 'Ponte en contacto con nosotros. Envíanos tu mensaje o consulta y te responderemos a la brevedad.';
 
-    // Extract nav actions (accionesNav from nav)
-    const activeNav =
-        seccionesData?.nav ||
-        seccionesData?.NAV ||
-        seccionesData?.['nav'] ||
-        Object.values(seccionesData || {}).find((s) => s?.slug?.toLowerCase() === 'nav');
+    // Búsqueda de imagen directa en contenido (label: imagen, foto, portada, banner o tipo imagen)
+    const directImgItem = contacto?.contenido?.find((c) => {
+        const l = (c.label || '').toLowerCase();
+        return l === 'imagen' || l === 'foto' || l === 'portada' || l === 'banner' || c.tipo === 'imagen';
+    });
+    const directImgVal = directImgItem?.valor;
+    const imagenDirecta = Array.isArray(directImgVal) ? directImgVal[0] : (typeof directImgVal === 'string' ? directImgVal : null);
 
-    const getNavContent = (labelName) => {
-        return activeNav?.contenido?.find(
-            (c) => c.label?.toLowerCase() === labelName.toLowerCase()
-        )?.valor;
+    // Dirección con prioridad absoluta desde estilos configurados en Admin
+    const direccion = estilos?.direccion
+        || site?.estilos?.direccion
+        || data?.Mapa
+        || data?.mapa
+        || null;
+    const mapaUrlConfig = estilos?.mapa_url || site?.estilos?.mapa_url;
+
+    // Redes Sociales desde General (estilos.redes_sociales)
+    const redesConfig = estilos?.redes_sociales || site?.estilos?.redes_sociales || {};
+
+    const formatSocialUrl = (val, prefix = '') => {
+        if (!val) return null;
+        const str = String(val).trim();
+        if (!str) return null;
+        if (str.startsWith('http://') || str.startsWith('https://')) return str;
+        if (str.startsWith('@')) return `${prefix}${str.slice(1)}`;
+        return `${prefix}${str}`;
     };
 
-    const rawNavActions = getNavContent('accion') || getNavContent('acciones') || getNavContent('accion_nav');
-    const cmsNavActions = Array.isArray(rawNavActions) ? rawNavActions : [];
-    const globalActions = Array.isArray(estilos?.acciones_nav) ? estilos.acciones_nav : [];
-    const combinedNavActions = [...globalActions, ...cmsNavActions];
-    const accionesNav = combinedNavActions.filter((item, index, self) =>
-        index === self.findIndex((t) => (t.texto || t.Texto) === (item.texto || item.Texto) && (t.icono || t.icon) === (item.icono || item.icon))
-    );
+    const redesList = [];
+    if (redesConfig.facebook) redesList.push({ nombre: 'Facebook', icono: 'FaFacebook', url: formatSocialUrl(redesConfig.facebook, 'https://facebook.com/') });
+    if (redesConfig.instagram) redesList.push({ nombre: 'Instagram', icono: 'FaInstagram', url: formatSocialUrl(redesConfig.instagram, 'https://instagram.com/') });
+    if (redesConfig.tiktok) redesList.push({ nombre: 'TikTok', icono: 'FaTiktok', url: formatSocialUrl(redesConfig.tiktok, 'https://tiktok.com/@') });
+    if (redesConfig.youtube) redesList.push({ nombre: 'YouTube', icono: 'FaYoutube', url: formatSocialUrl(redesConfig.youtube, 'https://youtube.com/@') });
+    if (redesConfig.twitter) redesList.push({ nombre: 'X (Twitter)', icono: 'FaXTwitter', url: formatSocialUrl(redesConfig.twitter, 'https://x.com/') });
+
+    // Fallback a CMS redes solo si el admin no configuró redes
+    const cmsRedes = Array.isArray(data?.Redes) ? data.Redes : (Array.isArray(data?.redes) ? data.redes : []);
+    const redesFinales = redesList.length > 0 ? redesList : cmsRedes.map(r => ({
+        nombre: r.nombre || 'Red Social',
+        icono: r.Icono || r.icono || 'FaShareNodes',
+        url: r.Texto || r.texto || '#'
+    }));
+
+    // Imagen principal de la cabecera (CMS o fallback de alta calidad)
+    const imagenHero = data?.Imagen
+        || data?.imagen
+        || data?.Foto
+        || data?.foto
+        || imagenDirecta
+        || seccion?.imagen
+        || site?.imagen
+        || 'https://images.unsplash.com/photo-1423666639041-f56000c27a9a?q=80&w=1600&auto=format&fit=crop';
+
+    // Acciones de contacto globales desde Admin General (estilos.acciones_nav) - NO DEPENDER DE NAV
+    const globalActions = Array.isArray(estilos?.acciones_nav)
+        ? estilos.acciones_nav
+        : (Array.isArray(site?.estilos?.acciones_nav) ? site.estilos.acciones_nav : []);
+
+    // Extraer número de WhatsApp con prioridad en redes_sociales.whatsapp o acciones_nav
+    const waFromActions = globalActions.find((a) => {
+        const ico = (a.icono || a.icon || '').toLowerCase();
+        const txt = (a.texto || a.Texto || '').toLowerCase();
+        return ico.includes('whatsapp') || txt.includes('wa.me');
+    });
+
+    const rawWa = redesConfig.whatsapp || waFromActions?.texto || waFromActions?.Texto || '';
+    const cleanDigits = String(rawWa).replace(/\D/g, '');
+    const waNum = cleanDigits ? (cleanDigits.length === 9 ? '51' + cleanDigits : cleanDigits) : null;
 
     // Form state
     const [nombre, setNombre] = useState('');
@@ -48,18 +98,6 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
 
     const handleSubmit = (e) => {
         e.preventDefault();
-
-        // Buscar el primer WhatsApp en accionesNav o fallback
-        const waItem = accionesNav.find((a) => {
-            const ico = (a.icono || a.icon || '').toLowerCase();
-            const txt = (a.texto || a.Texto || '').toLowerCase();
-            return ico.includes('whatsapp') || ico.includes('phone') || txt.includes('wa.me');
-        });
-
-        const rawWa = waItem?.texto || waItem?.Texto || '';
-        const firstLineWa = String(rawWa).split(/\r?\n/).map((s) => s.trim()).filter(Boolean)[0] || '';
-        const cleanDigits = firstLineWa.replace(/\D/g, '');
-        const waNum = cleanDigits ? (cleanDigits.length === 9 ? '51' + cleanDigits : cleanDigits) : '';
 
         if (waNum) {
             const textoEnvio = `*Nuevo mensaje de contacto desde la web*\n\n` +
@@ -82,32 +120,10 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
         setMensaje('');
     };
 
-    // Build map iframe embed URL based on address
-    const googleMapEmbedUrl = `https://maps.google.com/maps?q=${encodeURIComponent(mapaDireccion || 'San Juan de Lurigancho, Lima')}&t=&z=15&ie=UTF8&iwloc=&output=embed`;
-
-    // Helper to get network icons & urls
-    const getSocialIconAndUrl = (item) => {
-        const iconName = item.Icono || item.icono || 'FaShareNodes';
-        const textVal = item.Texto || item.texto || '';
-
-        let href = textVal;
-        if (href.startsWith('http://') || href.startsWith('https://')) {
-            // direct link
-        } else if (href.includes('.com') || href.includes('.pe')) {
-            href = `https://${href}`;
-        } else if (iconName === 'FaWhatsapp' || iconName === 'FaPhone') {
-            const cleanDigits = href.replace(/\D/g, '');
-            href = `https://wa.me/${cleanDigits}`;
-        } else {
-            href = `https://${href}`;
-        }
-
-        return { iconName, textVal, href };
-    };
-
-    // Extract phone/whatsapp from redes list if available
-    const phoneRed = redes.find((r) => (r.Icono || r.icono) === 'FaWhatsapp' || (r.Icono || r.icono) === 'FaPhone');
-    const phoneText = phoneRed ? (phoneRed.Texto || phoneRed.texto) : null;
+    // Google Map URL
+    const googleMapEmbedUrl = mapaUrlConfig && (mapaUrlConfig.includes('google.com/maps/embed') || mapaUrlConfig.includes('output=embed'))
+        ? mapaUrlConfig
+        : (direccion ? `https://maps.google.com/maps?q=${encodeURIComponent(direccion)}&t=&z=15&ie=UTF8&iwloc=&output=embed` : null);
 
     return (
         <main className="flex-1 bg-white">
@@ -161,9 +177,29 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
                                 transition={{ duration: 0.6 }}
                                 className="space-y-6"
                             >
-                                {/* Dynamic Contact Actions from Nav (accionesNav) */}
-                                {Array.isArray(accionesNav) && accionesNav.length > 0 ? (
-                                    accionesNav.map((item, idx) => {
+                                {/* Tarjeta Dirección Física (Desde General) */}
+                                {direccion && (
+                                    <div className="flex items-start gap-4">
+                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-800 shadow-xs border border-gray-200/60 mt-0.5">
+                                            <DynamicIcon name="FaLocationDot" className="h-5 w-5 text-gray-700" />
+                                        </div>
+                                        <div>
+                                            <span className="block text-xs font-bold uppercase tracking-wider text-gray-400">Dirección</span>
+                                            <a
+                                                href={mapaUrlConfig || `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(direccion)}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="block text-base font-bold text-gray-900 hover:text-[var(--color-primario)] transition-colors max-w-md whitespace-pre-line"
+                                            >
+                                                {direccion}
+                                            </a>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* Dynamic Contact Actions from Admin General (globalActions) */}
+                                {Array.isArray(globalActions) && globalActions.length > 0 && (
+                                    globalActions.map((item, idx) => {
                                         const iconName = item.icono || item.icon || 'FaInfoCircle';
                                         const textVal = item.texto || item.Texto || '';
                                         if (!textVal) return null;
@@ -185,13 +221,13 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
                                             const isEmail = lineLower.includes('@');
                                             const isPhone = (iconLower.includes('whatsapp') || iconLower.includes('phone')) && /^\+?[\d\s-]{7,}$/.test(lineStr);
                                             const isLink = lineLower.includes('.com') || lineLower.includes('.pe') || lineLower.startsWith('http');
-                                            const cleanDigits = lineStr.replace(/\D/g, '');
+                                            const clean = lineStr.replace(/\D/g, '');
 
                                             if (isEmail) return `mailto:${lineStr}`;
-                                            if (isPhone && cleanDigits.length >= 7) {
+                                            if (isPhone && clean.length >= 7) {
                                                 return iconLower.includes('whatsapp')
-                                                    ? `https://wa.me/${cleanDigits.length === 9 ? '51' + cleanDigits : cleanDigits}`
-                                                    : `tel:${cleanDigits}`;
+                                                    ? `https://wa.me/${clean.length === 9 ? '51' + clean : clean}`
+                                                    : `tel:${clean}`;
                                             }
                                             if (isLink) return lineStr.startsWith('http') ? lineStr : `https://${lineStr}`;
                                             return null;
@@ -226,57 +262,47 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
                                             </div>
                                         );
                                     })
-                                ) : (
-                                    <>
-                                        {phoneText && (
-                                            <div className="flex items-center gap-4">
-                                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-800 shadow-xs border border-gray-200/60">
-                                                    <DynamicIcon name="FaPhone" className="h-5 w-5 text-gray-700" />
-                                                </div>
-                                                <div>
-                                                    <span className="block text-xs font-bold uppercase tracking-wider text-gray-400">Teléfono / WhatsApp</span>
-                                                    <span className="block text-base font-bold text-gray-900">{phoneText}</span>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </>
                                 )}
 
-                                {/* Dirección del Mapa */}
-                                {mapaDireccion && (
-                                    <div className="flex items-start gap-4">
-                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-800 shadow-xs border border-gray-200/60 mt-0.5">
-                                            <DynamicIcon name="FaLocationDot" className="h-5 w-5 text-gray-700" />
+                                {/* Tarjeta WhatsApp si no estaba en globalActions */}
+                                {(!globalActions.some(a => (a.icono || a.icon || '').toLowerCase().includes('whatsapp'))) && waNum && (
+                                    <div className="flex items-center gap-4">
+                                        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gray-100 text-gray-800 shadow-xs border border-gray-200/60">
+                                            <DynamicIcon name="FaWhatsapp" className="h-5 w-5 text-emerald-600" />
                                         </div>
                                         <div>
-                                            <span className="block text-xs font-bold uppercase tracking-wider text-gray-400">Dirección</span>
-                                            <span className="block text-base font-bold text-gray-900 max-w-md whitespace-pre-line">{mapaDireccion}</span>
+                                            <span className="block text-xs font-bold uppercase tracking-wider text-gray-400">WhatsApp Oficial</span>
+                                            <a
+                                                href={`https://wa.me/${waNum}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="block text-base font-bold text-gray-900 hover:text-emerald-600 transition-colors"
+                                            >
+                                                +{waNum}
+                                            </a>
                                         </div>
                                     </div>
                                 )}
 
-                                {/* REDES SOCIALES */}
-                                {redes.length > 0 && (
+                                {/* REDES SOCIALES DESDE GENERAL */}
+                                {redesFinales.length > 0 && (
                                     <div className="pt-4 border-t border-gray-100">
                                         <span className="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-3">
                                             Síguenos en nuestras redes
                                         </span>
                                         <div className="flex flex-wrap items-center gap-3">
-                                            {redes.map((item, idx) => {
-                                                const { iconName, href } = getSocialIconAndUrl(item);
-
-                                                return (
-                                                    <a
-                                                        key={idx}
-                                                        href={href}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-700 shadow-sm border border-gray-200/80 transition-all duration-300 hover:bg-[var(--color-primario)] hover:text-white hover:border-transparent hover:scale-110"
-                                                    >
-                                                        <DynamicIcon name={iconName} className="h-5 w-5" />
-                                                    </a>
-                                                );
-                                            })}
+                                            {redesFinales.map((item, idx) => (
+                                                <a
+                                                    key={idx}
+                                                    href={item.url}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    title={item.nombre}
+                                                    className="flex h-11 w-11 items-center justify-center rounded-full bg-gray-100 text-gray-700 shadow-sm border border-gray-200/80 transition-all duration-300 hover:bg-[var(--color-primario)] hover:text-white hover:border-transparent hover:scale-110"
+                                                >
+                                                    <DynamicIcon name={item.icono} className="h-5 w-5" />
+                                                </a>
+                                            ))}
                                         </div>
                                     </div>
                                 )}
@@ -378,34 +404,36 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
             </section>
 
             {/* 3. SECCIÓN INFERIOR: MAPA ABAJO DE TODOS ("el mapa abajo de todos") */}
-            <section className="relative w-full bg-gray-50 border-t border-gray-200/80 py-12 sm:py-16">
-                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-                    <div className="mb-8 text-center max-w-2xl mx-auto">
-                        <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#075E54] border border-emerald-200/80 mb-2">
-                            <DynamicIcon name="FaLocationDot" className="h-3.5 w-3.5 text-[var(--color-primario)]" />
-                            Ubicación
-                        </span>
-                        <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
-                            Encuéntranos en el mapa
-                        </h2>
-                        {mapaDireccion && (
-                            <p className="text-sm text-gray-600 font-medium mt-1">
-                                {mapaDireccion}
-                            </p>
-                        )}
-                    </div>
+            {googleMapEmbedUrl && (
+                <section className="relative w-full bg-gray-50 border-t border-gray-200/80 py-12 sm:py-16">
+                    <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                        <div className="mb-8 text-center max-w-2xl mx-auto">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-[#075E54] border border-emerald-200/80 mb-2">
+                                <DynamicIcon name="FaLocationDot" className="h-3.5 w-3.5 text-[var(--color-primario)]" />
+                                Ubicación
+                            </span>
+                            <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
+                                Encuéntranos en el mapa
+                            </h2>
+                            {direccion && (
+                                <p className="text-sm text-gray-600 font-medium mt-1">
+                                    {direccion}
+                                </p>
+                            )}
+                        </div>
 
-                    <div className="h-[400px] sm:h-[480px] w-full overflow-hidden rounded-3xl shadow-xl border border-gray-200 relative bg-gray-200">
-                        <iframe
-                            src={googleMapEmbedUrl}
-                            title={`Mapa de ${titulo}`}
-                            className="h-full w-full border-0"
-                            loading="lazy"
-                            allowFullScreen
-                        />
+                        <div className="h-[400px] sm:h-[480px] w-full overflow-hidden rounded-3xl shadow-xl border border-gray-200 relative bg-gray-200">
+                            <iframe
+                                src={googleMapEmbedUrl}
+                                title={`Mapa de ${titulo}`}
+                                className="h-full w-full border-0"
+                                loading="lazy"
+                                allowFullScreen
+                            />
+                        </div>
                     </div>
-                </div>
-            </section>
+                </section>
+            )}
         </main>
     );
 }

@@ -82,6 +82,7 @@ export default function Tortas({
                     secciones={secciones}
                     seccionActiva={seccionActiva}
                     seccionesData={seccionesData}
+                    estilos={estilos}
                 />
 
                 <ActiveComponent
@@ -94,6 +95,7 @@ export default function Tortas({
                     productosDestacados={productosDestacados}
                     serviciosSitio={serviciosSitio}
                     styles={styles}
+                    estilos={estilos}
                 />
 
                 <Footer
@@ -103,6 +105,8 @@ export default function Tortas({
                     secciones={secciones}
                     seccionActiva={seccionActiva}
                     seccionesData={seccionesData}
+                    estilos={estilos}
+                    productos={productos}
                 />
 
                 <FloatingWhatsApp site={site} dominio={dominio} siteSlug={siteSlug} seccionesData={seccionesData} estilos={estilos} />
