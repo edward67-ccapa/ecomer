@@ -398,6 +398,9 @@ class SitePageController extends Controller
 
     public function descargarCatalogo(string $param1, ?string $param2 = null)
     {
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(300);
+
         $dominio = $param1;
         $siteSlug = $param2;
 

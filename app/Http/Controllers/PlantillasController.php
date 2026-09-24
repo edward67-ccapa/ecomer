@@ -157,6 +157,9 @@ class PlantillasController extends Controller
 
     public function descargarCatalogo(Plantilla $plantilla)
     {
+        @ini_set('memory_limit', '512M');
+        @set_time_limit(300);
+
         $plantilla->load(['tiendas']);
 
         $estilos = $plantilla->estilos ?? [];
