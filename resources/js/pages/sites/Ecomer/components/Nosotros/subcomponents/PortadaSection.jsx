@@ -40,15 +40,15 @@ export default function PortadaSection({ seccionData, site, estilos, dominio, si
     const boton1 = data?.Boton1 || data?.boton1 || (isCatalogoActivo ? catalogoTitulo : 'Ver Catálogo');
     const boton2 = data?.Boton2 || data?.boton2 || 'Contactar WhatsApp';
 
-    // 2. WhatsApp con mensaje predeterminado: "Hola, en que podemos ayudarte"
+    // 2. WhatsApp con mensaje predeterminado: "Hola, quisiera ...."
     const redesSociales = activeEstilos?.redes_sociales || activeSite?.estilos?.redes_sociales || {};
     const navActions = activeEstilos?.acciones_nav || activeSite?.estilos?.acciones_nav || [];
     const waFromActions = navActions.find(a => (a.icono || a.icon || '').toLowerCase().includes('whatsapp') || (a.texto || a.Texto || '').toLowerCase().includes('wa.me'));
     const rawWaNum = redesSociales.whatsapp || waFromActions?.texto || waFromActions?.Texto || '';
     const cleanWa = String(rawWaNum).replace(/\D/g, '');
     const finalWaNumber = cleanWa ? (cleanWa.length === 9 ? `51${cleanWa}` : cleanWa) : null;
-    const whatsappMsg = encodeURIComponent('Hola, en que podemos ayudarte');
-    const whatsappUrl = finalWaNumber ? `https://wa.me/${finalWaNumber}?text=${whatsappMsg}` : '#contacto';
+    const whatsappMsg = encodeURIComponent('Hola, quisiera ....');
+    const whatsappUrl = finalWaNumber ? `https://wa.me/${finalWaNumber}?text=${whatsappMsg}` : `https://wa.me/?text=${whatsappMsg}`;
 
     // Normalizar Imagen (string o array)
     const rawImagen = data?.Imagen;

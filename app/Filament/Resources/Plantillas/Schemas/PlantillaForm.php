@@ -132,12 +132,24 @@ class PlantillaForm
 
                                                 Section::make('Tiendas')
                                                     ->icon('heroicon-o-shopping-bag')
+                                                    ->description('Asocia las tiendas de la plantilla y configura el subtítulo, título e ícono por defecto para la sección de Productos / Tiendas.')
                                                     ->collapsible()
                                                     ->schema([
                                                         MultiSelect::make('tiendas')
                                                             ->label('Tiendas asociadas')
                                                             ->relationship('tiendas', 'nombre')
                                                             ->searchable(),
+
+                                                        Grid::make(3)->schema([
+                                                            TextInput::make('estilos.seccion_productos.sub_titulo')
+                                                                ->label('Subtítulo de Productos / Tienda')
+                                                                ->placeholder('Ej: Catálogo Completo'),
+                                                            TextInput::make('estilos.seccion_productos.titulo')
+                                                                ->label('Título de Productos / Tienda')
+                                                                ->placeholder('Ej: Nuestras Tortas y Creaciones'),
+                                                            IconPicker::make('estilos.seccion_productos.icono')
+                                                                ->label('Ícono de Productos / Tienda'),
+                                                        ]),
                                                     ])
                                                     ->columnSpanFull(),
 

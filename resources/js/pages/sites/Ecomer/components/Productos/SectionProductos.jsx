@@ -93,41 +93,71 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
     const isCatalogoMode = Boolean(currentUrl && currentUrl.includes('catalogo=1'));
     const catalogoConfig = estilos?.catalogo || {};
 
-    const getValor = (label) => seccionData?.contenido?.find((item) => item.label === label)?.valor;
+    const getValor = (label) =>
+        seccionData?.contenido?.find(
+            (item) => item.label?.toLowerCase() === label.toLowerCase()
+        )?.valor;
 
-    const subTitulo = isCatalogoMode ? 'Catálogo Especial' : (getValor('sub_titulo') || 'Catálogo Completo');
-    const titulo = isCatalogoMode ? (catalogoConfig.titulo || 'Catálogo de Productos') : (getValor('titulo') || 'Nuestras Tortas y Creaciones');
-    const icono = getValor('icono') || 'FaRegHeart';
+    const subTitulo = isCatalogoMode ? 'Catálogo Especial' : (estilos?.seccion_productos?.sub_titulo || getValor('sub_titulo') || getValor('subtitulo') || '');
+    const titulo = isCatalogoMode ? (catalogoConfig.titulo || 'Catálogo de Productos') : (estilos?.seccion_productos?.titulo || getValor('titulo') || getValor('title') || '');
+    const icono = estilos?.seccion_productos?.icono || getValor('icono') || getValor('icon') || '';
 
     // Árbol jerárquico de Categorías -> Subcategorías para el desplegable dentro del desplegable
     const categoriasArbol = useMemo(() => {
         const catMap = new Map();
 
         productos.forEach((prod) => {
-            const cat = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
-            const sub = typeof prod.subcategoria === 'object' ? prod.subcategoria?.nombre : prod.subcategoria;
+            const catNombre = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
+            const subNombre = typeof prod.subcategoria === 'object' ? prod.subcategoria?.nombre : prod.subcategoria;
 
-            if (!cat) return;
+            if (!catNombre) return;
 
-            if (!catMap.has(cat)) {
-                catMap.set(cat, {
-                    nombre: cat,
+            const propiaImagenCat = typeof prod.categoria === 'object'
+                ? (prod.categoria?.imagen ? (prod.categoria.imagen.startsWith('http') ? prod.categoria.imagen : `/storage/${prod.categoria.imagen.replace(/^\/?storage\//, '')}`) : null)
+                : (prod.categoria_imagen || prod.categoria_objeto?.imagen || null);
+
+            const propioIconoCat = typeof prod.categoria === 'object'
+                ? (prod.categoria?.icono || null)
+                : (prod.categoria_icono || prod.categoria_objeto?.icono || null);
+
+            const fallbackImagen = prod.imagen || (Array.isArray(prod.imagenes) && prod.imagenes[0]) || null;
+            const imagenFinal = propiaImagenCat || fallbackImagen;
+
+            if (!catMap.has(catNombre)) {
+                catMap.set(catNombre, {
+                    nombre: catNombre,
                     count: 0,
                     subcategoriasMap: new Map(),
+                    imagen: imagenFinal,
+                    tienePropiaImagen: Boolean(propiaImagenCat),
+                    icono: propioIconoCat,
                 });
             }
 
-            const catData = catMap.get(cat);
+            const catData = catMap.get(catNombre);
             catData.count += 1;
 
-            if (sub) {
-                catData.subcategoriasMap.set(sub, (catData.subcategoriasMap.get(sub) || 0) + 1);
+            if (!catData.tienePropiaImagen && propiaImagenCat) {
+                catData.imagen = propiaImagenCat;
+                catData.tienePropiaImagen = true;
+            } else if (!catData.imagen && fallbackImagen) {
+                catData.imagen = fallbackImagen;
+            }
+
+            if (!catData.icono && propioIconoCat) {
+                catData.icono = propioIconoCat;
+            }
+
+            if (subNombre) {
+                catData.subcategoriasMap.set(subNombre, (catData.subcategoriasMap.get(subNombre) || 0) + 1);
             }
         });
 
         return Array.from(catMap.values()).map((catData) => ({
             nombre: catData.nombre,
             count: catData.count,
+            imagen: catData.imagen,
+            icono: catData.icono,
             subcategorias: Array.from(catData.subcategoriasMap.entries()).map(([subNombre, subCount]) => ({
                 nombre: subNombre,
                 count: subCount,
@@ -327,67 +357,69 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
         <main className="flex-1 pb-16 pt-40 px-4 sm:px-6 bg-white">
             <div className="max-w-7xl mx-auto">
                 {/* Cabecera */}
-                <div className="text-center max-w-2xl mx-auto mb-10">
-                    {subTitulo && (
-                        <p
-                            className="text-sm font-semibold uppercase tracking-wider mb-2"
-                            style={{ color: 'var(--color-primario)', fontFamily: 'var(--tipografia-texto)' }}
-                        >
-                            {subTitulo}
-                        </p>
-                    )}
+                {(subTitulo || titulo || icono || isCatalogoMode) && (
+                    <div className="text-center max-w-2xl mx-auto mb-10">
+                        {subTitulo && (
+                            <p
+                                className="text-sm font-semibold uppercase tracking-wider mb-2"
+                                style={{ color: 'var(--color-primario)', fontFamily: 'var(--tipografia-texto)' }}
+                            >
+                                {subTitulo}
+                            </p>
+                        )}
 
-                    {titulo && (
-                        <h1
-                            className="text-3xl md:text-5xl font-bold mb-3"
-                            style={{ fontFamily: 'var(--tipografia-titulos)', color: '#1a1a2e' }}
-                        >
-                            {titulo}
-                        </h1>
-                    )}
+                        {titulo && (
+                            <h1
+                                className="text-3xl md:text-5xl font-bold mb-3"
+                                style={{ fontFamily: 'var(--tipografia-titulos)', color: '#1a1a2e' }}
+                            >
+                                {titulo}
+                            </h1>
+                        )}
 
-                    {icono && (
-                        <div className="flex items-center justify-center gap-4 mb-4">
-                            <div className="flex-1 max-w-20 h-px" style={{ background: 'linear-gradient(to right, transparent, var(--color-primario))' }} />
-                            <DynamicIcon name={icono} className="h-5 w-5" style={{ color: 'var(--color-primario)' }} />
-                            <div className="flex-1 max-w-20 h-px" style={{ background: 'linear-gradient(to left, transparent, var(--color-primario))' }} />
-                        </div>
-                    )}
-
-                    {isCatalogoMode && (
-                        <>
-                            <style>{`
-                                @media print {
-                                    header, footer, nav, button, form, .print\\:hidden, [class*="whatsapp"], [class*="offcanvas"] {
-                                        display: none !important;
-                                    }
-                                    body, main {
-                                        background: #ffffff !important;
-                                        color: #000000 !important;
-                                        padding: 0 !important;
-                                        margin: 0 !important;
-                                    }
-                                    main {
-                                        padding-top: 20px !important;
-                                    }
-                                }
-                            `}</style>
-
-                            <div className="mt-4 flex justify-center print:hidden">
-                                <button
-                                    type="button"
-                                    onClick={() => window.print()}
-                                    className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-primario)] px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:opacity-90 transition cursor-pointer"
-                                >
-                                    <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                    </svg>
-                                    <span>Descargar Catálogo (PDF)</span>
-                                </button>
+                        {icono && (
+                            <div className="flex items-center justify-center gap-4 mb-4">
+                                <div className="flex-1 max-w-20 h-px" style={{ background: 'linear-gradient(to right, transparent, var(--color-primario))' }} />
+                                <DynamicIcon name={icono} className="h-5 w-5" style={{ color: 'var(--color-primario)' }} />
+                                <div className="flex-1 max-w-20 h-px" style={{ background: 'linear-gradient(to left, transparent, var(--color-primario))' }} />
                             </div>
-                        </>
-                    )}
-                </div>
+                        )}
+
+                        {isCatalogoMode && (
+                            <>
+                                <style>{`
+                                    @media print {
+                                        header, footer, nav, button, form, .print\\:hidden, [class*="whatsapp"], [class*="offcanvas"] {
+                                            display: none !important;
+                                        }
+                                        body, main {
+                                            background: #ffffff !important;
+                                            color: #000000 !important;
+                                            padding: 0 !important;
+                                            margin: 0 !important;
+                                        }
+                                        main {
+                                            padding-top: 20px !important;
+                                        }
+                                    }
+                                `}</style>
+
+                                <div className="mt-4 flex justify-center print:hidden">
+                                    <button
+                                        type="button"
+                                        onClick={() => window.print()}
+                                        className="inline-flex items-center gap-2 rounded-xl bg-[var(--color-primario)] px-5 py-2.5 text-sm font-bold text-white shadow-lg hover:opacity-90 transition cursor-pointer"
+                                    >
+                                        <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                        </svg>
+                                        <span>Descargar Catálogo (PDF)</span>
+                                    </button>
+                                </div>
+                            </>
+                        )}
+                    </div>
+                )}
 
                 {/* SECCIÓN SUPERIOR: EXPLORAR POR CATEGORÍA ("Shop by Category") */}
                 {categoriasArbol.length > 0 && (
@@ -444,13 +476,9 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                 </div>
                             </button>
 
-                            {/* Tarjetas por Categoría */}
+                             {/* Tarjetas por Categoría */}
                             {categoriasArbol.map((cat) => {
                                 const isSelected = (filtrosSeleccionados.categoria || []).includes(cat.nombre);
-                                const prodConImagen = productos.find((p) => {
-                                    const c = typeof p.categoria === 'object' ? p.categoria?.nombre : p.categoria;
-                                    return c === cat.nombre && p.imagen;
-                                });
 
                                 return (
                                     <button
@@ -462,10 +490,10 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                             : 'border-gray-800 hover:border-gray-600 shadow-md hover:scale-[1.01]'
                                             } bg-neutral-950 p-4 flex flex-col justify-between`}
                                     >
-                                        {/* Imagen de Fondo Real del Producto con Nitidez */}
-                                        {prodConImagen?.imagen ? (
+                                        {/* Imagen de Fondo de la Categoría */}
+                                        {cat.imagen ? (
                                             <img
-                                                src={prodConImagen.imagen}
+                                                src={cat.imagen}
                                                 alt={cat.nombre}
                                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                                             />
@@ -478,7 +506,8 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
 
                                         {/* Contenido en la Tarjeta */}
                                         <div className="relative z-20 flex items-center justify-between">
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-white/90 bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-xs border border-white/10">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-white/90 bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-xs border border-white/10 flex items-center gap-1.5">
+                                                {cat.icono && <DynamicIcon name={cat.icono} className="h-3.5 w-3.5 text-[var(--color-primario)]" />}
                                                 Categoría
                                             </span>
                                             <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${isSelected

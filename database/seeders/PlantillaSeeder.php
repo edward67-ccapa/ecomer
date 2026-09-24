@@ -58,8 +58,7 @@ class PlantillaSeeder extends Seeder
         ]);
 
         $this->preguntas($ecomer->secciones[2], [
-            ['label' => 'titulo', 'tipo' => 'texto', 'orden' => 1, 'requerida' => true],
-            ['label' => 'galeria', 'tipo' => 'galeria', 'orden' => 2],
+            ['label' => 'galeria', 'tipo' => 'galeria', 'orden' => 1],
         ]);
 
         $this->preguntas($ecomer->secciones[3], [

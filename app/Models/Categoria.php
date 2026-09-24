@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['site_id', 'tienda_id', 'nombre', 'slug', 'descripcion', 'imagen', 'orden', 'activa'])]
+#[Fillable(['site_id', 'tienda_id', 'nombre', 'slug', 'descripcion', 'imagen', 'icono', 'orden', 'activa'])]
 class Categoria extends Model
 {
     public function site(): BelongsTo

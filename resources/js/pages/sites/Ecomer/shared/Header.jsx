@@ -207,11 +207,15 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
 
                 if (!cat) return;
 
+                const propioIcono = typeof prod.categoria === 'object'
+                    ? (prod.categoria?.icono || null)
+                    : (prod.categoria_icono || prod.categoria_objeto?.icono || null);
+
                 if (!catMap.has(cat)) {
                     catMap.set(cat, {
                         nombre: cat,
                         count: 0,
-                        icono: (typeof prod.categoria === 'object' && prod.categoria?.icono) || getCategoryIcon(cat),
+                        icono: propioIcono || null,
                         maxDesc: 0,
                         ofertaBadge: null,
                         subcategoriasMap: new Map(),
@@ -222,6 +226,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                 const catData = catMap.get(cat);
                 catData.count += 1;
                 catData.productos.push(prod);
+
+                if (propioIcono && catData.icono !== propioIcono) {
+                    catData.icono = propioIcono;
+                }
 
                 const tieneOferta = Boolean(prod.precio_oferta || prod.precio_oferta_soles);
                 const precioRegular = Number(prod.precio_soles || prod.precio || 0);
@@ -635,10 +643,12 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                     }`}
                                             >
                                                 <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                                                    <span className={`p-1.5 rounded-lg transition-colors ${isSelected ? 'bg-[var(--color-primario)]/10 text-[var(--color-primario)]' : 'bg-gray-200/60 text-gray-500 group-hover/cat:text-gray-800'
-                                                        }`}>
-                                                        <DynamicIcon name={cat.icono || getCategoryIcon(cat.nombre)} className="h-3.5 w-3.5 shrink-0" />
-                                                    </span>
+                                                    {cat.icono && (
+                                                        <span className={`p-1.5 rounded-lg transition-colors ${isSelected ? 'bg-[var(--color-primario)]/10 text-[var(--color-primario)]' : 'bg-gray-200/60 text-gray-500 group-hover/cat:text-gray-800'
+                                                            }`}>
+                                                            <DynamicIcon name={cat.icono} className="h-3.5 w-3.5 shrink-0" />
+                                                        </span>
+                                                    )}
                                                     <span className="truncate">{cat.nombre}</span>
                                                 </div>
                                                 <div className="flex items-center gap-1.5 shrink-0">
@@ -661,9 +671,11 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                             {/* Header de la Categoría Seleccionada */}
                                             <div className="flex items-center justify-between pb-4 mb-6 border-b border-gray-100">
                                                 <div className="flex items-center gap-3">
-                                                    <span className="p-2.5 rounded-xl bg-[var(--color-primario)]/10 text-[var(--color-primario)]">
-                                                        <DynamicIcon name={activeCategoryData.icono || getCategoryIcon(activeCategoryData.nombre)} className="h-5 w-5" />
-                                                    </span>
+                                                    {activeCategoryData.icono && (
+                                                        <span className="p-2.5 rounded-xl bg-[var(--color-primario)]/10 text-[var(--color-primario)]">
+                                                            <DynamicIcon name={activeCategoryData.icono} className="h-5 w-5" />
+                                                        </span>
+                                                    )}
                                                     <div>
                                                         <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
                                                             <span>{activeCategoryData.nombre}</span>
@@ -774,7 +786,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                             className="flex items-center justify-between mb-2"
                                                         >
                                                             <span className="text-sm font-bold text-gray-900 group-hover/catcard:text-[var(--color-primario)] transition-colors flex items-center gap-2">
-                                                                <DynamicIcon name={cat.icono || getCategoryIcon(cat.nombre)} className="h-4 w-4 text-[var(--color-primario)]" />
+                                                                {cat.icono && <DynamicIcon name={cat.icono} className="h-4 w-4 text-[var(--color-primario)]" />}
                                                                 <span>{cat.nombre}</span>
                                                             </span>
                                                             {cat.ofertaBadge && (
@@ -909,9 +921,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                             <Link
                                                                 href={getProductosUrl(cat.nombre, null)}
                                                                 onClick={() => setMobileMenuOpen(false)}
-                                                                className="block text-xs font-bold text-gray-800 hover:text-[var(--color-primario)] py-0.5"
+                                                                className="flex items-center gap-2 text-xs font-bold text-gray-800 hover:text-[var(--color-primario)] py-0.5"
                                                             >
-                                                                {cat.nombre}
+                                                                {cat.icono && <DynamicIcon name={cat.icono} className="h-3.5 w-3.5 text-[var(--color-primario)] shrink-0" />}
+                                                                <span>{cat.nombre}</span>
                                                             </Link>
                                                             {cat.subcategorias?.map((sub) => (
                                                                 <Link

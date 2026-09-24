@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Link } from '@inertiajs/react';
+import DynamicIcon from '@/components/DynamicIcon';
 
 export default function CategoriaSection({
     productos = [],
@@ -12,28 +13,50 @@ export default function CategoriaSection({
         const catMap = new Map();
 
         (productos || []).forEach((prod) => {
-            const cat = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
-            const sub = typeof prod.subcategoria === 'object' ? prod.subcategoria?.nombre : prod.subcategoria;
+            const catNombre = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
+            const subNombre = typeof prod.subcategoria === 'object' ? prod.subcategoria?.nombre : prod.subcategoria;
 
-            if (!cat) return;
+            if (!catNombre) return;
 
-            if (!catMap.has(cat)) {
-                catMap.set(cat, {
-                    nombre: cat,
+            // Prioridad a la propia imagen de la Categoría en BD; luego fallback a imagen del producto
+            const propiaImagenCat = typeof prod.categoria === 'object'
+                ? (prod.categoria?.imagen ? (prod.categoria.imagen.startsWith('http') ? prod.categoria.imagen : `/storage/${prod.categoria.imagen.replace(/^\/?storage\//, '')}`) : null)
+                : (prod.categoria_imagen || prod.categoria_objeto?.imagen || null);
+
+            const propioIconoCat = typeof prod.categoria === 'object'
+                ? (prod.categoria?.icono || null)
+                : (prod.categoria_icono || prod.categoria_objeto?.icono || null);
+
+            const fallbackImagen = prod.imagen || (Array.isArray(prod.imagenes) && prod.imagenes[0]) || null;
+            const imagenFinal = propiaImagenCat || fallbackImagen;
+
+            if (!catMap.has(catNombre)) {
+                catMap.set(catNombre, {
+                    nombre: catNombre,
                     count: 0,
                     subcategoriasMap: new Map(),
-                    imagen: prod.imagen || (Array.isArray(prod.imagenes) && prod.imagenes[0]) || null,
+                    imagen: imagenFinal,
+                    tienePropiaImagen: Boolean(propiaImagenCat),
+                    icono: propioIconoCat,
                 });
             }
 
-            const catData = catMap.get(cat);
+            const catData = catMap.get(catNombre);
             catData.count += 1;
-            if (!catData.imagen && prod.imagen) {
-                catData.imagen = prod.imagen;
+
+            if (!catData.tienePropiaImagen && propiaImagenCat) {
+                catData.imagen = propiaImagenCat;
+                catData.tienePropiaImagen = true;
+            } else if (!catData.imagen && fallbackImagen) {
+                catData.imagen = fallbackImagen;
             }
 
-            if (sub) {
-                catData.subcategoriasMap.set(sub, (catData.subcategoriasMap.get(sub) || 0) + 1);
+            if (!catData.icono && propioIconoCat) {
+                catData.icono = propioIconoCat;
+            }
+
+            if (subNombre) {
+                catData.subcategoriasMap.set(subNombre, (catData.subcategoriasMap.get(subNombre) || 0) + 1);
             }
         });
 
@@ -41,6 +64,7 @@ export default function CategoriaSection({
             nombre: catData.nombre,
             count: catData.count,
             imagen: catData.imagen,
+            icono: catData.icono,
             subcategorias: Array.from(catData.subcategoriasMap.entries()).map(([subNombre, subCount]) => ({
                 nombre: subNombre,
                 count: subCount,
@@ -120,7 +144,8 @@ export default function CategoriaSection({
 
                                 {/* Contenido Superior en la Tarjeta */}
                                 <div className="relative z-20 flex items-center justify-between">
-                                    <span className="text-[10px] font-bold uppercase tracking-wider text-white/90 bg-black/40 px-2.5 py-0.5 rounded-md backdrop-blur-xs border border-white/10">
+                                    <span className="text-[10px] font-bold uppercase tracking-wider text-white/90 bg-black/40 px-2.5 py-0.5 rounded-md backdrop-blur-xs border border-white/10 flex items-center gap-1.5">
+                                        {cat.icono && <DynamicIcon name={cat.icono} className="h-3.5 w-3.5 text-[var(--color-primario)]" />}
                                         Categoría
                                     </span>
                                     <span className="text-[10px] font-extrabold px-2.5 py-0.5 rounded-full bg-white/20 text-white backdrop-blur-md border border-white/20">

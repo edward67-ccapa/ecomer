@@ -103,7 +103,7 @@ class SitePageController extends Controller
             $seccionActiva = [
                 'slug' => $canonicalSlug,
                 'nombre' => ucfirst($canonicalSlug),
-                'contenido' => [],
+                'contenido' => $seccionesData[$canonicalSlug]['contenido'] ?? $seccionesData['productos']['contenido'] ?? $seccionesData['tiendas']['contenido'] ?? [],
             ];
         } else {
             $seccion = $seccion ?? $seccionesNav->first();

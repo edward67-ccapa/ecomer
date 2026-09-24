@@ -30,12 +30,19 @@
             }
         }
 
-        // Si es WebP, convertir a JPEG usando GD para compatibilidad con DomPDF
+        // Si es WebP, convertir a JPEG con fondo blanco para DomPDF
+        // (Al convertir a JPEG con lienzo blanco, las transparencias se componen sobre blanco
+        // de forma imperceptible en la hoja y DomPDF las procesa 100% en PHP sin requerir la extensión GD).
         $ext = strtolower(pathinfo($fullPath, PATHINFO_EXTENSION));
-        if ($ext === 'webp' || (function_exists('mime_content_type') && @mime_content_type($fullPath) === 'image/webp')) {
-            $jpgPath = sys_get_temp_dir() . '/' . md5($fullPath . '_dompdf_v3') . '.jpg';
+        $isWebp = ($ext === 'webp') || (function_exists('mime_content_type') && @mime_content_type($fullPath) === 'image/webp');
+
+        if ($isWebp) {
+            $jpgPath = sys_get_temp_dir() . '/' . md5($fullPath . '_dompdf_jpg_v8') . '.jpg';
             if (!file_exists($jpgPath)) {
-                if (function_exists('imagecreatefromwebp')) {
+                $converted = false;
+
+                // Método 1: GD
+                if (function_exists('imagecreatefromwebp') && function_exists('imagejpeg')) {
                     $im = @imagecreatefromwebp($fullPath);
                     if ($im) {
                         $w = imagesx($im);
@@ -47,17 +54,73 @@
                         imagejpeg($bg, $jpgPath, 92);
                         imagedestroy($im);
                         imagedestroy($bg);
+                        $converted = true;
+                    }
+                }
+
+                // Método 2: Imagick PHP Extension
+                if (!$converted && class_exists('Imagick')) {
+                    try {
+                        $im = new \Imagick($fullPath);
+                        $im->setImageBackgroundColor('white');
+                        $im = $im->mergeImageLayers(\Imagick::LAYERMETHOD_FLATTEN);
+                        $im->setImageFormat('jpeg');
+                        $im->setImageCompressionQuality(92);
+                        $im->writeImage($jpgPath);
+                        $im->clear();
+                        $im->destroy();
+                        $converted = true;
+                    } catch (\Throwable $e) {}
+                }
+
+                // Método 3: Python 3 PIL / Pillow (Fusión sobre fondo blanco)
+                if (!$converted && function_exists('exec')) {
+                    $pyCode = "from PIL import Image\n" .
+                              "img = Image.open('" . addslashes($fullPath) . "')\n" .
+                              "if img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info):\n" .
+                              "    img = img.convert('RGBA')\n" .
+                              "    bg = Image.new('RGB', img.size, (255, 255, 255))\n" .
+                              "    bg.paste(img, mask=img.split()[3])\n" .
+                              "    bg.save('" . addslashes($jpgPath) . "', 'JPEG', quality=92)\n" .
+                              "else:\n" .
+                              "    img.convert('RGB').save('" . addslashes($jpgPath) . "', 'JPEG', quality=92)\n";
+                    @exec('python3 -c ' . escapeshellarg($pyCode) . ' 2>&1');
+                    if (file_exists($jpgPath) && filesize($jpgPath) > 0) {
+                        $converted = true;
+                    }
+                }
+
+                // Método 4: dwebp CLI tool
+                if (!$converted && function_exists('exec')) {
+                    @exec('dwebp ' . escapeshellarg($fullPath) . ' -o ' . escapeshellarg($jpgPath) . ' 2>&1');
+                    if (file_exists($jpgPath) && filesize($jpgPath) > 0) {
+                        $converted = true;
+                    }
+                }
+
+                // Método 5: ImageMagick / convert CLI tool
+                if (!$converted && function_exists('exec')) {
+                    @exec('convert ' . escapeshellarg($fullPath) . ' -background white -flatten ' . escapeshellarg($jpgPath) . ' 2>&1');
+                    if (file_exists($jpgPath) && filesize($jpgPath) > 0) {
+                        $converted = true;
                     }
                 }
             }
-            if (file_exists($jpgPath)) {
+
+            if (file_exists($jpgPath) && filesize($jpgPath) > 0) {
                 return 'data:image/jpeg;base64,' . base64_encode(file_get_contents($jpgPath));
             }
+
+            return null;
         }
 
         $mime = 'image/jpeg';
         if ($ext === 'png') {
             $mime = 'image/png';
+        } elseif ($ext === 'gif') {
+            $mime = 'image/gif';
+        } elseif ($ext === 'svg' || (function_exists('mime_content_type') && @mime_content_type($fullPath) === 'image/svg+xml')) {
+            $mime = 'image/svg+xml';
         }
 
         return 'data:' . $mime . ';base64,' . base64_encode(file_get_contents($fullPath));

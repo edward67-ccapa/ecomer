@@ -47,41 +47,71 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
     const [subAcordeonesAbiertos, setSubAcordeonesAbiertos] = useState({});
     const [mostrarFiltrosMovil, setMostrarFiltrosMovil] = useState(false);
 
-    const getValor = (label) => seccionData?.contenido?.find((item) => item.label === label)?.valor;
+    const getValor = (label) =>
+        seccionData?.contenido?.find(
+            (item) => item.label?.toLowerCase() === label.toLowerCase()
+        )?.valor;
 
-    const subTitulo = getValor('sub_titulo') || 'Catálogo Completo';
-    const titulo = getValor('titulo') || 'Nuestras Tortas y Creaciones';
-    const icono = getValor('icono') || 'FaRegHeart';
+    const subTitulo = estilos?.seccion_productos?.sub_titulo || getValor('sub_titulo') || getValor('subtitulo') || '';
+    const titulo = estilos?.seccion_productos?.titulo || getValor('titulo') || getValor('title') || '';
+    const icono = estilos?.seccion_productos?.icono || getValor('icono') || getValor('icon') || '';
 
     // Árbol jerárquico de Categorías -> Subcategorías para el desplegable dentro del desplegable
     const categoriasArbol = useMemo(() => {
         const catMap = new Map();
 
         productos.forEach((prod) => {
-            const cat = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
-            const sub = typeof prod.subcategoria === 'object' ? prod.subcategoria?.nombre : prod.subcategoria;
+            const catNombre = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
+            const subNombre = typeof prod.subcategoria === 'object' ? prod.subcategoria?.nombre : prod.subcategoria;
 
-            if (!cat) return;
+            if (!catNombre) return;
 
-            if (!catMap.has(cat)) {
-                catMap.set(cat, {
-                    nombre: cat,
+            const propiaImagenCat = typeof prod.categoria === 'object'
+                ? (prod.categoria?.imagen ? (prod.categoria.imagen.startsWith('http') ? prod.categoria.imagen : `/storage/${prod.categoria.imagen.replace(/^\/?storage\//, '')}`) : null)
+                : (prod.categoria_imagen || prod.categoria_objeto?.imagen || null);
+
+            const propioIconoCat = typeof prod.categoria === 'object'
+                ? (prod.categoria?.icono || null)
+                : (prod.categoria_icono || prod.categoria_objeto?.icono || null);
+
+            const fallbackImagen = prod.imagen || (Array.isArray(prod.imagenes) && prod.imagenes[0]) || null;
+            const imagenFinal = propiaImagenCat || fallbackImagen;
+
+            if (!catMap.has(catNombre)) {
+                catMap.set(catNombre, {
+                    nombre: catNombre,
                     count: 0,
                     subcategoriasMap: new Map(),
+                    imagen: imagenFinal,
+                    tienePropiaImagen: Boolean(propiaImagenCat),
+                    icono: propioIconoCat,
                 });
             }
 
-            const catData = catMap.get(cat);
+            const catData = catMap.get(catNombre);
             catData.count += 1;
 
-            if (sub) {
-                catData.subcategoriasMap.set(sub, (catData.subcategoriasMap.get(sub) || 0) + 1);
+            if (!catData.tienePropiaImagen && propiaImagenCat) {
+                catData.imagen = propiaImagenCat;
+                catData.tienePropiaImagen = true;
+            } else if (!catData.imagen && fallbackImagen) {
+                catData.imagen = fallbackImagen;
+            }
+
+            if (!catData.icono && propioIconoCat) {
+                catData.icono = propioIconoCat;
+            }
+
+            if (subNombre) {
+                catData.subcategoriasMap.set(subNombre, (catData.subcategoriasMap.get(subNombre) || 0) + 1);
             }
         });
 
         return Array.from(catMap.values()).map((catData) => ({
             nombre: catData.nombre,
             count: catData.count,
+            imagen: catData.imagen,
+            icono: catData.icono,
             subcategorias: Array.from(catData.subcategoriasMap.entries()).map(([subNombre, subCount]) => ({
                 nombre: subNombre,
                 count: subCount,
@@ -234,33 +264,35 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
         <main className="flex-1 pb-16 pt-40 px-4 sm:px-6 bg-white">
             <div className="max-w-7xl mx-auto">
                 {/* Cabecera */}
-                <div className="text-center max-w-2xl mx-auto mb-10">
-                    {subTitulo && (
-                        <p
-                            className="text-sm font-semibold uppercase tracking-wider mb-2"
-                            style={{ color: 'var(--color-primario)', fontFamily: 'var(--tipografia-texto)' }}
-                        >
-                            {subTitulo}
-                        </p>
-                    )}
+                {(subTitulo || titulo || icono) && (
+                    <div className="text-center max-w-2xl mx-auto mb-10">
+                        {subTitulo && (
+                            <p
+                                className="text-sm font-semibold uppercase tracking-wider mb-2"
+                                style={{ color: 'var(--color-primario)', fontFamily: 'var(--tipografia-texto)' }}
+                            >
+                                {subTitulo}
+                            </p>
+                        )}
 
-                    {titulo && (
-                        <h1
-                            className="text-3xl md:text-5xl font-bold mb-3"
-                            style={{ fontFamily: 'var(--tipografia-titulos)', color: '#1a1a2e' }}
-                        >
-                            {titulo}
-                        </h1>
-                    )}
+                        {titulo && (
+                            <h1
+                                className="text-3xl md:text-5xl font-bold mb-3"
+                                style={{ fontFamily: 'var(--tipografia-titulos)', color: '#1a1a2e' }}
+                            >
+                                {titulo}
+                            </h1>
+                        )}
 
-                    {icono && (
-                        <div className="flex items-center justify-center gap-4 mb-4">
-                            <div className="flex-1 max-w-20 h-px" style={{ background: 'linear-gradient(to right, transparent, var(--color-primario))' }} />
-                            <DynamicIcon name={icono} className="h-5 w-5" style={{ color: 'var(--color-primario)' }} />
-                            <div className="flex-1 max-w-20 h-px" style={{ background: 'linear-gradient(to left, transparent, var(--color-primario))' }} />
-                        </div>
-                    )}
-                </div>
+                        {icono && (
+                            <div className="flex items-center justify-center gap-4 mb-4">
+                                <div className="flex-1 max-w-20 h-px" style={{ background: 'linear-gradient(to right, transparent, var(--color-primario))' }} />
+                                <DynamicIcon name={icono} className="h-5 w-5" style={{ color: 'var(--color-primario)' }} />
+                                <div className="flex-1 max-w-20 h-px" style={{ background: 'linear-gradient(to left, transparent, var(--color-primario))' }} />
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* SECCIÓN SUPERIOR: EXPLORAR POR CATEGORÍA ("Shop by Category") */}
                 {categoriasArbol.length > 0 && (
@@ -290,11 +322,10 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                         return copy;
                                     });
                                 }}
-                                className={`relative h-40 rounded-2xl transition-all duration-300 text-left group cursor-pointer overflow-hidden border ${
-                                    (!filtrosSeleccionados.categoria || filtrosSeleccionados.categoria.length === 0)
-                                        ? 'border-[var(--color-primario)] ring-4 ring-[var(--color-primario)]/30 scale-[1.02] shadow-xl'
-                                        : 'border-gray-800 hover:border-gray-600 shadow-md hover:scale-[1.01]'
-                                } bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 flex flex-col justify-between`}
+                                className={`relative h-40 rounded-2xl transition-all duration-300 text-left group cursor-pointer overflow-hidden border ${(!filtrosSeleccionados.categoria || filtrosSeleccionados.categoria.length === 0)
+                                    ? 'border-[var(--color-primario)] ring-4 ring-[var(--color-primario)]/30 scale-[1.02] shadow-xl'
+                                    : 'border-gray-800 hover:border-gray-600 shadow-md hover:scale-[1.01]'
+                                    } bg-gradient-to-br from-gray-950 via-gray-900 to-black p-4 flex flex-col justify-between`}
                             >
                                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/60 to-transparent z-10" />
 
@@ -302,11 +333,10 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                     <span className="text-[10px] font-bold text-white/80 uppercase tracking-wider bg-white/10 px-2 py-0.5 rounded border border-white/10">
                                         Catálogo
                                     </span>
-                                    <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
-                                        (!filtrosSeleccionados.categoria || filtrosSeleccionados.categoria.length === 0)
-                                            ? 'bg-[var(--color-primario)] text-white shadow-sm'
-                                            : 'bg-white/20 text-white backdrop-blur-md border border-white/10'
-                                    }`}>
+                                    <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${(!filtrosSeleccionados.categoria || filtrosSeleccionados.categoria.length === 0)
+                                        ? 'bg-[var(--color-primario)] text-white shadow-sm'
+                                        : 'bg-white/20 text-white backdrop-blur-md border border-white/10'
+                                        }`}>
                                         {productos.length} items
                                     </span>
                                 </div>
@@ -322,26 +352,21 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                             {/* Tarjetas por Categoría */}
                             {categoriasArbol.map((cat) => {
                                 const isSelected = (filtrosSeleccionados.categoria || []).includes(cat.nombre);
-                                const prodConImagen = productos.find((p) => {
-                                    const c = typeof p.categoria === 'object' ? p.categoria?.nombre : p.categoria;
-                                    return c === cat.nombre && p.imagen;
-                                });
 
                                 return (
                                     <button
                                         key={cat.nombre}
                                         type="button"
                                         onClick={() => toggleFiltro('categoria', cat.nombre)}
-                                        className={`relative h-40 rounded-2xl transition-all duration-300 text-left group cursor-pointer overflow-hidden border ${
-                                            isSelected
-                                                ? 'border-[var(--color-primario)] ring-4 ring-[var(--color-primario)]/30 scale-[1.02] shadow-xl'
-                                                : 'border-gray-800 hover:border-gray-600 shadow-md hover:scale-[1.01]'
-                                        } bg-neutral-950 p-4 flex flex-col justify-between`}
+                                        className={`relative h-40 rounded-2xl transition-all duration-300 text-left group cursor-pointer overflow-hidden border ${isSelected
+                                            ? 'border-[var(--color-primario)] ring-4 ring-[var(--color-primario)]/30 scale-[1.02] shadow-xl'
+                                            : 'border-gray-800 hover:border-gray-600 shadow-md hover:scale-[1.01]'
+                                            } bg-neutral-950 p-4 flex flex-col justify-between`}
                                     >
-                                        {/* Imagen de Fondo Real del Producto con Nitidez */}
-                                        {prodConImagen?.imagen ? (
+                                        {/* Imagen de Fondo de la Categoría */}
+                                        {cat.imagen ? (
                                             <img
-                                                src={prodConImagen.imagen}
+                                                src={cat.imagen}
                                                 alt={cat.nombre}
                                                 className="absolute inset-0 w-full h-full object-cover group-hover:scale-110 transition-transform duration-700 ease-out"
                                             />
@@ -354,22 +379,21 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
 
                                         {/* Contenido en la Tarjeta */}
                                         <div className="relative z-20 flex items-center justify-between">
-                                            <span className="text-[10px] font-bold uppercase tracking-wider text-white/90 bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-xs border border-white/10">
+                                            <span className="text-[10px] font-bold uppercase tracking-wider text-white/90 bg-black/40 px-2 py-0.5 rounded-md backdrop-blur-xs border border-white/10 flex items-center gap-1.5">
+                                                {cat.icono && <DynamicIcon name={cat.icono} className="h-3.5 w-3.5 text-[var(--color-primario)]" />}
                                                 Categoría
                                             </span>
-                                            <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${
-                                                isSelected
-                                                    ? 'bg-[var(--color-primario)] text-white shadow-sm'
-                                                    : 'bg-white/20 text-white backdrop-blur-md border border-white/20'
-                                            }`}>
+                                            <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${isSelected
+                                                ? 'bg-[var(--color-primario)] text-white shadow-sm'
+                                                : 'bg-white/20 text-white backdrop-blur-md border border-white/20'
+                                                }`}>
                                                 {cat.count}
                                             </span>
                                         </div>
 
                                         <div className="relative z-20">
-                                            <h3 className={`text-base sm:text-lg font-bold transition-colors tracking-tight ${
-                                                isSelected ? 'text-[var(--color-primario)]' : 'text-white group-hover:text-[var(--color-primario)]'
-                                            }`}>
+                                            <h3 className={`text-base sm:text-lg font-bold transition-colors tracking-tight ${isSelected ? 'text-[var(--color-primario)]' : 'text-white group-hover:text-[var(--color-primario)]'
+                                                }`}>
                                                 {cat.nombre}
                                             </h3>
                                             <p className="text-[11px] text-gray-300 font-medium">

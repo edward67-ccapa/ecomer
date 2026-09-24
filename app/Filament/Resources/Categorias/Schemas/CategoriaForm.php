@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Categorias\Schemas;
 
+use App\Filament\Forms\Components\IconPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -39,6 +40,8 @@ class CategoriaForm
                                         ->required()
                                         ->searchable()
                                         ->preload(),
+                                    IconPicker::make('icono')
+                                        ->label('Ícono'),
                                     TextInput::make('orden')
                                         ->numeric()
                                         ->default(0),
