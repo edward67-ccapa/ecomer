@@ -6,12 +6,13 @@ use App\Models\Plantilla;
 use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Notifications\Notification;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\Layout;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
-use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
 
@@ -32,7 +33,7 @@ class PlantillasTable
             ->modifyQueryUsing(fn (Builder $query) => $query
                 ->withCount('secciones'))
             ->filters([
-                \Filament\Tables\Filters\SelectFilter::make('tipo')
+                SelectFilter::make('tipo')
                     ->label('Tipo de plantilla')
                     ->options([
                         'ecommerce' => 'Ecommerce',

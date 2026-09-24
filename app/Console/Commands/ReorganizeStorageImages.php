@@ -107,6 +107,7 @@ class ReorganizeStorageImages extends Command
                         $disk->makeDirectory($targetDir);
                         $disk->move($oldPath, $newPath);
                         $modified = true;
+
                         return $newPath;
                     }
                 } elseif (is_array($val)) {
@@ -114,8 +115,10 @@ class ReorganizeStorageImages extends Command
                     foreach ($val as $k => $v) {
                         $newArr[$k] = $processValue($v);
                     }
+
                     return $newArr;
                 }
+
                 return $val;
             };
 

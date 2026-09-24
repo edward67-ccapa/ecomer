@@ -34,8 +34,17 @@ class ProductoResource extends JsonResource
                 : [],
             'categoria_id' => $this->categoria_id,
             'subcategoria_id' => $this->subcategoria_id,
+            'marca_id' => $this->marca_id,
             'categoria' => $this->categoria?->nombre,
             'subcategoria' => $this->subcategoria?->nombre,
+            'marca' => $this->marca?->titulo,
+            'marca_imagen' => $this->marca?->imagen ? asset('storage/'.$this->marca->imagen) : null,
+            'marca_objeto' => $this->marca ? [
+                'id' => $this->marca->id,
+                'titulo' => $this->marca->titulo,
+                'slug' => $this->marca->slug,
+                'imagen' => $this->marca->imagen ? asset('storage/'.$this->marca->imagen) : null,
+            ] : null,
             'variantes' => $this->whenLoaded('variantes'),
             'created_at' => $this->created_at?->toIso8601String(),
         ];

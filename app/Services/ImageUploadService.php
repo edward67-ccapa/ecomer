@@ -29,15 +29,15 @@ class ImageUploadService
                 // Optimizar la imagen temporal a resolución Full HD (max 1920px) manteniendo alta nitidez
                 ImageOptimizerService::optimizeImage($realPath, $maxWidth, $maxSizeKb);
 
-                $tmpWebp = sys_get_temp_dir() . '/' . Str::random(40) . '.webp';
+                $tmpWebp = sys_get_temp_dir().'/'.Str::random(40).'.webp';
 
                 if (self::convertToWebp($realPath, $tmpWebp, 85)) {
                     if (file_exists($tmpWebp) && is_file($tmpWebp) && filesize($tmpWebp) > 0) {
                         ImageOptimizerService::optimizeImage($tmpWebp, $maxWidth, $maxSizeKb);
                         $contents = @file_get_contents($tmpWebp);
                         if (is_string($contents) && strlen($contents) > 0) {
-                            $filename = Str::random(40) . '.webp';
-                            $destinationPath = $directory . '/' . $filename;
+                            $filename = Str::random(40).'.webp';
+                            $destinationPath = $directory.'/'.$filename;
 
                             Storage::disk($disk)->put($destinationPath, $contents);
 
@@ -52,7 +52,7 @@ class ImageUploadService
                 }
             }
         } catch (\Throwable $e) {
-            Log::warning('ImageUploadService WebP processing exception: ' . $e->getMessage());
+            Log::warning('ImageUploadService WebP processing exception: '.$e->getMessage());
         }
 
         // Fallback: store the file with its original format
@@ -60,14 +60,14 @@ class ImageUploadService
         try {
             $storedPath = Storage::disk($disk)->putFile($directory, $file);
         } catch (\Throwable $e) {
-            Log::error('ImageUploadService putFile fallback failed: ' . $e->getMessage());
+            Log::error('ImageUploadService putFile fallback failed: '.$e->getMessage());
         }
 
         if (! $storedPath) {
             try {
                 $storedPath = $file->store($directory, $disk);
             } catch (\Throwable $e) {
-                Log::error('ImageUploadService file->store fallback failed: ' . $e->getMessage());
+                Log::error('ImageUploadService file->store fallback failed: '.$e->getMessage());
             }
         }
 
@@ -97,7 +97,7 @@ class ImageUploadService
     private static function syncToPublicPath(string $relativeDestination, string $contents): void
     {
         try {
-            $targetPath = public_path('storage/' . ltrim($relativeDestination, '/'));
+            $targetPath = public_path('storage/'.ltrim($relativeDestination, '/'));
             $targetDir = dirname($targetPath);
 
             if (! file_exists($targetDir)) {
@@ -155,7 +155,7 @@ class ImageUploadService
                     return true;
                 }
             } catch (\Throwable $e) {
-                Log::warning('WebPConvert failed: ' . $e->getMessage());
+                Log::warning('WebPConvert failed: '.$e->getMessage());
             }
 
             // 2. Try Imagick extension if available
@@ -171,7 +171,7 @@ class ImageUploadService
                         return true;
                     }
                 } catch (\Throwable $e) {
-                    Log::warning('Imagick WebP conversion failed: ' . $e->getMessage());
+                    Log::warning('Imagick WebP conversion failed: '.$e->getMessage());
                 }
             }
 
@@ -192,11 +192,11 @@ class ImageUploadService
                         }
                     }
                 } catch (\Throwable $e) {
-                    Log::warning('GD WebP conversion failed: ' . $e->getMessage());
+                    Log::warning('GD WebP conversion failed: '.$e->getMessage());
                 }
             }
         } catch (\Throwable $e) {
-            Log::warning('convertToWebp top-level exception: ' . $e->getMessage());
+            Log::warning('convertToWebp top-level exception: '.$e->getMessage());
         }
 
         return false;

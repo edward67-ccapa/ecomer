@@ -5,9 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 #[Fillable(['user_id', 'dominio_id', 'plantilla_id', 'tienda_id', 'moneda_id', 'nombre', 'slug', 'imagen', 'estado', 'estilos'])]
 class Site extends Model
@@ -40,6 +39,11 @@ class Site extends Model
     public function servicios(): BelongsToMany
     {
         return $this->belongsToMany(Servicios::class, 'site_servicio', 'site_id', 'servicios_id')->withTimestamps();
+    }
+
+    public function marcas(): BelongsToMany
+    {
+        return $this->belongsToMany(Marca::class, 'site_marca')->withTimestamps();
     }
 
     public function moneda(): BelongsTo

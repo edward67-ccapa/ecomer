@@ -4,6 +4,7 @@ namespace App\Filament\Resources\Productos\Schemas;
 
 use App\Models\Categoria;
 use App\Models\Color;
+use App\Models\Moneda;
 use App\Models\Producto;
 use App\Models\Subcategoria;
 use App\Models\Talla;
@@ -33,7 +34,7 @@ class ProductoForm
             return in_array($codigoIso, ['PEN', 'USD']);
         }
 
-        return \App\Models\Moneda::whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds))
+        return Moneda::whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds))
             ->where('codigo', $codigoIso)
             ->exists();
     }
@@ -78,6 +79,12 @@ class ProductoForm
                                 ->searchable()
                                 ->preload()
                                 ->live(),
+                            Select::make('marca_id')
+                                ->label('Marca')
+                                ->relationship('marca', 'titulo')
+                                ->searchable()
+                                ->preload()
+                                ->placeholder('— sin marca —'),
                             Select::make('categoria_id')
                                 ->label('Categoría')
                                 ->options(function (Get $get, ?Producto $record): array {

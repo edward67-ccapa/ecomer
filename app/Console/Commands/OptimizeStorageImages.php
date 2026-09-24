@@ -34,23 +34,24 @@ class OptimizeStorageImages extends Command
         $maxKb = (int) $this->option('max-kb') ?: 400;
         $specificPath = $this->option('path');
 
-        $this->info("=== Transformador y Optimizador de Imágenes ===");
+        $this->info('=== Transformador y Optimizador de Imágenes ===');
         $this->info("Parámetros: Ancho máx = {$maxWidth}px | Peso máx = {$maxKb} KB");
 
         $diskPath = Storage::disk('public')->path('');
         $targetDir = $diskPath;
 
         if ($specificPath) {
-            $targetDir = rtrim($diskPath, '/') . '/' . ltrim($specificPath, '/');
+            $targetDir = rtrim($diskPath, '/').'/'.ltrim($specificPath, '/');
         }
 
         if (! file_exists($targetDir) || ! is_dir($targetDir)) {
             // Intentar también con public_path('storage')
-            $targetDir = public_path('storage/' . ltrim($specificPath ?? '', '/'));
+            $targetDir = public_path('storage/'.ltrim($specificPath ?? '', '/'));
         }
 
         if (! file_exists($targetDir) || ! is_dir($targetDir)) {
             $this->error("El directorio especificado no existe: {$targetDir}");
+
             return Command::FAILURE;
         }
 
@@ -74,7 +75,8 @@ class OptimizeStorageImages extends Command
 
         $totalImages = count($imageFiles);
         if ($totalImages === 0) {
-            $this->warn("No se encontraron imágenes para optimizar.");
+            $this->warn('No se encontraron imágenes para optimizar.');
+
             return Command::SUCCESS;
         }
 
@@ -105,7 +107,7 @@ class OptimizeStorageImages extends Command
             // Sincronizar también con public_path('storage/...') si es una ruta dentro de storage/app/public
             if (str_contains($filePath, storage_path('app/public/'))) {
                 $relativePath = str_replace(storage_path('app/public/'), '', $filePath);
-                $publicStoragePath = public_path('storage/' . ltrim($relativePath, '/'));
+                $publicStoragePath = public_path('storage/'.ltrim($relativePath, '/'));
                 if (file_exists(dirname($publicStoragePath))) {
                     @copy($filePath, $publicStoragePath);
                 }
@@ -126,13 +128,14 @@ class OptimizeStorageImages extends Command
             [
                 ['Total imágenes procesadas', $totalImages],
                 ['Imágenes optimizadas con éxito', $optimizedCount],
-                ['Peso original total', round($totalOriginalSize / 1024 / 1024, 2) . ' MB'],
-                ['Peso nuevo total', round($totalNewSize / 1024 / 1024, 2) . ' MB'],
+                ['Peso original total', round($totalOriginalSize / 1024 / 1024, 2).' MB'],
+                ['Peso nuevo total', round($totalNewSize / 1024 / 1024, 2).' MB'],
                 ['Ahorro total de espacio', "{$savedMb} MB ({$savedKb} KB)"],
             ]
         );
 
-        $this->info("¡Optimización completada exitosamente!");
+        $this->info('¡Optimización completada exitosamente!');
+
         return Command::SUCCESS;
     }
 }

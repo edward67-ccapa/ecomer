@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\v1;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\SitePageController;
 use App\Http\Resources\v1\SiteResource;
+use App\Models\Respuesta;
 use App\Models\Seccion;
 use App\Models\Site;
 use Illuminate\Http\JsonResponse;
@@ -34,8 +35,8 @@ class SiteApiController extends Controller
         } else {
             $query->where(function ($q) use ($dominioOrSlug) {
                 $q->where('slug', $dominioOrSlug)
-                  ->orWhereRaw('LOWER(slug) = ?', [strtolower($dominioOrSlug)])
-                  ->orWhereHas('dominio', fn ($d) => $d->whereRaw('LOWER(nombre) = ?', [strtolower($dominioOrSlug)]));
+                    ->orWhereRaw('LOWER(slug) = ?', [strtolower($dominioOrSlug)])
+                    ->orWhereHas('dominio', fn ($d) => $d->whereRaw('LOWER(nombre) = ?', [strtolower($dominioOrSlug)]));
             });
         }
 
@@ -75,6 +76,7 @@ class SiteApiController extends Controller
         $seccion = $site->plantilla->secciones->first(function ($s) use ($targetSlug) {
             $sSlug = strtolower(str_replace(['_', ' '], '-', $s->slug));
             $sNombre = strtolower(str_replace(['_', ' '], '-', $s->nombre));
+
             return $sSlug === $targetSlug
                 || $sNombre === $targetSlug
                 || str_contains($sSlug, $targetSlug)
@@ -86,7 +88,7 @@ class SiteApiController extends Controller
         }
 
         $siteRespuestas = $site->respuestas->keyBy('pregunta_id')->all();
-        $plantillaRespuestas = \App\Models\Respuesta::where('plantilla_id', $site->plantilla_id)->get()->keyBy('pregunta_id')->all();
+        $plantillaRespuestas = Respuesta::where('plantilla_id', $site->plantilla_id)->get()->keyBy('pregunta_id')->all();
         $respuestas = $siteRespuestas + $plantillaRespuestas;
 
         $contenido = SitePageController::formatearPreguntas($seccion->preguntas, $respuestas);

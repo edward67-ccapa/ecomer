@@ -5,8 +5,11 @@ namespace App\Filament\Resources\Sites\Pages;
 use App\Filament\Resources\Sites\SiteResource;
 use App\Models\Dominio;
 use App\Models\Plantilla;
+use App\Models\Pregunta;
 use App\Models\Respuesta;
+use Filament\Actions\Action;
 use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Js;
 
 class CreateSite extends CreateRecord
 {
@@ -46,13 +49,13 @@ class CreateSite extends CreateRecord
         }
     }
 
-    protected function getCancelFormAction(): \Filament\Actions\Action
+    protected function getCancelFormAction(): Action
     {
         $url = $this->previousUrl ?? static::getResource()::getUrl('index');
 
         return parent::getCancelFormAction()
             ->url($url)
-            ->alpineClickHandler('window.location.href = ' . \Illuminate\Support\Js::from($url));
+            ->alpineClickHandler('window.location.href = '.Js::from($url));
     }
 
     protected function afterCreate(): void
@@ -87,7 +90,7 @@ class CreateSite extends CreateRecord
             return;
         }
 
-        $validPreguntaIds = \App\Models\Pregunta::whereIn('id', array_keys($respuestas))->pluck('id')->all();
+        $validPreguntaIds = Pregunta::whereIn('id', array_keys($respuestas))->pluck('id')->all();
 
         foreach ($respuestas as $preguntaId => $item) {
             if (! in_array((int) $preguntaId, $validPreguntaIds, true)) {

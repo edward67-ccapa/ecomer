@@ -8,6 +8,7 @@ use App\Models\Respuesta;
 use App\Models\Site;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Tests\TestCase;
 
 class PublicPagesTest extends TestCase
@@ -119,7 +120,7 @@ class PublicPagesTest extends TestCase
 
     public function test_storage_fallback_route(): void
     {
-        \Illuminate\Support\Facades\Storage::disk('public')->put('sites/test-demo/imagen-test.png', 'test-content');
+        Storage::disk('public')->put('sites/test-demo/imagen-test.png', 'test-content');
 
         // Acceso directo a la nueva ruta ordenada
         $this->get('/storage/sites/test-demo/imagen-test.png')->assertOk();
@@ -127,6 +128,6 @@ class PublicPagesTest extends TestCase
         // Acceso con ruta antigua no ordenada (búsqueda por nombre de archivo)
         $this->get('/storage/sites/contenido/imagen-test.png')->assertOk();
 
-        \Illuminate\Support\Facades\Storage::disk('public')->delete('sites/test-demo/imagen-test.png');
+        Storage::disk('public')->delete('sites/test-demo/imagen-test.png');
     }
 }

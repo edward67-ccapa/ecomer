@@ -119,8 +119,8 @@
       "_DynamicIcon-D53Gpl9c.js"
     ]
   },
-  "_MarcasSection-Crz2PPXF.js": {
-    "file": "assets/MarcasSection-Crz2PPXF.js",
+  "_MarcasSection-CYEg2F6s.js": {
+    "file": "assets/MarcasSection-CYEg2F6s.js",
     "name": "MarcasSection",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
@@ -351,7 +351,7 @@
     "isEntry": true
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-DZark66U.js",
+    "file": "assets/app-CtwjtR5P.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -374,10 +374,10 @@
       "_BanerPieSection-D5bCNXax.js",
       "_CategoriaSection-BiSq3B7l.js",
       "_GaleriaSection-c-HkhU03.js",
-      "_HeroSection-Dpf4drhS.js",
-      "_MarcasSection-Crz2PPXF.js",
-      "_OfertasSection-NQHdf8Tw.js",
-      "_ProductosDestacadosSection-tQjW9I-6.js",
+      "_HeroSection-qyYSFxPM.js",
+      "_MarcasSection-CYEg2F6s.js",
+      "_OfertasSection-BSa1NdF6.js",
+      "_ProductosDestacadosSection-Bi7ZF_BO.js",
       "_TikTokSection-T2zXCebo.js",
       "resources/js/pages/sites/Ecomer/components/Nosotros/SectionNosotros.jsx",
       "_AccionSection-B_ReiEWp.js",
@@ -493,7 +493,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/Index.jsx": {
-    "file": "assets/Index-DzPAtUi8.js",
+    "file": "assets/Index-CPD-iks4.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Ecomer/Index.jsx",
     "isDynamicEntry": true,
@@ -524,7 +524,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Inicio/SectionInicio.jsx": {
-    "file": "assets/SectionInicio-D3O-kkyT.js",
+    "file": "assets/SectionInicio-CfDRHkXF.js",
     "name": "SectionInicio",
     "src": "resources/js/pages/sites/Ecomer/components/Inicio/SectionInicio.jsx",
     "isDynamicEntry": true,
@@ -532,9 +532,9 @@
       "_vendor-framer-motion-C1JIXETN.js",
       "_HeroSection-Dpf4drhS.js",
       "_GaleriaSection-c-HkhU03.js",
-      "_OfertasSection-NQHdf8Tw.js",
-      "_MarcasSection-Crz2PPXF.js",
-      "_CategoriaSection-BiSq3B7l.js",
+      "_OfertasSection-BSa1NdF6.js",
+      "_MarcasSection-CYEg2F6s.js",
+      "_CategoriaSection-BaeDp_YH.js",
       "_TikTokSection-T2zXCebo.js",
       "_ProductosDestacadosSection-tQjW9I-6.js",
       "_BanerPieSection-D5bCNXax.js"

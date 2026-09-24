@@ -2,11 +2,13 @@
 
 namespace App\Filament\Resources\Plantillas\Schemas;
 
+use App\Filament\Forms\Components\IconPicker;
+use App\Filament\Forms\Components\LinkPicker;
+use App\Models\Categoria;
 use App\Models\Plantilla;
 use App\Models\Pregunta;
 use App\Models\Site;
-use App\Filament\Forms\Components\IconPicker;
-use App\Filament\Forms\Components\LinkPicker;
+use App\Models\Subcategoria;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
@@ -14,19 +16,17 @@ use Filament\Forms\Components\MultiSelect;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
-
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\HtmlString;
 use Illuminate\Support\Str;
 
 class PlantillaForm
@@ -91,7 +91,7 @@ class PlantillaForm
                                                                 Textarea::make('descripcion')
                                                                     ->rows(2),
                                                                 FileUpload::make('imagen')
-                                                                    ->webp5Mb(fn (Get $get, ?Model $record) => 'plantillas/' . (Str::slug($get('slug') ?? $record?->slug) ?: 'general'), 'public')
+                                                                    ->webp5Mb(fn (Get $get, ?Model $record) => 'plantillas/'.(Str::slug($get('slug') ?? $record?->slug) ?: 'general'), 'public')
                                                                     ->orientImagesFromExif(false)
                                                                     ->uploadingMessage('Subiendo imagen...')
                                                                     ->deletable(true)
@@ -153,6 +153,18 @@ class PlantillaForm
                                                     ])
                                                     ->columnSpanFull(),
 
+                                                Section::make('Marcas')
+                                                    ->icon('heroicon-o-tag')
+                                                    ->collapsible()
+                                                    ->schema([
+                                                        MultiSelect::make('marcas')
+                                                            ->label('Marcas asociadas')
+                                                            ->relationship('marcas', 'titulo')
+                                                            ->searchable()
+                                                            ->preload(),
+                                                    ])
+                                                    ->columnSpanFull(),
+
                                                 Section::make('Catálogo de Productos')
                                                     ->icon('heroicon-o-book-open')
                                                     ->description('Configura la disponibilidad del catálogo por defecto para la plantilla.')
@@ -195,14 +207,14 @@ class PlantillaForm
 
                                                                 MultiSelect::make('estilos.catalogo.categorias')
                                                                     ->label('Categorías a incluir')
-                                                                    ->options(fn () => \App\Models\Categoria::pluck('nombre', 'id'))
+                                                                    ->options(fn () => Categoria::pluck('nombre', 'id'))
                                                                     ->searchable()
                                                                     ->preload()
                                                                     ->visible(fn (Get $get) => $get('estilos.catalogo.tipo_filtro') === 'categoria'),
 
                                                                 MultiSelect::make('estilos.catalogo.subcategorias')
                                                                     ->label('Subcategorías a incluir')
-                                                                    ->options(fn () => \App\Models\Subcategoria::with('categoria')->get()->mapWithKeys(fn ($sub) => [$sub->id => ($sub->categoria ? $sub->categoria->nombre . ' > ' : '') . $sub->nombre]))
+                                                                    ->options(fn () => Subcategoria::with('categoria')->get()->mapWithKeys(fn ($sub) => [$sub->id => ($sub->categoria ? $sub->categoria->nombre.' > ' : '').$sub->nombre]))
                                                                     ->searchable()
                                                                     ->preload()
                                                                     ->visible(fn (Get $get) => $get('estilos.catalogo.tipo_filtro') === 'subcategoria'),
@@ -243,7 +255,7 @@ class PlantillaForm
                                                                 ]),
                                                             ])
                                                             ->collapsible()
-                                                            ->itemLabel(fn (array $state): ?string => ($state['Label'] ?? '') ? ($state['Label'] . ': ' . ($state['texto'] ?? '')) : null)
+                                                            ->itemLabel(fn (array $state): ?string => ($state['Label'] ?? '') ? ($state['Label'].': '.($state['texto'] ?? '')) : null)
                                                             ->columnSpanFull(),
                                                     ])
                                                     ->columnSpanFull(),
@@ -262,7 +274,7 @@ class PlantillaForm
                                                     ->reorderableWithDragAndDrop()
                                                     ->collapsible()
                                                     ->collapsed()
-                                                    ->itemLabel(fn (array $state): ?string => isset($state['nombre']) && filled($state['nombre']) ? "Sección: {$state['nombre']} (" . ($state['slug'] ?? 'sin-slug') . ")" : 'Nueva Sección')
+                                                    ->itemLabel(fn (array $state): ?string => isset($state['nombre']) && filled($state['nombre']) ? "Sección: {$state['nombre']} (".($state['slug'] ?? 'sin-slug').')' : 'Nueva Sección')
                                                     ->grid(['default' => 1])
                                                     ->schema([
                                                         Grid::make(4)->schema([
@@ -284,7 +296,7 @@ class PlantillaForm
                                                             ->reorderableWithDragAndDrop()
                                                             ->collapsible()
                                                             ->collapsed()
-                                                            ->itemLabel(fn (array $state): ?string => isset($state['label']) && filled($state['label']) ? "Pregunta: {$state['label']} [" . ($state['tipo'] ?? 'texto') . "]" : 'Nueva Pregunta')
+                                                            ->itemLabel(fn (array $state): ?string => isset($state['label']) && filled($state['label']) ? "Pregunta: {$state['label']} [".($state['tipo'] ?? 'texto').']' : 'Nueva Pregunta')
                                                             ->schema([
                                                                 Grid::make(7)->schema([
                                                                     TextInput::make('label')
@@ -335,7 +347,7 @@ class PlantillaForm
                                                                             Select::make('estructura')
                                                                                 ->options([
                                                                                     'objeto' => 'Objeto',
-                                                                                    'array'  => 'Array',
+                                                                                    'array' => 'Array',
                                                                                 ])
                                                                                 ->default('objeto')
                                                                                 ->live(onBlur: true)
@@ -373,7 +385,7 @@ class PlantillaForm
                                                                                     Select::make('estructura')
                                                                                         ->options([
                                                                                             'objeto' => 'Objeto',
-                                                                                            'array'  => 'Array',
+                                                                                            'array' => 'Array',
                                                                                         ])
                                                                                         ->default('objeto')
                                                                                         ->live(onBlur: true)
@@ -408,9 +420,9 @@ class PlantillaForm
                                                             ])
                                                             ->columns(1),
                                                     ]),
-                                             ]),
-                                     ]),
-                             ]),
+                                            ]),
+                                    ]),
+                            ]),
 
                         Tab::make('Respuestas por Defecto')
                             ->icon('heroicon-o-document-text')
@@ -481,9 +493,11 @@ class PlantillaForm
 
             if ($record instanceof Site || $get('plantilla_id') !== null) {
                 $folder = $slug ?: ($record?->id ? "site-{$record->id}" : 'general');
+
                 return "sites/{$folder}/contenido";
             }
             $folder = $slug ?: ($record?->id ? "plantilla-{$record->id}" : 'general');
+
             return "plantillas/{$folder}/contenido";
         };
 
@@ -504,7 +518,7 @@ class PlantillaForm
                     ->deletable(true)
                     ->openable()
                     ->downloadable()
-                    ->helperText('Puedes subir múltiples imágenes' . ($pregunta->max_items ? " (máx. {$pregunta->max_items})" : '') . '. Formato WebP, máx. 2 MB c/u.')
+                    ->helperText('Puedes subir múltiples imágenes'.($pregunta->max_items ? " (máx. {$pregunta->max_items})" : '').'. Formato WebP, máx. 2 MB c/u.')
                 : FileUpload::make($statePath)
                     ->webp5Mb($contentDirectory, 'public')
                     ->orientImagesFromExif(false)
@@ -543,17 +557,17 @@ class PlantillaForm
 
                         // Un child con estructura=array e imagen usa múltiple
                         $subField = match ($child->tipo) {
-                            'area'   => Textarea::make($childPath)->rows(2),
+                            'area' => Textarea::make($childPath)->rows(2),
                             'imagen' => $child->estructura === 'array'
                                 ? FileUpload::make($childPath)->multiple()->maxFiles($child->max_items ?? null)->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable()
                                 : FileUpload::make($childPath)->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imagen...')->deletable(true)->openable()->downloadable(),
                             'galeria' => FileUpload::make($childPath)->multiple()->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable(),
-                            'color'  => ColorPicker::make($childPath),
-                            'icono'  => IconPicker::make($childPath),
+                            'color' => ColorPicker::make($childPath),
+                            'icono' => IconPicker::make($childPath),
                             'enlace' => TextInput::make($childPath)->placeholder('https://ejemplo.com'),
 
                             // ── Hijo tipo grupo → Repeater con sus propios sub-campos ──
-                            'grupo'  => Repeater::make($childPath)
+                            'grupo' => Repeater::make($childPath)
                                 ->schema(function () use ($child, $contentDirectory) {
                                     $grandChildren = $child->children;
                                     if ($grandChildren->isEmpty() && isset($child->id)) {
@@ -564,15 +578,15 @@ class PlantillaForm
                                         $gcPath = $grandChild->label;
 
                                         $gcField = match ($grandChild->tipo) {
-                                            'area'    => Textarea::make($gcPath)->rows(2),
-                                            'imagen'  => $grandChild->estructura === 'array'
+                                            'area' => Textarea::make($gcPath)->rows(2),
+                                            'imagen' => $grandChild->estructura === 'array'
                                                 ? FileUpload::make($gcPath)->multiple()->maxFiles($grandChild->max_items ?? null)->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable()
                                                 : FileUpload::make($gcPath)->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imagen...')->deletable(true)->openable()->downloadable(),
                                             'galeria' => FileUpload::make($gcPath)->multiple()->webp5Mb($contentDirectory, 'public')->orientImagesFromExif(false)->uploadingMessage('Subiendo imágenes...')->deletable(true)->openable()->downloadable(),
-                                            'color'   => ColorPicker::make($gcPath),
-                                            'icono'   => IconPicker::make($gcPath),
-                                            'enlace'  => TextInput::make($gcPath)->placeholder('https://ejemplo.com'),
-                                            default   => TextInput::make($gcPath),
+                                            'color' => ColorPicker::make($gcPath),
+                                            'icono' => IconPicker::make($gcPath),
+                                            'enlace' => TextInput::make($gcPath)->placeholder('https://ejemplo.com'),
+                                            default => TextInput::make($gcPath),
                                         };
 
                                         return $gcField->label($grandChild->label);
@@ -585,10 +599,10 @@ class PlantillaForm
                                 ->maxItems($child->estructura === 'objeto' ? 1 : $child->max_items)
                                 ->deletable($child->estructura === 'array')
                                 ->reorderable($child->estructura === 'array')
-                                ->addActionLabel('+ Agregar ' . $child->label)
+                                ->addActionLabel('+ Agregar '.$child->label)
                                 ->collapsible(),
 
-                            default  => $child->estructura === 'array' ? TagsInput::make($childPath) : TextInput::make($childPath),
+                            default => $child->estructura === 'array' ? TagsInput::make($childPath) : TextInput::make($childPath),
                         };
 
                         // Los sub-Repeaters (tipo grupo) ya tienen ->label() aplicado arriba
@@ -784,7 +798,7 @@ class PlantillaForm
                 'FaBullhorn' => 'FaBullhorn (Anuncios / Novedades)',
                 'FaHeadphones' => 'FaHeadphones (Audífonos / Soporte)',
                 'MdOutlineSupportAgent' => 'MdOutlineSupportAgent (Agente de Soporte)',
-            ]
+            ],
         ];
     }
 
@@ -861,4 +875,3 @@ class PlantillaForm
             ->columnSpanFull();
     }
 }
-

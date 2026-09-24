@@ -48,6 +48,7 @@ class PlantillaApiController extends Controller
         // Devolver únicamente el contenido de la sección solicitada (ligero y rápido)
         $seccionModel = $secciones->first(function ($s) use ($seccion) {
             $normalize = fn ($str) => strtolower(str_replace(['_', ' '], '-', $str));
+
             return $normalize($s->slug) === $normalize($seccion);
         });
 

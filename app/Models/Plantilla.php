@@ -30,6 +30,11 @@ class Plantilla extends Model
         return $this->belongsToMany(Servicios::class, 'plantilla_servicio', 'plantilla_id', 'servicios_id')->withTimestamps();
     }
 
+    public function marcas(): BelongsToMany
+    {
+        return $this->belongsToMany(Marca::class, 'plantilla_marca')->withTimestamps();
+    }
+
     public function respuestas(): HasMany
     {
         return $this->hasMany(Respuesta::class);

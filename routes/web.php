@@ -2,11 +2,14 @@
 
 use App\Http\Controllers\PlantillasController;
 use App\Http\Controllers\SitePageController;
+use App\Models\Site;
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 Route::get('/', function () {
-    $site = \App\Models\Site::where('estado', 'publicado')->with('dominio')->first();
+    $site = Site::where('estado', 'publicado')->with('dominio')->first();
     $dominio = $site?->dominio?->nombre ?? 'TortasLucha';
+
     return redirect()->to("/{$dominio}/Inicio");
 })->name('welcome');
 
@@ -19,7 +22,7 @@ Route::get('/plantillas/{plantilla:slug}/{seccion?}', [PlantillasController::cla
     ->name('plantillas.preview');
 
 Route::get('/storage/{path}', function (string $path) {
-    $disk = \Illuminate\Support\Facades\Storage::disk('public');
+    $disk = Storage::disk('public');
 
     $targetFile = null;
     if ($disk->exists($path)) {
@@ -38,6 +41,7 @@ Route::get('/storage/{path}', function (string $path) {
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         if (in_array($extension, ['png', 'jpg', 'jpeg', 'webp', 'svg', 'gif'])) {
             $placeholderSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="400" height="300" fill="#F3F4F6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9CA3AF" font-family="sans-serif" font-size="16">Imagen no encontrada</text></svg>';
+
             return response($placeholderSvg, 200, [
                 'Content-Type' => 'image/svg+xml',
                 'Cache-Control' => 'no-cache',
@@ -61,4 +65,3 @@ Route::get('/{dominio}/catalogo/descargar-pdf', [SitePageController::class, 'des
 Route::get('/{param1}/{param2}/{param3}', [SitePageController::class, 'show'])->name('sitios.show3');
 Route::get('/{dominio}/{seccion}', [SitePageController::class, 'show'])->name('sitios.show');
 Route::get('/{dominio}', [SitePageController::class, 'redirectToFirst'])->name('sitios.home');
-

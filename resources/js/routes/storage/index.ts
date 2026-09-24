@@ -1,8 +1,8 @@
 import { queryParams, type RouteQueryOptions, type RouteDefinition, type RouteFormDefinition, applyUrlDefaults } from './../../wayfinder'
 /**
- * @see routes/web.php:21
- * @route '/storage/{path}'
- */
+* @see routes/web.php:24
+* @route '/storage/{path}'
+*/
 export const local = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: local.url(args, options),
     method: 'get',
@@ -14,9 +14,9 @@ local.definition = {
 } satisfies RouteDefinition<["get","head"]>
 
 /**
- * @see routes/web.php:21
- * @route '/storage/{path}'
- */
+* @see routes/web.php:24
+* @route '/storage/{path}'
+*/
 local.url = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions) => {
     if (typeof args === 'string' || typeof args === 'number') {
         args = { path: args }
@@ -41,30 +41,55 @@ local.url = (args: { path: string | number } | [path: string | number ] | string
 }
 
 /**
- * @see routes/web.php:21
- * @route '/storage/{path}'
- */
+* @see routes/web.php:24
+* @route '/storage/{path}'
+*/
 local.get = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: local.url(args, options),
     method: 'get',
 })
 /**
- * @see routes/web.php:21
- * @route '/storage/{path}'
- */
+* @see routes/web.php:24
+* @route '/storage/{path}'
+*/
 local.head = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     url: local.url(args, options),
     method: 'head',
 })
 
-    /**
- * @see routes/web.php:21
- * @route '/storage/{path}'
- */
-    const localForm = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-        action: local.url(args, options),
-        method: 'get',
-    })
+/**
+* @see routes/web.php:24
+* @route '/storage/{path}'
+*/
+const localForm = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: local.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:24
+* @route '/storage/{path}'
+*/
+localForm.get = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: local.url(args, options),
+    method: 'get',
+})
+
+/**
+* @see routes/web.php:24
+* @route '/storage/{path}'
+*/
+localForm.head = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
+    action: local.url(args, {
+        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
+            _method: 'HEAD',
+            ...(options?.query ?? options?.mergeQuery ?? {}),
+        }
+    }),
+    method: 'get',
+})
+
+local.form = localForm
 
             /**
  * @see routes/web.php:21

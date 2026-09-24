@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreignId('categoria_id')->nullable()->constrained()->nullOnDelete();
             $table->string('nombre');
             $table->string('slug');
+            $table->text('descripcion_corta')->nullable();
             $table->text('descripcion')->nullable();
             $table->decimal('precio', 10, 2);
             $table->decimal('precio_oferta', 10, 2)->nullable();

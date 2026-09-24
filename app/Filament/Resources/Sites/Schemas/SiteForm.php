@@ -3,9 +3,11 @@
 namespace App\Filament\Resources\Sites\Schemas;
 
 use App\Filament\Resources\Plantillas\Schemas\PlantillaForm;
+use App\Models\Categoria;
 use App\Models\Dominio;
 use App\Models\Plantilla;
 use App\Models\Respuesta;
+use App\Models\Subcategoria;
 use App\Models\User;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
@@ -15,15 +17,15 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-
-use Filament\Schemas\Components\Tabs;
-use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Component;
 use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Tabs;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Schemas\Schema;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
 class SiteForm
@@ -110,7 +112,7 @@ class SiteForm
                                                 ->columnSpan(2),
                                             FileUpload::make('imagen')
                                                 ->label('Logo / imagen')
-                                                ->webp5Mb(fn (Get $get, ?\Illuminate\Database\Eloquent\Model $record) => 'sites/' . (Str::slug($get('slug') ?? $record?->slug) ?: 'general'), 'public')
+                                                ->webp5Mb(fn (Get $get, ?Model $record) => 'sites/'.(Str::slug($get('slug') ?? $record?->slug) ?: 'general'), 'public')
                                                 ->orientImagesFromExif(false)
                                                 ->uploadingMessage('Subiendo imagen...')
                                                 ->deletable(true)
@@ -152,7 +154,7 @@ class SiteForm
                                                         ]),
                                                     ])
                                                     ->collapsible()
-                                                    ->itemLabel(fn (array $state): ?string => ($state['Label'] ?? '') ? ($state['Label'] . ': ' . ($state['texto'] ?? '')) : null)
+                                                    ->itemLabel(fn (array $state): ?string => ($state['Label'] ?? '') ? ($state['Label'].': '.($state['texto'] ?? '')) : null)
                                                     ->columnSpanFull(),
                                             ])
                                             ->columnSpanFull(),
@@ -176,6 +178,18 @@ class SiteForm
                                                 MultiSelect::make('servicios')
                                                     ->label('Servicios asociados')
                                                     ->relationship('servicios', 'nombre')
+                                                    ->searchable()
+                                                    ->preload(),
+                                            ])
+                                            ->columnSpanFull(),
+
+                                        Section::make('Marcas')
+                                            ->icon('heroicon-o-tag')
+                                            ->collapsible()
+                                            ->schema([
+                                                MultiSelect::make('marcas')
+                                                    ->label('Marcas asociadas')
+                                                    ->relationship('marcas', 'titulo')
                                                     ->searchable()
                                                     ->preload(),
                                             ])
@@ -223,14 +237,14 @@ class SiteForm
 
                                                         MultiSelect::make('estilos.catalogo.categorias')
                                                             ->label('Categorías a incluir')
-                                                            ->options(fn () => \App\Models\Categoria::pluck('nombre', 'id'))
+                                                            ->options(fn () => Categoria::pluck('nombre', 'id'))
                                                             ->searchable()
                                                             ->preload()
                                                             ->visible(fn (Get $get) => $get('estilos.catalogo.tipo_filtro') === 'categoria'),
 
                                                         MultiSelect::make('estilos.catalogo.subcategorias')
                                                             ->label('Subcategorías a incluir')
-                                                            ->options(fn () => \App\Models\Subcategoria::with('categoria')->get()->mapWithKeys(fn ($sub) => [$sub->id => ($sub->categoria ? $sub->categoria->nombre . ' > ' : '') . $sub->nombre]))
+                                                            ->options(fn () => Subcategoria::with('categoria')->get()->mapWithKeys(fn ($sub) => [$sub->id => ($sub->categoria ? $sub->categoria->nombre.' > ' : '').$sub->nombre]))
                                                             ->searchable()
                                                             ->preload()
                                                             ->visible(fn (Get $get) => $get('estilos.catalogo.tipo_filtro') === 'subcategoria'),

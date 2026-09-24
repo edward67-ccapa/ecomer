@@ -2,10 +2,13 @@
 
 namespace Database\Seeders;
 
+use App\Models\Dominio;
 use App\Models\Plantilla;
 use App\Models\Pregunta;
 use App\Models\Respuesta;
 use App\Models\Seccion;
+use App\Models\Site;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class PlantillaEjemploSeeder extends Seeder
@@ -196,17 +199,17 @@ class PlantillaEjemploSeeder extends Seeder
         );
 
         // 9. Crear Usuario, Dominio y Site de Ejemplo (Corporativo 1)
-        $user = \App\Models\User::firstOrCreate(
+        $user = User::firstOrCreate(
             ['email' => 'test@example.com'],
             ['name' => 'Test User', 'password' => bcrypt('password')]
         );
 
-        $dominio = \App\Models\Dominio::firstOrCreate(
+        $dominio = Dominio::firstOrCreate(
             ['nombre' => 'creadorDePaginas'],
             ['user_id' => $user->id, 'estado' => 'activo']
         );
 
-        $site = \App\Models\Site::updateOrCreate(
+        $site = Site::updateOrCreate(
             ['slug' => 'corporativo1'],
             [
                 'user_id' => $user->id,

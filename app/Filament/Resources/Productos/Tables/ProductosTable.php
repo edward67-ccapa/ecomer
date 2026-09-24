@@ -33,7 +33,8 @@ class ProductosTable
                     ->label('Precio')
                     ->formatStateUsing(function (Producto $record): string {
                         $simbolo = $record->tiendas->first()?->moneda?->simbolo ?? 'S/';
-                        return $simbolo . ' ' . number_format((float) $record->precio, 2);
+
+                        return $simbolo.' '.number_format((float) $record->precio, 2);
                     }),
                 TextColumn::make('stock')
                     ->numeric(),

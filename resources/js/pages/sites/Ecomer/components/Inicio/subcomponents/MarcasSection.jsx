@@ -9,6 +9,7 @@ import 'swiper/css';
 export default function MarcasSection({
     seccionData,
     productos = [],
+    marcasSitio = [],
     onSeleccionarProducto,
 }) {
     const addItem = useCartStore((state) => state.addItem);
@@ -22,10 +23,29 @@ export default function MarcasSection({
 
     // Títulos opcionales desde seccionData
     const subTitulo = getValor('sub_titulo') || getValor('subtitulo') || '';
-    const titulo = getValor('titulo') || getValor('title') || 'Nuestras Marcas y Categorías';
+    const titulo = getValor('titulo') || getValor('title') || 'Nuestras Marcas';
     const descripcion = getValor('descripcion') || getValor('descripción') || '';
 
-    // Extraer Imágenes de la galería de Marcas
+    // 1. Extraer Marcas del Backend (sitio / plantilla)
+    const marcasFromBackend = useMemo(() => {
+        if (!Array.isArray(marcasSitio)) return [];
+        return marcasSitio
+            .map((m) => {
+                if (typeof m === 'string') {
+                    return { titulo: m, imagen: null, slug: null };
+                }
+                return {
+                    id: m.id,
+                    titulo: m.titulo || m.nombre || '',
+                    imagen: m.imagen || m.logo || null,
+                    slug: m.slug || null,
+                    descripcion: m.descripcion || null,
+                };
+            })
+            .filter((m) => m.titulo || m.imagen);
+    }, [marcasSitio]);
+
+    // 2. Extraer Imágenes de la galería de Marcas en CMS (seccionData)
     const imagenesRaw =
         getValor('imagenes') ||
         getValor('imágenes') ||
@@ -33,16 +53,73 @@ export default function MarcasSection({
         getValor('logos') ||
         getValor('galeria');
 
-    let imagenesList = [];
-    if (Array.isArray(imagenesRaw)) {
-        imagenesList = imagenesRaw
-            .map((item) => (typeof item === 'string' ? item.trim() : (item?.imagen || item?.url || item?.src || null)))
-            .filter(Boolean);
-    } else if (typeof imagenesRaw === 'string' && imagenesRaw.trim()) {
-        imagenesList = [imagenesRaw.trim()];
-    }
+    const marcasFromCMS = useMemo(() => {
+        let list = [];
+        if (Array.isArray(imagenesRaw)) {
+            list = imagenesRaw.map((item, idx) => {
+                if (typeof item === 'string') {
+                    return { titulo: `Marca ${idx + 1}`, imagen: item.trim() };
+                }
+                return {
+                    titulo: item?.titulo || item?.nombre || item?.label || `Marca ${idx + 1}`,
+                    imagen: item?.imagen || item?.url || item?.src || null,
+                };
+            });
+        } else if (typeof imagenesRaw === 'string' && imagenesRaw.trim()) {
+            list = [{ titulo: 'Marca', imagen: imagenesRaw.trim() }];
+        }
+        return list.filter((m) => m.imagen || m.titulo);
+    }, [imagenesRaw]);
 
-    // Extraer Categorías desde seccionData CMS (ÚNICAMENTE las configuradas para Marcas)
+    // 3. Extraer Marcas asignadas a los Productos
+    const marcasFromProductos = useMemo(() => {
+        if (!Array.isArray(productos)) return [];
+        const map = new Map();
+        productos.forEach((p) => {
+            if (p.marca_objeto && (p.marca_objeto.titulo || p.marca_objeto.imagen)) {
+                const key = (p.marca_objeto.titulo || p.marca_objeto.id).toString().toLowerCase();
+                if (!map.has(key)) {
+                    map.set(key, {
+                        id: p.marca_objeto.id,
+                        titulo: p.marca_objeto.titulo,
+                        imagen: p.marca_objeto.imagen,
+                        slug: p.marca_objeto.slug,
+                    });
+                }
+            } else if (p.marca && typeof p.marca === 'string') {
+                const key = p.marca.toLowerCase().trim();
+                if (!map.has(key)) {
+                    map.set(key, {
+                        titulo: p.marca,
+                        imagen: p.marca_imagen || null,
+                    });
+                }
+            }
+        });
+        return Array.from(map.values());
+    }, [productos]);
+
+    // Combinar y deduplicar marcas manteniendo el orden de prioridad: Backend > Productos > CMS
+    const marcasList = useMemo(() => {
+        const result = [];
+        const seenKeys = new Set();
+
+        const addMarca = (m) => {
+            const key = (m.titulo || m.imagen || '').toString().toLowerCase().trim();
+            if (key && !seenKeys.has(key)) {
+                seenKeys.add(key);
+                result.push(m);
+            }
+        };
+
+        marcasFromBackend.forEach(addMarca);
+        marcasFromProductos.forEach(addMarca);
+        marcasFromCMS.forEach(addMarca);
+
+        return result;
+    }, [marcasFromBackend, marcasFromProductos, marcasFromCMS]);
+
+    // Extraer Categorías desde seccionData CMS (si están configuradas)
     const categoriasRaw = getValor('categorias') || getValor('categorías') || getValor('categoria') || getValor('lista_categorias');
     const cmsCatList = useMemo(() => {
         if (Array.isArray(categoriasRaw)) {
@@ -55,29 +132,52 @@ export default function MarcasSection({
         return [];
     }, [categoriasRaw]);
 
-    // Agrupar productos ÚNICAMENTE por las categorías configuradas en la sección Marcas
+    // Agrupar productos por categorías configuradas o por marcas asignadas
     const productosPorCategoria = useMemo(() => {
-        if (!productos || productos.length === 0 || cmsCatList.length === 0) return [];
+        if (!productos || productos.length === 0) return [];
 
         const result = [];
 
-        cmsCatList.forEach((catName) => {
-            const target = catName.toLowerCase().trim();
-            const prodsDeCat = productos.filter((p) => {
-                const c = typeof p.categoria === 'string'
-                    ? p.categoria
-                    : (p.categoria?.nombre || p.categoria?.slug || '');
-                const cLower = c.toLowerCase().trim();
-                return cLower === target || cLower.includes(target) || target.includes(cLower);
+        if (cmsCatList.length > 0) {
+            cmsCatList.forEach((catName) => {
+                const target = catName.toLowerCase().trim();
+                const prodsDeCat = productos.filter((p) => {
+                    const c = typeof p.categoria === 'string'
+                        ? p.categoria
+                        : (p.categoria?.nombre || p.categoria?.slug || '');
+                    const cLower = c.toLowerCase().trim();
+                    return cLower === target || cLower.includes(target) || target.includes(cLower);
+                });
+
+                if (prodsDeCat.length > 0) {
+                    result.push({
+                        nombre: catName,
+                        productos: prodsDeCat,
+                    });
+                }
+            });
+            if (result.length > 0) return result;
+        }
+
+        // Si hay productos con marcas asignadas, agrupar por marca
+        const prodsConMarca = productos.filter((p) => p.marca || p.marca_objeto);
+        if (prodsConMarca.length > 0) {
+            const mapMarca = new Map();
+            prodsConMarca.forEach((p) => {
+                const marcaNombre = p.marca_objeto?.titulo || (typeof p.marca === 'string' ? p.marca : null) || 'Otras Marcas';
+                if (!mapMarca.has(marcaNombre)) {
+                    mapMarca.set(marcaNombre, []);
+                }
+                mapMarca.get(marcaNombre).push(p);
             });
 
-            if (prodsDeCat.length > 0) {
+            mapMarca.forEach((prods, marcaNombre) => {
                 result.push({
-                    nombre: catName,
-                    productos: prodsDeCat,
+                    nombre: marcaNombre,
+                    productos: prods,
                 });
-            }
-        });
+            });
+        }
 
         return result;
     }, [cmsCatList, productos]);
@@ -99,7 +199,7 @@ export default function MarcasSection({
         }
     };
 
-    if (!seccionData && imagenesList.length === 0 && productos.length === 0) return null;
+    if (!seccionData && marcasList.length === 0 && productos.length === 0) return null;
 
     return (
         <section id="marcas" className="scroll-mt-10 py-10 sm:py-14 bg-white border-t border-gray-100">
@@ -129,14 +229,14 @@ export default function MarcasSection({
                     </div>
                 </div>
 
-                {/* ── CARRUSEL DE LOGOS / IMÁGENES DE MARCAS ── */}
-                {imagenesList.length > 0 && (
+                {/* ── CARRUSEL DE LOGOS / MARCAS ── */}
+                {marcasList.length > 0 && (
                     <div className="mb-10">
                         <Swiper
                             modules={[Autoplay]}
                             spaceBetween={16}
                             slidesPerView={2}
-                            loop={imagenesList.length > 3}
+                            loop={marcasList.length > 3}
                             autoplay={{
                                 delay: 2500,
                                 disableOnInteraction: false,
@@ -151,18 +251,27 @@ export default function MarcasSection({
                             }}
                             className="py-2"
                         >
-                            {imagenesList.map((imgUrl, idx) => (
-                                <SwiperSlide key={idx}>
-                                    <div className="flex items-center justify-center h-24 sm:h-28 bg-white border border-gray-200/80 rounded-xl p-4 shadow-2xs hover:shadow-md hover:border-gray-300 transition-all duration-300 group cursor-pointer">
-                                        <img
-                                            src={imgUrl}
-                                            alt={`Marca ${idx + 1}`}
-                                            width={300}
-                                            height={150}
-                                            className="max-h-full max-w-full object-contain group-hover:scale-105 transition-all duration-300"
-                                            loading="lazy"
-                                            decoding="async"
-                                        />
+                            {marcasList.map((m, idx) => (
+                                <SwiperSlide key={m.id || m.slug || idx}>
+                                    <div className="flex items-center justify-center h-24 sm:h-28 bg-white border border-gray-200/80 rounded-xl p-4 shadow-2xs hover:shadow-md hover:border-gray-300 transition-all duration-300 group cursor-pointer text-center">
+                                        {m.imagen ? (
+                                            <img
+                                                src={m.imagen}
+                                                alt={m.titulo || `Marca ${idx + 1}`}
+                                                width={300}
+                                                height={150}
+                                                className="max-h-full max-w-full object-contain filter grayscale opacity-75 group-hover:grayscale-0 group-hover:opacity-100 group-hover:scale-105 transition-all duration-300"
+                                                loading="lazy"
+                                                decoding="async"
+                                            />
+                                        ) : (
+                                            <span
+                                                className="text-sm sm:text-base font-extrabold text-gray-700 tracking-tight group-hover:text-[var(--color-primario)] transition-colors line-clamp-2"
+                                                style={{ fontFamily: 'var(--tipografia-titulos)' }}
+                                            >
+                                                {m.titulo}
+                                            </span>
+                                        )}
                                     </div>
                                 </SwiperSlide>
                             ))}

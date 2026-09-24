@@ -15,6 +15,7 @@ export default function SectionInicio({
     seccionesData,
     productosDestacados,
     productos: initialProductos = [],
+    marcasSitio = [],
     onSeleccionarProducto,
 }) {
     const listaProductos =
@@ -75,6 +76,7 @@ export default function SectionInicio({
             <MarcasSection
                 seccionData={marcas}
                 productos={productos}
+                marcasSitio={marcasSitio}
                 onSeleccionarProducto={onSeleccionarProducto}
             />
             <CategoriaSection

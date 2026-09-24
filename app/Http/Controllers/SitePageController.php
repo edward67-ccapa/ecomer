@@ -2,16 +2,22 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Resources\v1\ProductoResource;
+use App\Models\Marca;
 use App\Models\Plantilla;
 use App\Models\Pregunta;
 use App\Models\Producto;
+use App\Models\Respuesta;
 use App\Models\Seccion;
+use App\Models\Servicio;
+use App\Models\Servicios;
 use App\Models\Site;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
-use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 
 class SitePageController extends Controller
@@ -67,11 +73,12 @@ class SitePageController extends Controller
             if ($targetSlug === 'inicio' || $targetSlug === 'hero') {
                 return in_array($sSlug, ['inicio', 'hero']) || in_array($sNombre, ['inicio', 'hero']);
             }
+
             return $sSlug === $targetSlug || $sNombre === $targetSlug || str_contains($sSlug, $targetSlug) || str_contains($targetSlug, $sSlug);
         });
 
         $siteRespuestas = $site->respuestas->keyBy('pregunta_id')->all();
-        $plantillaRespuestas = \App\Models\Respuesta::where('plantilla_id', $site->plantilla_id)->get()->keyBy('pregunta_id')->all();
+        $plantillaRespuestas = Respuesta::where('plantilla_id', $site->plantilla_id)->get()->keyBy('pregunta_id')->all();
         $respuestas = $siteRespuestas + $plantillaRespuestas;
 
         // Pre-cargar el contenido de TODAS las secciones (activas e inanimadas/ocultas del nav) para renderizado instantáneo
@@ -85,7 +92,7 @@ class SitePageController extends Controller
             ];
         }
 
-        if (!$seccion && in_array($targetSlug, ['inicio', 'hero', 'productos', 'tienda', 'tiendas', 'servicios', 'servicio', 'nosotros', 'sobre-nosotros', 'contacto', 'contactos'])) {
+        if (! $seccion && in_array($targetSlug, ['inicio', 'hero', 'productos', 'tienda', 'tiendas', 'servicios', 'servicio', 'nosotros', 'sobre-nosotros', 'contacto', 'contactos'])) {
             $canonicalSlug = in_array($targetSlug, ['productos', 'tienda', 'tiendas'])
                 ? 'productos'
                 : (in_array($targetSlug, ['servicios', 'servicio'])
@@ -116,7 +123,7 @@ class SitePageController extends Controller
             $tiendaIds = $site->plantilla->tiendas->pluck('id')->all();
         }
 
-        $productosQuery = \App\Models\Producto::with(['categoria', 'subcategoria', 'variantes', 'tiendas.moneda'])
+        $productosQuery = Producto::with(['categoria', 'subcategoria', 'marca', 'variantes', 'tiendas.moneda'])
             ->where('activo', true);
 
         if (! empty($tiendaIds)) {
@@ -134,31 +141,48 @@ class SitePageController extends Controller
         // Serializar servicios del sitio para el frontend
         $serviciosSitio = $site->servicios
             ->where('activo', true)
-            ->map(fn (\App\Models\Servicios $grupo) => [
-                'id'       => $grupo->id,
-                'nombre'   => $grupo->nombre,
-                'activo'   => $grupo->activo,
+            ->map(fn (Servicios $grupo) => [
+                'id' => $grupo->id,
+                'nombre' => $grupo->nombre,
+                'activo' => $grupo->activo,
                 'servicios' => $grupo->servicios
                     ->where('activo', true)
                     ->values()
-                    ->map(fn (\App\Models\Servicio $s) => [
-                        'id'               => $s->id,
-                        'titulo'           => $s->titulo,
-                        'subtitulo'        => $s->subtitulo,
-                        'descripcion'      => $s->descripcion,
+                    ->map(fn (Servicio $s) => [
+                        'id' => $s->id,
+                        'titulo' => $s->titulo,
+                        'subtitulo' => $s->subtitulo,
+                        'descripcion' => $s->descripcion,
                         'descripcioncorta' => $s->descripcioncorta,
-                        'lista'            => $s->lista_array,
-                        'icono'            => $s->icono,
-                        'imagen'           => $s->imagen
+                        'lista' => $s->lista_array,
+                        'icono' => $s->icono,
+                        'imagen' => $s->imagen
                             ? asset('storage/'.$s->imagen)
                             : null,
-                        'boton'            => $s->boton,
-                        'url'              => $s->url,
-                        'orden'            => $s->orden,
+                        'boton' => $s->boton,
+                        'url' => $s->url,
+                        'orden' => $s->orden,
                     ])
                     ->toArray(),
             ])
             ->values()
+            ->toArray();
+
+        // Serializar marcas del sitio para el frontend
+        $marcas = $site->marcas->where('activa', true);
+        if ($marcas->isEmpty() && $site->plantilla) {
+            $marcas = $site->plantilla->marcas->where('activa', true);
+        }
+
+        $marcasSitio = $marcas
+            ->values()
+            ->map(fn (Marca $m) => [
+                'id' => $m->id,
+                'titulo' => $m->titulo,
+                'slug' => $m->slug,
+                'imagen' => $m->imagen ? asset('storage/'.$m->imagen) : null,
+                'descripcion' => $m->descripcion,
+            ])
             ->toArray();
 
         return Inertia::render(self::paginaPlantilla($site->plantilla), [
@@ -180,17 +204,18 @@ class SitePageController extends Controller
                 ->values(),
             'seccionActiva' => $seccionActiva,
             'seccionesData' => $seccionesData,
-            'productos' => \App\Http\Resources\v1\ProductoResource::collection($productos)->resolve(),
-            'productosDestacados' => \App\Http\Resources\v1\ProductoResource::collection($productosDestacados)->resolve(),
+            'productos' => ProductoResource::collection($productos)->resolve(),
+            'productosDestacados' => ProductoResource::collection($productosDestacados)->resolve(),
             'estilos' => $estilos,
             'serviciosSitio' => $serviciosSitio,
+            'marcasSitio' => $marcasSitio,
         ]);
     }
 
     private function findSite(string $dominioOrSlug, ?string $siteSlug = null): Site
     {
         $query = Site::query()
-            ->with(['plantilla.secciones.preguntas', 'dominio', 'respuestas', 'servicios.servicios'])
+            ->with(['plantilla.secciones.preguntas', 'plantilla.marcas', 'dominio', 'respuestas', 'servicios.servicios', 'marcas'])
             ->where('estado', 'publicado');
 
         if ($siteSlug) {
@@ -199,21 +224,21 @@ class SitePageController extends Controller
         } else {
             $query->where(function ($q) use ($dominioOrSlug) {
                 $q->where('slug', $dominioOrSlug)
-                  ->orWhereRaw('LOWER(slug) = ?', [strtolower($dominioOrSlug)])
-                  ->orWhereHas('dominio', fn ($d) => $d->whereRaw('LOWER(nombre) = ?', [strtolower($dominioOrSlug)]));
+                    ->orWhereRaw('LOWER(slug) = ?', [strtolower($dominioOrSlug)])
+                    ->orWhereHas('dominio', fn ($d) => $d->whereRaw('LOWER(nombre) = ?', [strtolower($dominioOrSlug)]));
             });
         }
 
         $site = $query->first();
 
-        if (!$site && in_array(strtolower($dominioOrSlug), ['productos', 'servicios', 'tienda', 'tiendas', 'servicio'])) {
+        if (! $site && in_array(strtolower($dominioOrSlug), ['productos', 'servicios', 'tienda', 'tiendas', 'servicio'])) {
             $site = Site::query()
                 ->with(['plantilla.secciones.preguntas', 'dominio', 'respuestas', 'servicios.servicios'])
                 ->where('estado', 'publicado')
                 ->first();
         }
 
-        if (!$site) {
+        if (! $site) {
             abort(404);
         }
 
@@ -348,15 +373,16 @@ class SitePageController extends Controller
                     if (str_contains($ruta, '127.0.0.1') || str_contains($ruta, 'localhost')) {
                         $cleanPath = preg_replace('/^https?:\/\/[^\/]+\/(storage\/)?/', '', $ruta);
                         if (request()->hasHeader('Host')) {
-                            return request()->schemeAndHttpHost() . '/storage/' . ltrim($cleanPath, '/');
+                            return request()->schemeAndHttpHost().'/storage/'.ltrim($cleanPath, '/');
                         }
                     }
+
                     return $ruta;
                 }
 
                 $cleanPath = ltrim($ruta, '/');
                 if (request()->hasHeader('Host')) {
-                    return request()->schemeAndHttpHost() . '/storage/' . $cleanPath;
+                    return request()->schemeAndHttpHost().'/storage/'.$cleanPath;
                 }
 
                 return Storage::disk('public')->url($cleanPath);
@@ -380,7 +406,7 @@ class SitePageController extends Controller
         $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
         $catalogoConfig = $estilos['catalogo'] ?? [];
 
-        if (!empty($catalogoConfig['enlace'])) {
+        if (! empty($catalogoConfig['enlace'])) {
             $enlace = trim($catalogoConfig['enlace']);
             if (str_starts_with($enlace, 'http://') || str_starts_with($enlace, 'https://')) {
                 return redirect()->away($enlace);
@@ -399,18 +425,18 @@ class SitePageController extends Controller
             $tiendaIds = $site->plantilla->tiendas->pluck('id')->all();
         }
 
-        $productosQuery = \App\Models\Producto::with(['categoria', 'subcategoria'])
+        $productosQuery = Producto::with(['categoria', 'subcategoria'])
             ->where('activo', true);
 
-        if (!empty($tiendaIds)) {
+        if (! empty($tiendaIds)) {
             $productosQuery->whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds));
         }
 
         $tipoFiltro = $catalogoConfig['tipo_filtro'] ?? 'todos';
-        if ($tipoFiltro === 'categoria' && !empty($catalogoConfig['categorias'])) {
+        if ($tipoFiltro === 'categoria' && ! empty($catalogoConfig['categorias'])) {
             $catIds = (array) $catalogoConfig['categorias'];
             $productosQuery->whereIn('categoria_id', $catIds);
-        } elseif ($tipoFiltro === 'subcategoria' && !empty($catalogoConfig['subcategorias'])) {
+        } elseif ($tipoFiltro === 'subcategoria' && ! empty($catalogoConfig['subcategorias'])) {
             $subCatIds = (array) $catalogoConfig['subcategorias'];
             $productosQuery->whereIn('subcategoria_id', $subCatIds);
         }
@@ -419,7 +445,7 @@ class SitePageController extends Controller
         $titulo = $catalogoConfig['titulo'] ?? 'Catálogo de Productos';
         $colorPrimario = $estilos['color_primario'] ?? '#F72F46';
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.catalogo', [
+        $pdf = Pdf::loadView('pdf.catalogo', [
             'site' => $site,
             'titulo' => $titulo,
             'productos' => $productos,
@@ -427,7 +453,8 @@ class SitePageController extends Controller
             'estilos' => $estilos,
         ])->setOption('isGdEnabled', false)->setOption('isRemoteEnabled', true);
 
-        $filename = Str::slug($titulo) . '.pdf';
+        $filename = Str::slug($titulo).'.pdf';
+
         return $pdf->download($filename);
     }
 }

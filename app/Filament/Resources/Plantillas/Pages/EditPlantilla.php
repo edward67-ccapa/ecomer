@@ -3,9 +3,11 @@
 namespace App\Filament\Resources\Plantillas\Pages;
 
 use App\Filament\Resources\Plantillas\PlantillaResource;
+use App\Models\Pregunta;
 use App\Models\Respuesta;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\DB;
 
 class EditPlantilla extends EditRecord
 {
@@ -75,6 +77,7 @@ class EditPlantilla extends EditRecord
                                 if (is_array($item)) {
                                     return $item['nombre'] ?? $item['titulo'] ?? $item['valor'] ?? $item['label'] ?? null;
                                 }
+
                                 return is_scalar($item) ? (string) $item : null;
                             }, $valor)));
                         }
@@ -135,7 +138,7 @@ class EditPlantilla extends EditRecord
             ->get()
             ->keyBy('pregunta_id');
 
-        $validPreguntaIds = \App\Models\Pregunta::whereIn('id', array_keys($respuestas))->pluck('id')->all();
+        $validPreguntaIds = Pregunta::whereIn('id', array_keys($respuestas))->pluck('id')->all();
 
         $dirtyRespuestas = [];
         foreach ($respuestas as $preguntaId => $item) {
@@ -168,7 +171,7 @@ class EditPlantilla extends EditRecord
             return;
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($dirtyRespuestas) {
+        DB::transaction(function () use ($dirtyRespuestas) {
             foreach ($dirtyRespuestas as $preguntaId => $item) {
                 Respuesta::updateOrCreate(
                     ['plantilla_id' => $this->record->id, 'pregunta_id' => $preguntaId],

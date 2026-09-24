@@ -45,7 +45,7 @@ class Pregunta extends Model
     protected static function booted(): void
     {
         static::creating(function (Pregunta $pregunta) {
-            if (empty($pregunta->seccion_id) && !empty($pregunta->parent_id)) {
+            if (empty($pregunta->seccion_id) && ! empty($pregunta->parent_id)) {
                 $parent = static::find($pregunta->parent_id);
                 if ($parent) {
                     $pregunta->seccion_id = $parent->seccion_id;

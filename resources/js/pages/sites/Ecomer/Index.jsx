@@ -22,6 +22,7 @@ export default function Ecomer({
     productosDestacados = [],
     estilos,
     serviciosSitio = [],
+    marcasSitio = [],
 }) {
     useEffect(() => {
         if (typeof document !== 'undefined') {
@@ -183,6 +184,7 @@ export default function Ecomer({
                         productos={productos}
                         productosDestacados={productosDestacados}
                         serviciosSitio={serviciosSitio}
+                        marcasSitio={marcasSitio}
                         styles={styles}
                         estilos={estilos}
                         onSeleccionarProducto={handleSeleccionarProducto}

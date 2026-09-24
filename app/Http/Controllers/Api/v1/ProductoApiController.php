@@ -103,8 +103,8 @@ class ProductoApiController extends Controller
         } else {
             $query->where(function ($q) use ($dominioOrSlug) {
                 $q->where('slug', $dominioOrSlug)
-                  ->orWhereRaw('LOWER(slug) = ?', [strtolower($dominioOrSlug)])
-                  ->orWhereHas('dominio', fn ($d) => $d->whereRaw('LOWER(nombre) = ?', [strtolower($dominioOrSlug)]));
+                    ->orWhereRaw('LOWER(slug) = ?', [strtolower($dominioOrSlug)])
+                    ->orWhereHas('dominio', fn ($d) => $d->whereRaw('LOWER(nombre) = ?', [strtolower($dominioOrSlug)]));
             });
         }
 

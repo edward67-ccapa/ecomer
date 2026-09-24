@@ -2,9 +2,7 @@
 
 namespace App\Filament\Resources\Tiendas\Schemas;
 
-use App\Models\Tienda;
 use Filament\Forms\Components\MultiSelect;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;

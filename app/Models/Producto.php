@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['site_id', 'tienda_id', 'moneda_id', 'categoria_id', 'subcategoria_id', 'nombre', 'slug', 'descripcion_corta', 'descripcion', 'precio', 'precio_oferta', 'precio_dolares', 'precio_oferta_dolares', 'precio_euros', 'precio_oferta_euros', 'cantidad', 'stock', 'sku', 'imagen', 'imagenes', 'activo', 'destacado', 'orden'])]
+#[Fillable(['site_id', 'tienda_id', 'moneda_id', 'categoria_id', 'subcategoria_id', 'marca_id', 'nombre', 'slug', 'descripcion_corta', 'descripcion', 'precio', 'precio_oferta', 'precio_dolares', 'precio_oferta_dolares', 'precio_euros', 'precio_oferta_euros', 'cantidad', 'stock', 'sku', 'imagen', 'imagenes', 'activo', 'destacado', 'orden'])]
 class Producto extends Model
 {
     public function site(): BelongsTo
@@ -34,6 +34,11 @@ class Producto extends Model
     public function subcategoria(): BelongsTo
     {
         return $this->belongsTo(Categoria::class, 'subcategoria_id');
+    }
+
+    public function marca(): BelongsTo
+    {
+        return $this->belongsTo(Marca::class);
     }
 
     public function variantes(): HasMany

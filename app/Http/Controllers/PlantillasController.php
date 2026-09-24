@@ -5,10 +5,11 @@ namespace App\Http\Controllers;
 use App\Http\Resources\v1\ProductoResource;
 use App\Models\Plantilla;
 use App\Models\Producto;
-use App\Models\Pregunta;
-use App\Models\Respuesta;
 use App\Models\Seccion;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -38,7 +39,7 @@ class PlantillasController extends Controller
 
     public function preview(Plantilla $plantilla, ?string $seccion = null): Response
     {
-        $plantilla->load(['secciones.preguntas', 'respuestas', 'tiendas', 'servicios.servicios']);
+        $plantilla->load(['secciones.preguntas', 'respuestas', 'tiendas', 'servicios.servicios', 'marcas']);
 
         $seccionesNav = $plantilla->secciones->where('activa', true);
 
@@ -53,6 +54,7 @@ class PlantillasController extends Controller
                     if ($targetSlug === 'inicio' || $targetSlug === 'hero') {
                         return in_array($sSlug, ['inicio', 'hero']) || in_array($sNombre, ['inicio', 'hero']);
                     }
+
                     return $sSlug === $targetSlug || $sNombre === $targetSlug;
                 });
             })
@@ -60,7 +62,7 @@ class PlantillasController extends Controller
 
         $respuestas = $plantilla->respuestas->keyBy('pregunta_id');
 
-        if (filled($seccion) && !$seccionModel && in_array($targetSlug, ['inicio', 'hero', 'productos', 'tienda', 'tiendas', 'servicios', 'servicio', 'nosotros', 'sobre-nosotros', 'contacto', 'contactos'])) {
+        if (filled($seccion) && ! $seccionModel && in_array($targetSlug, ['inicio', 'hero', 'productos', 'tienda', 'tiendas', 'servicios', 'servicio', 'nosotros', 'sobre-nosotros', 'contacto', 'contactos'])) {
             $canonicalSlug = in_array($targetSlug, ['productos', 'tienda', 'tiendas'])
                 ? 'productos'
                 : (in_array($targetSlug, ['servicios', 'servicio'])
@@ -113,7 +115,7 @@ class PlantillasController extends Controller
         if (! empty($tiendaIds)) {
             $productosQuery->where(function ($q) use ($tiendaIds) {
                 $q->whereIn('tienda_id', $tiendaIds)
-                  ->orWhereHas('tiendas', fn ($sub) => $sub->whereIn('tiendas.id', $tiendaIds));
+                    ->orWhereHas('tiendas', fn ($sub) => $sub->whereIn('tiendas.id', $tiendaIds));
             });
         }
 
@@ -160,31 +162,31 @@ class PlantillasController extends Controller
         $estilos = $plantilla->estilos ?? [];
         $catalogoConfig = $estilos['catalogo'] ?? [];
 
-        if (!empty($catalogoConfig['enlace'])) {
+        if (! empty($catalogoConfig['enlace'])) {
             $enlace = trim($catalogoConfig['enlace']);
             if (str_starts_with($enlace, 'http://') || str_starts_with($enlace, 'https://')) {
                 return redirect()->away($enlace);
             }
             $cleanPath = preg_replace('/^\/?storage\//', '', $enlace);
-            if (\Illuminate\Support\Facades\Storage::disk('public')->exists($cleanPath)) {
-                return response()->download(\Illuminate\Support\Facades\Storage::disk('public')->path($cleanPath));
+            if (Storage::disk('public')->exists($cleanPath)) {
+                return response()->download(Storage::disk('public')->path($cleanPath));
             }
         }
 
         $tiendaIds = $plantilla->tiendas->pluck('id')->all();
 
-        $productosQuery = \App\Models\Producto::with(['categoria', 'subcategoria'])
+        $productosQuery = Producto::with(['categoria', 'subcategoria'])
             ->where('activo', true);
 
-        if (!empty($tiendaIds)) {
+        if (! empty($tiendaIds)) {
             $productosQuery->whereHas('tiendas', fn ($q) => $q->whereIn('tiendas.id', $tiendaIds));
         }
 
         $tipoFiltro = $catalogoConfig['tipo_filtro'] ?? 'todos';
-        if ($tipoFiltro === 'categoria' && !empty($catalogoConfig['categorias'])) {
+        if ($tipoFiltro === 'categoria' && ! empty($catalogoConfig['categorias'])) {
             $catIds = (array) $catalogoConfig['categorias'];
             $productosQuery->whereIn('categoria_id', $catIds);
-        } elseif ($tipoFiltro === 'subcategoria' && !empty($catalogoConfig['subcategorias'])) {
+        } elseif ($tipoFiltro === 'subcategoria' && ! empty($catalogoConfig['subcategorias'])) {
             $subCatIds = (array) $catalogoConfig['subcategorias'];
             $productosQuery->whereIn('subcategoria_id', $subCatIds);
         }
@@ -193,7 +195,7 @@ class PlantillasController extends Controller
         $titulo = $catalogoConfig['titulo'] ?? 'Catálogo de Productos';
         $colorPrimario = $estilos['color_primario'] ?? '#F72F46';
 
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('pdf.catalogo', [
+        $pdf = Pdf::loadView('pdf.catalogo', [
             'site' => (object) ['nombre' => $plantilla->nombre, 'imagen' => $plantilla->imagen, 'estilos' => $estilos],
             'titulo' => $titulo,
             'productos' => $productos,
@@ -201,7 +203,8 @@ class PlantillasController extends Controller
             'estilos' => $estilos,
         ])->setOption('isGdEnabled', false)->setOption('isRemoteEnabled', true);
 
-        $filename = \Illuminate\Support\Str::slug($titulo) . '.pdf';
+        $filename = Str::slug($titulo).'.pdf';
+
         return $pdf->download($filename);
     }
 }

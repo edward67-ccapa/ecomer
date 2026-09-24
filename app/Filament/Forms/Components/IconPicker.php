@@ -2,8 +2,8 @@
 
 namespace App\Filament\Forms\Components;
 
-use App\Helpers\IconRegistry;
 use App\Filament\Resources\Plantillas\Schemas\PlantillaForm;
+use App\Helpers\IconRegistry;
 use Filament\Forms\Components\Field;
 
 class IconPicker extends Field

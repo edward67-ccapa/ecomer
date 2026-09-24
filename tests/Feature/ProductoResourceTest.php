@@ -13,6 +13,7 @@ use App\Models\Producto;
 use App\Models\Site;
 use App\Models\Subcategoria;
 use App\Models\Talla;
+use App\Models\Tienda;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -54,7 +55,7 @@ class ProductoResourceTest extends TestCase
             'slug' => 'mi-tienda',
         ]);
 
-        $tienda = \App\Models\Tienda::create([
+        $tienda = Tienda::create([
             'nombre' => 'Tienda Test',
             'slug' => 'tienda-test',
         ]);

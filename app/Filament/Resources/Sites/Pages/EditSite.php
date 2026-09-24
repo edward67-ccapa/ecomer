@@ -3,9 +3,13 @@
 namespace App\Filament\Resources\Sites\Pages;
 
 use App\Filament\Resources\Sites\SiteResource;
+use App\Models\Pregunta;
 use App\Models\Respuesta;
+use Filament\Actions\Action;
 use Filament\Actions\DeleteAction;
 use Filament\Resources\Pages\EditRecord;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Js;
 
 class EditSite extends EditRecord
 {
@@ -18,13 +22,13 @@ class EditSite extends EditRecord
         ];
     }
 
-    protected function getCancelFormAction(): \Filament\Actions\Action
+    protected function getCancelFormAction(): Action
     {
         $url = $this->previousUrl ?? static::getResource()::getUrl('index');
 
         return parent::getCancelFormAction()
             ->url($url)
-            ->alpineClickHandler('window.location.href = ' . \Illuminate\Support\Js::from($url));
+            ->alpineClickHandler('window.location.href = '.Js::from($url));
     }
 
     protected function mutateFormDataBeforeFill(array $data): array
@@ -82,6 +86,7 @@ class EditSite extends EditRecord
                                 if (is_array($item)) {
                                     return $item['nombre'] ?? $item['titulo'] ?? $item['valor'] ?? $item['label'] ?? null;
                                 }
+
                                 return is_scalar($item) ? (string) $item : null;
                             }, $valor)));
                         }
@@ -137,6 +142,7 @@ class EditSite extends EditRecord
                                     if (is_array($item)) {
                                         return $item['nombre'] ?? $item['titulo'] ?? $item['valor'] ?? $item['label'] ?? null;
                                     }
+
                                     return is_scalar($item) ? (string) $item : null;
                                 }, $valor)));
                             }
@@ -182,7 +188,7 @@ class EditSite extends EditRecord
             ->get()
             ->keyBy('pregunta_id');
 
-        $validPreguntaIds = \App\Models\Pregunta::whereIn('id', array_keys($respuestas))->pluck('id')->all();
+        $validPreguntaIds = Pregunta::whereIn('id', array_keys($respuestas))->pluck('id')->all();
 
         $dirtyRespuestas = [];
         foreach ($respuestas as $preguntaId => $item) {
@@ -216,7 +222,7 @@ class EditSite extends EditRecord
             return;
         }
 
-        \Illuminate\Support\Facades\DB::transaction(function () use ($dirtyRespuestas, $siteId) {
+        DB::transaction(function () use ($dirtyRespuestas, $siteId) {
             foreach ($dirtyRespuestas as $preguntaId => $item) {
                 Respuesta::updateOrCreate(
                     ['site_id' => $siteId, 'pregunta_id' => $preguntaId],

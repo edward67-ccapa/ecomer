@@ -11,6 +11,7 @@ use App\Models\Dominio;
 use App\Models\Plantilla;
 use App\Models\Producto;
 use App\Models\Site;
+use App\Models\Tienda;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
@@ -43,7 +44,7 @@ class ProductosResourceTest extends TestCase
             'nombre' => 'creadorDePaginas',
         ]);
 
-        $this->tienda = \App\Models\Tienda::create([
+        $this->tienda = Tienda::create([
             'nombre' => 'Tienda Test',
             'slug' => 'tienda-test',
         ]);

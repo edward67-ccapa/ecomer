@@ -2,7 +2,15 @@
 
 namespace App\Providers;
 
+use App\Services\ImageUploadService;
+use Filament\Forms\Components\FileUpload;
+use Filament\Support\Facades\FilamentView;
+use Filament\View\PanelsRenderHook;
+use Illuminate\Support\Facades\View;
+use Illuminate\Support\HtmlString;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\ViewErrorBag;
+use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -11,7 +19,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        if (file_exists(base_path('build/manifest.json')) && !file_exists(base_path('public/build/manifest.json'))) {
+        if (file_exists(base_path('build/manifest.json')) && ! file_exists(base_path('public/build/manifest.json'))) {
             $this->app->usePublicPath(base_path());
         }
     }
@@ -21,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        \Illuminate\Support\Facades\View::share('errors', new \Illuminate\Support\ViewErrorBag);
+        View::share('errors', new ViewErrorBag);
 
         // Asegurar que las carpetas de subida temporal de Livewire existan y tengan permisos
         $tmpDirectories = [
@@ -37,9 +45,9 @@ class AppServiceProvider extends ServiceProvider
             }
         }
 
-        \Filament\Support\Facades\FilamentView::registerRenderHook(
-            \Filament\View\PanelsRenderHook::BODY_END,
-            fn (): \Illuminate\Support\HtmlString => new \Illuminate\Support\HtmlString('
+        FilamentView::registerRenderHook(
+            PanelsRenderHook::BODY_END,
+            fn (): HtmlString => new HtmlString('
                 <script>
                     document.addEventListener("DOMContentLoaded", () => {
                         const showUploadErrorNotification = (msg) => {
@@ -67,8 +75,8 @@ class AppServiceProvider extends ServiceProvider
             ')
         );
 
-        \Filament\Forms\Components\FileUpload::macro('webp5Mb', function (string|\Closure|null $directory = null, ?string $disk = null) {
-            /** @var \Filament\Forms\Components\FileUpload $this */
+        FileUpload::macro('webp5Mb', function (string|\Closure|null $directory = null, ?string $disk = null) {
+            /** @var FileUpload $this */
             $component = $this
                 ->image()
                 ->maxSize(5120) // 5MB max limit (5120 KB)
@@ -83,11 +91,11 @@ class AppServiceProvider extends ServiceProvider
                 $component->disk($disk);
             }
 
-            return $component->saveUploadedFileUsing(function (\Livewire\Features\SupportFileUploads\TemporaryUploadedFile $file, \Filament\Forms\Components\FileUpload $comp) {
+            return $component->saveUploadedFileUsing(function (TemporaryUploadedFile $file, FileUpload $comp) {
                 $dir = $comp->getDirectory() ?? 'uploads';
                 $diskName = $comp->getDiskName() ?? 'public';
 
-                return \App\Services\ImageUploadService::processAndSave($file, $dir, $diskName);
+                return ImageUploadService::processAndSave($file, $dir, $diskName);
             });
         });
     }

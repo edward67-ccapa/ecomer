@@ -2,16 +2,14 @@
 
 namespace App\Services;
 
-use Illuminate\Support\Facades\Log;
-
 class ImageOptimizerService
 {
     /**
      * Redimensiona la imagen a un máximo de $maxWidth de ancho (default 1920px) y la comprime a un peso máximo de $maxSizeKb KB (default 400 KB).
      *
-     * @param string $filePath Ruta absoluta del archivo de imagen
-     * @param int $maxWidth Ancho máximo en px (default 1920)
-     * @param int $maxSizeKb Peso máximo en KB (default 400)
+     * @param  string  $filePath  Ruta absoluta del archivo de imagen
+     * @param  int  $maxWidth  Ancho máximo en px (default 1920)
+     * @param  int  $maxSizeKb  Peso máximo en KB (default 400)
      * @return array Resultado del proceso
      */
     public static function optimizeImage(string $filePath, int $maxWidth = 1920, int $maxSizeKb = 400): array
@@ -27,6 +25,7 @@ class ImageOptimizerService
 
         if (! file_exists($filePath) || ! is_file($filePath) || ! is_writable($filePath)) {
             $defaultResult['message'] = 'Archivo no existe o no tiene permisos de escritura.';
+
             return $defaultResult;
         }
 
@@ -41,11 +40,11 @@ class ImageOptimizerService
             $dwebpBin = file_exists('/opt/lampp/bin/dwebp') ? '/opt/lampp/bin/dwebp' : 'dwebp';
 
             $code = '
-                $filePath = ' . var_export($filePath, true) . ';
-                $maxWidth = ' . (int) $maxWidth . ';
-                $maxSizeBytes = ' . (int) $maxSizeBytes . ';
-                $cwebpBin = ' . var_export($cwebpBin, true) . ';
-                $dwebpBin = ' . var_export($dwebpBin, true) . ';
+                $filePath = '.var_export($filePath, true).';
+                $maxWidth = '.(int) $maxWidth.';
+                $maxSizeBytes = '.(int) $maxSizeBytes.';
+                $cwebpBin = '.var_export($cwebpBin, true).';
+                $dwebpBin = '.var_export($dwebpBin, true).';
 
                 $imageInfo = @getimagesize($filePath);
                 if (!$imageInfo) exit(1);
@@ -137,7 +136,7 @@ class ImageOptimizerService
                 exit(3);
             ';
 
-            $cmd = escapeshellcmd($phpBin) . ' -r ' . escapeshellarg($code) . ' 2>&1';
+            $cmd = escapeshellcmd($phpBin).' -r '.escapeshellarg($code).' 2>&1';
             $output = [];
             $ret = -1;
             exec($cmd, $output, $ret);
@@ -156,17 +155,18 @@ class ImageOptimizerService
                     'width' => $w,
                     'height' => $h,
                     'quality' => 80,
-                    'message' => 'Optimizado a ' . round($newSize / 1024, 1) . ' KB con ancho ' . $w . 'px.',
+                    'message' => 'Optimizado a '.round($newSize / 1024, 1).' KB con ancho '.$w.'px.',
                 ];
             }
         }
 
         if (! $imageInfo) {
             $defaultResult['message'] = 'No se pudo obtener información de la imagen.';
+
             return $defaultResult;
         }
 
-        list($origWidth, $origHeight, $type) = $imageInfo;
+        [$origWidth, $origHeight, $type] = $imageInfo;
 
         // Cargar recurso GD según el tipo de imagen
         $srcImage = null;
@@ -191,8 +191,8 @@ class ImageOptimizerService
                 if (! $srcImage) {
                     $dwebpBin = file_exists('/opt/lampp/bin/dwebp') ? '/opt/lampp/bin/dwebp' : (exec('which dwebp') ?: null);
                     if ($dwebpBin) {
-                        $tmpConvertedPng = sys_get_temp_dir() . '/dwebp_' . md5($filePath . microtime(true)) . '.png';
-                        @exec(escapeshellarg($dwebpBin) . ' ' . escapeshellarg($filePath) . ' -o ' . escapeshellarg($tmpConvertedPng) . ' 2>&1');
+                        $tmpConvertedPng = sys_get_temp_dir().'/dwebp_'.md5($filePath.microtime(true)).'.png';
+                        @exec(escapeshellarg($dwebpBin).' '.escapeshellarg($filePath).' -o '.escapeshellarg($tmpConvertedPng).' 2>&1');
                         if (file_exists($tmpConvertedPng) && filesize($tmpConvertedPng) > 0 && function_exists('imagecreatefrompng')) {
                             $srcImage = @imagecreatefrompng($tmpConvertedPng);
                         }
@@ -225,6 +225,7 @@ class ImageOptimizerService
 
         if (! $srcImage) {
             $defaultResult['message'] = 'No se pudo decodificar el formato de imagen.';
+
             return $defaultResult;
         }
 
@@ -269,7 +270,7 @@ class ImageOptimizerService
             );
 
             $targetExt = in_array($ext, ['png', 'webp'], true) ? $ext : 'jpg';
-            $tmpFile = sys_get_temp_dir() . '/opt_' . md5($filePath . microtime(true)) . '.' . $targetExt;
+            $tmpFile = sys_get_temp_dir().'/opt_'.md5($filePath.microtime(true)).'.'.$targetExt;
 
             if ($targetExt === 'webp' && function_exists('imagewebp')) {
                 @imagewebp($canvas, $tmpFile, $quality);
@@ -278,10 +279,12 @@ class ImageOptimizerService
                 $pngQuality = (int) max(0, min(9, round((100 - $quality) / 10)));
                 @imagepng($canvas, $tmpFile, $pngQuality);
             } elseif ($ext === 'webp' && $cwebpBin) {
-                $tmpPng = sys_get_temp_dir() . '/tmp_cwebp_' . md5($filePath) . '.png';
+                $tmpPng = sys_get_temp_dir().'/tmp_cwebp_'.md5($filePath).'.png';
                 @imagepng($canvas, $tmpPng);
-                @exec(escapeshellarg($cwebpBin) . ' -q ' . (int) $quality . ' -resize ' . (int) $currentWidth . ' 0 ' . escapeshellarg($tmpPng) . ' -o ' . escapeshellarg($tmpFile) . ' 2>&1');
-                if (file_exists($tmpPng)) @unlink($tmpPng);
+                @exec(escapeshellarg($cwebpBin).' -q '.(int) $quality.' -resize '.(int) $currentWidth.' 0 '.escapeshellarg($tmpPng).' -o '.escapeshellarg($tmpFile).' 2>&1');
+                if (file_exists($tmpPng)) {
+                    @unlink($tmpPng);
+                }
             } else {
                 @imagejpeg($canvas, $tmpFile, $quality);
             }
@@ -303,7 +306,7 @@ class ImageOptimizerService
                         'width' => $currentWidth,
                         'height' => $currentHeight,
                         'quality' => $quality,
-                        'message' => 'Optimizado a ' . round($currentSize / 1024, 1) . ' KB con ancho ' . $currentWidth . 'px.',
+                        'message' => 'Optimizado a '.round($currentSize / 1024, 1).' KB con ancho '.$currentWidth.'px.',
                     ];
                 }
             }
@@ -323,7 +326,7 @@ class ImageOptimizerService
         }
 
         imagedestroy($srcImage);
+
         return $defaultResult;
     }
 }
-
