@@ -22,17 +22,17 @@ descargar2.definition = {
 descargar2.url = (args: { param1: string | number, param2: string | number } | [param1: string | number, param2: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    param1: args[0],
-                    param2: args[1],
-                }
+            param1: args[0],
+            param2: args[1],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        param1: args.param1,
-                                param2: args.param2,
-                }
+        param1: args.param1,
+        param2: args.param2,
+    }
 
     return descargar2.definition.url
             .replace('{param1}', parsedArgs.param1.toString())
@@ -49,6 +49,7 @@ descargar2.get = (args: { param1: string | number, param2: string | number } | [
     url: descargar2.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\SitePageController::descargar2
 * @see app/Http/Controllers/SitePageController.php:399
@@ -59,7 +60,7 @@ descargar2.head = (args: { param1: string | number, param2: string | number } | 
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\SitePageController::descargar2
 * @see app/Http/Controllers/SitePageController.php:399
 * @route '/{param1}/{param2}/catalogo/descargar-pdf'
@@ -69,7 +70,7 @@ const descargar2Form = (args: { param1: string | number, param2: string | number
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\SitePageController::descargar2
 * @see app/Http/Controllers/SitePageController.php:399
 * @route '/{param1}/{param2}/catalogo/descargar-pdf'
@@ -121,18 +122,17 @@ descargar1.url = (args: { dominio: string | number } | [dominio: string | number
         args = { dominio: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    dominio: args[0],
-                }
+            dominio: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        dominio: args.dominio,
-                }
+        dominio: args.dominio,
+    }
 
     return descargar1.definition.url
             .replace('{dominio}', parsedArgs.dominio.toString())
@@ -148,6 +148,7 @@ descargar1.get = (args: { dominio: string | number } | [dominio: string | number
     url: descargar1.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\SitePageController::descargar1
 * @see app/Http/Controllers/SitePageController.php:399
@@ -158,7 +159,7 @@ descargar1.head = (args: { dominio: string | number } | [dominio: string | numbe
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\SitePageController::descargar1
 * @see app/Http/Controllers/SitePageController.php:399
 * @route '/{dominio}/catalogo/descargar-pdf'
@@ -168,7 +169,7 @@ const descargar1Form = (args: { dominio: string | number } | [dominio: string | 
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\SitePageController::descargar1
 * @see app/Http/Controllers/SitePageController.php:399
 * @route '/{dominio}/catalogo/descargar-pdf'
@@ -197,7 +198,7 @@ descargar1.form = descargar1Form
 
 const catalogo = {
     descargar2: Object.assign(descargar2, descargar2),
-descargar1: Object.assign(descargar1, descargar1),
+    descargar1: Object.assign(descargar1, descargar1),
 }
 
 export default catalogo

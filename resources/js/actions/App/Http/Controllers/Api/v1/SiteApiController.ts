@@ -32,6 +32,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::index
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:16
@@ -42,7 +43,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::index
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:16
 * @route '/api/v1/sites'
@@ -52,7 +53,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::index
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:16
 * @route '/api/v1/sites'
@@ -102,17 +103,17 @@ showSection59b4ede910234ae5c6690508612f0045.definition = {
 showSection59b4ede910234ae5c6690508612f0045.url = (args: { dominio: string | number, seccion: string | number } | [dominio: string | number, seccion: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    dominio: args[0],
-                    seccion: args[1],
-                }
+            dominio: args[0],
+            seccion: args[1],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        dominio: args.dominio,
-                                seccion: args.seccion,
-                }
+        dominio: args.dominio,
+        seccion: args.seccion,
+    }
 
     return showSection59b4ede910234ae5c6690508612f0045.definition.url
             .replace('{dominio}', parsedArgs.dominio.toString())
@@ -129,6 +130,7 @@ showSection59b4ede910234ae5c6690508612f0045.get = (args: { dominio: string | num
     url: showSection59b4ede910234ae5c6690508612f0045.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::showSection
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:61
@@ -139,7 +141,7 @@ showSection59b4ede910234ae5c6690508612f0045.head = (args: { dominio: string | nu
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::showSection
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:61
 * @route '/api/v1/sites/{dominio}/{seccion}'
@@ -149,7 +151,7 @@ const showSection59b4ede910234ae5c6690508612f0045Form = (args: { dominio: string
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::showSection
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:61
 * @route '/api/v1/sites/{dominio}/{seccion}'
@@ -198,19 +200,19 @@ showSection38a32a6d7d70adc7eda0fe7c91a318d8.definition = {
 showSection38a32a6d7d70adc7eda0fe7c91a318d8.url = (args: { dominio: string | number, site: string | number, seccion: string | number } | [dominio: string | number, site: string | number, seccion: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    dominio: args[0],
-                    site: args[1],
-                    seccion: args[2],
-                }
+            dominio: args[0],
+            site: args[1],
+            seccion: args[2],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        dominio: args.dominio,
-                                site: args.site,
-                                seccion: args.seccion,
-                }
+        dominio: args.dominio,
+        site: args.site,
+        seccion: args.seccion,
+    }
 
     return showSection38a32a6d7d70adc7eda0fe7c91a318d8.definition.url
             .replace('{dominio}', parsedArgs.dominio.toString())
@@ -228,6 +230,7 @@ showSection38a32a6d7d70adc7eda0fe7c91a318d8.get = (args: { dominio: string | num
     url: showSection38a32a6d7d70adc7eda0fe7c91a318d8.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::showSection
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:61
@@ -238,7 +241,7 @@ showSection38a32a6d7d70adc7eda0fe7c91a318d8.head = (args: { dominio: string | nu
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::showSection
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:61
 * @route '/api/v1/sites/{dominio}/{site}/{seccion}'
@@ -248,7 +251,7 @@ const showSection38a32a6d7d70adc7eda0fe7c91a318d8Form = (args: { dominio: string
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::showSection
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:61
 * @route '/api/v1/sites/{dominio}/{site}/{seccion}'
@@ -310,18 +313,17 @@ showSitefd647586bc344bbe2dd8e3d8023457f9.url = (args: { dominio: string | number
         args = { dominio: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    dominio: args[0],
-                }
+            dominio: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        dominio: args.dominio,
-                }
+        dominio: args.dominio,
+    }
 
     return showSitefd647586bc344bbe2dd8e3d8023457f9.definition.url
             .replace('{dominio}', parsedArgs.dominio.toString())
@@ -337,6 +339,7 @@ showSitefd647586bc344bbe2dd8e3d8023457f9.get = (args: { dominio: string | number
     url: showSitefd647586bc344bbe2dd8e3d8023457f9.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::showSite
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:46
@@ -347,7 +350,7 @@ showSitefd647586bc344bbe2dd8e3d8023457f9.head = (args: { dominio: string | numbe
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::showSite
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:46
 * @route '/api/v1/sites/{dominio}'
@@ -357,7 +360,7 @@ const showSitefd647586bc344bbe2dd8e3d8023457f9Form = (args: { dominio: string | 
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::showSite
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:46
 * @route '/api/v1/sites/{dominio}'
@@ -406,17 +409,17 @@ showSited39cf58583f4ff26ee7470bf48d24cf7.definition = {
 showSited39cf58583f4ff26ee7470bf48d24cf7.url = (args: { dominio: string | number, site: string | number } | [dominio: string | number, site: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    dominio: args[0],
-                    site: args[1],
-                }
+            dominio: args[0],
+            site: args[1],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        dominio: args.dominio,
-                                site: args.site,
-                }
+        dominio: args.dominio,
+        site: args.site,
+    }
 
     return showSited39cf58583f4ff26ee7470bf48d24cf7.definition.url
             .replace('{dominio}', parsedArgs.dominio.toString())
@@ -433,6 +436,7 @@ showSited39cf58583f4ff26ee7470bf48d24cf7.get = (args: { dominio: string | number
     url: showSited39cf58583f4ff26ee7470bf48d24cf7.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::showSite
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:46
@@ -443,7 +447,7 @@ showSited39cf58583f4ff26ee7470bf48d24cf7.head = (args: { dominio: string | numbe
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::showSite
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:46
 * @route '/api/v1/sites/{dominio}/{site}'
@@ -453,7 +457,7 @@ const showSited39cf58583f4ff26ee7470bf48d24cf7Form = (args: { dominio: string | 
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\Api\v1\SiteApiController::showSite
 * @see app/Http/Controllers/Api/v1/SiteApiController.php:46
 * @route '/api/v1/sites/{dominio}/{site}'

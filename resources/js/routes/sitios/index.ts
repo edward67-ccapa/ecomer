@@ -22,19 +22,19 @@ show3.definition = {
 show3.url = (args: { param1: string | number, param2: string | number, param3: string | number } | [param1: string | number, param2: string | number, param3: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    param1: args[0],
-                    param2: args[1],
-                    param3: args[2],
-                }
+            param1: args[0],
+            param2: args[1],
+            param3: args[2],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        param1: args.param1,
-                                param2: args.param2,
-                                param3: args.param3,
-                }
+        param1: args.param1,
+        param2: args.param2,
+        param3: args.param3,
+    }
 
     return show3.definition.url
             .replace('{param1}', parsedArgs.param1.toString())
@@ -52,6 +52,7 @@ show3.get = (args: { param1: string | number, param2: string | number, param3: s
     url: show3.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\SitePageController::show3
 * @see app/Http/Controllers/SitePageController.php:43
@@ -62,7 +63,7 @@ show3.head = (args: { param1: string | number, param2: string | number, param3: 
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\SitePageController::show3
 * @see app/Http/Controllers/SitePageController.php:43
 * @route '/{param1}/{param2}/{param3}'
@@ -72,7 +73,7 @@ const show3Form = (args: { param1: string | number, param2: string | number, par
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\SitePageController::show3
 * @see app/Http/Controllers/SitePageController.php:43
 * @route '/{param1}/{param2}/{param3}'
@@ -122,17 +123,17 @@ show.definition = {
 show.url = (args: { dominio: string | number, seccion: string | number } | [dominio: string | number, seccion: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    dominio: args[0],
-                    seccion: args[1],
-                }
+            dominio: args[0],
+            seccion: args[1],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        dominio: args.dominio,
-                                seccion: args.seccion,
-                }
+        dominio: args.dominio,
+        seccion: args.seccion,
+    }
 
     return show.definition.url
             .replace('{dominio}', parsedArgs.dominio.toString())
@@ -149,6 +150,7 @@ show.get = (args: { dominio: string | number, seccion: string | number } | [domi
     url: show.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:43
@@ -159,7 +161,7 @@ show.head = (args: { dominio: string | number, seccion: string | number } | [dom
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:43
 * @route '/{dominio}/{seccion}'
@@ -169,7 +171,7 @@ const showForm = (args: { dominio: string | number, seccion: string | number } |
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:43
 * @route '/{dominio}/{seccion}'
@@ -221,18 +223,17 @@ home.url = (args: { dominio: string | number } | [dominio: string | number ] | s
         args = { dominio: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    dominio: args[0],
-                }
+            dominio: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        dominio: args.dominio,
-                }
+        dominio: args.dominio,
+    }
 
     return home.definition.url
             .replace('{dominio}', parsedArgs.dominio.toString())
@@ -248,6 +249,7 @@ home.get = (args: { dominio: string | number } | [dominio: string | number ] | s
     url: home.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\SitePageController::home
 * @see app/Http/Controllers/SitePageController.php:25
@@ -258,7 +260,7 @@ home.head = (args: { dominio: string | number } | [dominio: string | number ] | 
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\SitePageController::home
 * @see app/Http/Controllers/SitePageController.php:25
 * @route '/{dominio}'
@@ -268,7 +270,7 @@ const homeForm = (args: { dominio: string | number } | [dominio: string | number
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\SitePageController::home
 * @see app/Http/Controllers/SitePageController.php:25
 * @route '/{dominio}'
@@ -297,8 +299,8 @@ home.form = homeForm
 
 const sitios = {
     show3: Object.assign(show3, show3),
-show: Object.assign(show, show),
-home: Object.assign(home, home),
+    show: Object.assign(show, show),
+    home: Object.assign(home, home),
 }
 
 export default sitios

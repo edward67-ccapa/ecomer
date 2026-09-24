@@ -32,6 +32,7 @@ index.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: index.url(options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\PlantillasController::index
 * @see app/Http/Controllers/PlantillasController.php:18
@@ -42,7 +43,7 @@ index.head = (options?: RouteQueryOptions): RouteDefinition<'head'> => ({
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\PlantillasController::index
 * @see app/Http/Controllers/PlantillasController.php:18
 * @route '/plantillas'
@@ -52,7 +53,7 @@ const indexForm = (options?: RouteQueryOptions): RouteFormDefinition<'get'> => (
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\PlantillasController::index
 * @see app/Http/Controllers/PlantillasController.php:18
 * @route '/plantillas'
@@ -104,23 +105,23 @@ descargarCatalogo.url = (args: { plantilla: string | { slug: string } } | [plant
         args = { plantilla: args }
     }
 
-            if (typeof args === 'object' && !Array.isArray(args) && 'slug' in args) {
-            args = { plantilla: args.slug }
-        }
-    
+    if (typeof args === 'object' && !Array.isArray(args) && 'slug' in args) {
+        args = { plantilla: args.slug }
+    }
+
     if (Array.isArray(args)) {
         args = {
-                    plantilla: args[0],
-                }
+            plantilla: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        plantilla: typeof args.plantilla === 'object'
-                ? args.plantilla.slug
-                : args.plantilla,
-                }
+        plantilla: typeof args.plantilla === 'object'
+        ? args.plantilla.slug
+        : args.plantilla,
+    }
 
     return descargarCatalogo.definition.url
             .replace('{plantilla}', parsedArgs.plantilla.toString())
@@ -136,6 +137,7 @@ descargarCatalogo.get = (args: { plantilla: string | { slug: string } } | [plant
     url: descargarCatalogo.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\PlantillasController::descargarCatalogo
 * @see app/Http/Controllers/PlantillasController.php:158
@@ -146,7 +148,7 @@ descargarCatalogo.head = (args: { plantilla: string | { slug: string } } | [plan
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\PlantillasController::descargarCatalogo
 * @see app/Http/Controllers/PlantillasController.php:158
 * @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
@@ -156,7 +158,7 @@ const descargarCatalogoForm = (args: { plantilla: string | { slug: string } } | 
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\PlantillasController::descargarCatalogo
 * @see app/Http/Controllers/PlantillasController.php:158
 * @route '/plantillas/{plantilla}/catalogo/descargar-pdf'
@@ -206,23 +208,23 @@ preview.definition = {
 preview.url = (args: { plantilla: string | { slug: string }, seccion?: string | number } | [plantilla: string | { slug: string }, seccion: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    plantilla: args[0],
-                    seccion: args[1],
-                }
+            plantilla: args[0],
+            seccion: args[1],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     validateParameters(args, [
-            "seccion",
-        ])
+        "seccion",
+    ])
 
     const parsedArgs = {
-                        plantilla: typeof args.plantilla === 'object'
-                ? args.plantilla.slug
-                : args.plantilla,
-                                seccion: args.seccion,
-                }
+        plantilla: typeof args.plantilla === 'object'
+        ? args.plantilla.slug
+        : args.plantilla,
+        seccion: args.seccion,
+    }
 
     return preview.definition.url
             .replace('{plantilla}', parsedArgs.plantilla.toString())
@@ -239,6 +241,7 @@ preview.get = (args: { plantilla: string | { slug: string }, seccion?: string | 
     url: preview.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\PlantillasController::preview
 * @see app/Http/Controllers/PlantillasController.php:40
@@ -249,7 +252,7 @@ preview.head = (args: { plantilla: string | { slug: string }, seccion?: string |
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\PlantillasController::preview
 * @see app/Http/Controllers/PlantillasController.php:40
 * @route '/plantillas/{plantilla}/{seccion?}'
@@ -259,7 +262,7 @@ const previewForm = (args: { plantilla: string | { slug: string }, seccion?: str
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\PlantillasController::preview
 * @see app/Http/Controllers/PlantillasController.php:40
 * @route '/plantillas/{plantilla}/{seccion?}'

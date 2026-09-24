@@ -12,6 +12,7 @@ import Subcategorias from './Subcategorias'
 import Tallas from './Tallas'
 import Tiendas from './Tiendas'
 import Users from './Users'
+
 const Resources = {
     Categorias: Object.assign(Categorias, Categorias),
     Colores: Object.assign(Colores, Colores),

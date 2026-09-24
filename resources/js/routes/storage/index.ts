@@ -22,18 +22,17 @@ local.url = (args: { path: string | number } | [path: string | number ] | string
         args = { path: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    path: args[0],
-                }
+            path: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        path: args.path,
-                }
+        path: args.path,
+    }
 
     return local.definition.url
             .replace('{path}', parsedArgs.path.toString())
@@ -48,6 +47,7 @@ local.get = (args: { path: string | number } | [path: string | number ] | string
     url: local.url(args, options),
     method: 'get',
 })
+
 /**
 * @see routes/web.php:24
 * @route '/storage/{path}'
@@ -91,29 +91,6 @@ localForm.head = (args: { path: string | number } | [path: string | number ] | s
 
 local.form = localForm
 
-            /**
- * @see routes/web.php:21
- * @route '/storage/{path}'
- */
-        localForm.get = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: local.url(args, options),
-            method: 'get',
-        })
-            /**
- * @see routes/web.php:21
- * @route '/storage/{path}'
- */
-        localForm.head = (args: { path: string | number } | [path: string | number ] | string | number, options?: RouteQueryOptions): RouteFormDefinition<'get'> => ({
-            action: local.url(args, {
-                        [options?.mergeQuery ? 'mergeQuery' : 'query']: {
-                            _method: 'HEAD',
-                            ...(options?.query ?? options?.mergeQuery ?? {}),
-                        }
-                    }),
-            method: 'get',
-        })
-    
-    local.form = localForm
 const storage = {
     local: Object.assign(local, local),
 }

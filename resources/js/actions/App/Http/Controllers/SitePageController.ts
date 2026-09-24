@@ -22,17 +22,17 @@ descargarCatalogobeeae37e65ef939033903be744aedb4c.definition = {
 descargarCatalogobeeae37e65ef939033903be744aedb4c.url = (args: { param1: string | number, param2: string | number } | [param1: string | number, param2: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    param1: args[0],
-                    param2: args[1],
-                }
+            param1: args[0],
+            param2: args[1],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        param1: args.param1,
-                                param2: args.param2,
-                }
+        param1: args.param1,
+        param2: args.param2,
+    }
 
     return descargarCatalogobeeae37e65ef939033903be744aedb4c.definition.url
             .replace('{param1}', parsedArgs.param1.toString())
@@ -49,6 +49,7 @@ descargarCatalogobeeae37e65ef939033903be744aedb4c.get = (args: { param1: string 
     url: descargarCatalogobeeae37e65ef939033903be744aedb4c.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\SitePageController::descargarCatalogo
 * @see app/Http/Controllers/SitePageController.php:399
@@ -59,7 +60,7 @@ descargarCatalogobeeae37e65ef939033903be744aedb4c.head = (args: { param1: string
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\SitePageController::descargarCatalogo
 * @see app/Http/Controllers/SitePageController.php:399
 * @route '/{param1}/{param2}/catalogo/descargar-pdf'
@@ -69,7 +70,7 @@ const descargarCatalogobeeae37e65ef939033903be744aedb4cForm = (args: { param1: s
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\SitePageController::descargarCatalogo
 * @see app/Http/Controllers/SitePageController.php:399
 * @route '/{param1}/{param2}/catalogo/descargar-pdf'
@@ -120,18 +121,17 @@ descargarCatalogoa0db0def83886227f6725985f3117c4e.url = (args: { dominio: string
         args = { dominio: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    dominio: args[0],
-                }
+            dominio: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        dominio: args.dominio,
-                }
+        dominio: args.dominio,
+    }
 
     return descargarCatalogoa0db0def83886227f6725985f3117c4e.definition.url
             .replace('{dominio}', parsedArgs.dominio.toString())
@@ -147,6 +147,7 @@ descargarCatalogoa0db0def83886227f6725985f3117c4e.get = (args: { dominio: string
     url: descargarCatalogoa0db0def83886227f6725985f3117c4e.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\SitePageController::descargarCatalogo
 * @see app/Http/Controllers/SitePageController.php:399
@@ -157,7 +158,7 @@ descargarCatalogoa0db0def83886227f6725985f3117c4e.head = (args: { dominio: strin
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\SitePageController::descargarCatalogo
 * @see app/Http/Controllers/SitePageController.php:399
 * @route '/{dominio}/catalogo/descargar-pdf'
@@ -167,7 +168,7 @@ const descargarCatalogoa0db0def83886227f6725985f3117c4eForm = (args: { dominio: 
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\SitePageController::descargarCatalogo
 * @see app/Http/Controllers/SitePageController.php:399
 * @route '/{dominio}/catalogo/descargar-pdf'
@@ -227,19 +228,19 @@ show0eafefde54f71dc0248fbeba8012a228.definition = {
 show0eafefde54f71dc0248fbeba8012a228.url = (args: { param1: string | number, param2: string | number, param3: string | number } | [param1: string | number, param2: string | number, param3: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    param1: args[0],
-                    param2: args[1],
-                    param3: args[2],
-                }
+            param1: args[0],
+            param2: args[1],
+            param3: args[2],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        param1: args.param1,
-                                param2: args.param2,
-                                param3: args.param3,
-                }
+        param1: args.param1,
+        param2: args.param2,
+        param3: args.param3,
+    }
 
     return show0eafefde54f71dc0248fbeba8012a228.definition.url
             .replace('{param1}', parsedArgs.param1.toString())
@@ -257,6 +258,7 @@ show0eafefde54f71dc0248fbeba8012a228.get = (args: { param1: string | number, par
     url: show0eafefde54f71dc0248fbeba8012a228.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:43
@@ -267,7 +269,7 @@ show0eafefde54f71dc0248fbeba8012a228.head = (args: { param1: string | number, pa
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:43
 * @route '/{param1}/{param2}/{param3}'
@@ -277,7 +279,7 @@ const show0eafefde54f71dc0248fbeba8012a228Form = (args: { param1: string | numbe
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:43
 * @route '/{param1}/{param2}/{param3}'
@@ -326,17 +328,17 @@ show0001254fc6f9d86a3e515c910343db99.definition = {
 show0001254fc6f9d86a3e515c910343db99.url = (args: { dominio: string | number, seccion: string | number } | [dominio: string | number, seccion: string | number ], options?: RouteQueryOptions) => {
     if (Array.isArray(args)) {
         args = {
-                    dominio: args[0],
-                    seccion: args[1],
-                }
+            dominio: args[0],
+            seccion: args[1],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        dominio: args.dominio,
-                                seccion: args.seccion,
-                }
+        dominio: args.dominio,
+        seccion: args.seccion,
+    }
 
     return show0001254fc6f9d86a3e515c910343db99.definition.url
             .replace('{dominio}', parsedArgs.dominio.toString())
@@ -353,6 +355,7 @@ show0001254fc6f9d86a3e515c910343db99.get = (args: { dominio: string | number, se
     url: show0001254fc6f9d86a3e515c910343db99.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:43
@@ -363,7 +366,7 @@ show0001254fc6f9d86a3e515c910343db99.head = (args: { dominio: string | number, s
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:43
 * @route '/{dominio}/{seccion}'
@@ -373,7 +376,7 @@ const show0001254fc6f9d86a3e515c910343db99Form = (args: { dominio: string | numb
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\SitePageController::show
 * @see app/Http/Controllers/SitePageController.php:43
 * @route '/{dominio}/{seccion}'
@@ -435,18 +438,17 @@ redirectToFirst.url = (args: { dominio: string | number } | [dominio: string | n
         args = { dominio: args }
     }
 
-    
     if (Array.isArray(args)) {
         args = {
-                    dominio: args[0],
-                }
+            dominio: args[0],
+        }
     }
 
     args = applyUrlDefaults(args)
 
     const parsedArgs = {
-                        dominio: args.dominio,
-                }
+        dominio: args.dominio,
+    }
 
     return redirectToFirst.definition.url
             .replace('{dominio}', parsedArgs.dominio.toString())
@@ -462,6 +464,7 @@ redirectToFirst.get = (args: { dominio: string | number } | [dominio: string | n
     url: redirectToFirst.url(args, options),
     method: 'get',
 })
+
 /**
 * @see \App\Http\Controllers\SitePageController::redirectToFirst
 * @see app/Http/Controllers/SitePageController.php:25
@@ -472,7 +475,7 @@ redirectToFirst.head = (args: { dominio: string | number } | [dominio: string | 
     method: 'head',
 })
 
-    /**
+/**
 * @see \App\Http\Controllers\SitePageController::redirectToFirst
 * @see app/Http/Controllers/SitePageController.php:25
 * @route '/{dominio}'
@@ -482,7 +485,7 @@ const redirectToFirstForm = (args: { dominio: string | number } | [dominio: stri
     method: 'get',
 })
 
-            /**
+/**
 * @see \App\Http\Controllers\SitePageController::redirectToFirst
 * @see app/Http/Controllers/SitePageController.php:25
 * @route '/{dominio}'

@@ -29,6 +29,7 @@ welcome.get = (options?: RouteQueryOptions): RouteDefinition<'get'> => ({
     url: welcome.url(options),
     method: 'get',
 })
+
 /**
 * @see routes/web.php:9
 * @route '/'
