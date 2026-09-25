@@ -185,6 +185,41 @@ class SitePageController extends Controller
             ])
             ->toArray();
 
+        $seccionesArray = $seccionesNav
+            ->map(fn (Seccion $s): array => [
+                'slug' => $s->slug,
+                'nombre' => $s->nombre,
+            ])
+            ->values()
+            ->toArray();
+
+        $hasProductosInNav = collect($seccionesArray)->contains(
+            fn ($s) => in_array(strtolower($s['slug'] ?? ''), ['productos', 'tienda', 'tiendas'])
+        );
+        if (! empty($tiendaIds) && ! $hasProductosInNav) {
+            array_splice($seccionesArray, 1, 0, [[
+                'slug' => 'productos',
+                'nombre' => 'Productos',
+            ]]);
+        }
+
+        $hasServiciosInNav = collect($seccionesArray)->contains(
+            fn ($s) => in_array(strtolower($s['slug'] ?? ''), ['servicios', 'servicio'])
+        );
+        if (! empty($serviciosSitio) && ! $hasServiciosInNav) {
+            $insertPos = 1;
+            foreach ($seccionesArray as $idx => $sec) {
+                if (in_array(strtolower($sec['slug'] ?? ''), ['productos', 'tienda', 'tiendas'])) {
+                    $insertPos = $idx + 1;
+                    break;
+                }
+            }
+            array_splice($seccionesArray, $insertPos, 0, [[
+                'slug' => 'servicios',
+                'nombre' => 'Servicios',
+            ]]);
+        }
+
         return Inertia::render(self::paginaPlantilla($site->plantilla), [
             'site' => [
                 'id' => $site->id,
@@ -196,12 +231,7 @@ class SitePageController extends Controller
             'dominio' => $dominio,
             'siteSlug' => $siteSlug,
             'tieneTienda' => ! empty($tiendaIds),
-            'secciones' => $seccionesNav
-                ->map(fn (Seccion $s): array => [
-                    'slug' => $s->slug,
-                    'nombre' => $s->nombre,
-                ])
-                ->values(),
+            'secciones' => $seccionesArray,
             'seccionActiva' => $seccionActiva,
             'seccionesData' => $seccionesData,
             'productos' => ProductoResource::collection($productos)->resolve(),

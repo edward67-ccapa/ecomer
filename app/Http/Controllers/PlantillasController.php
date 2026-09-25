@@ -128,6 +128,42 @@ class PlantillasController extends Controller
 
         $serviciosSitio = $plantilla->servicios->flatMap(fn ($s) => $s->servicios ?? collect([$s]))->unique('id')->values();
 
+        $seccionesArray = $seccionesNav
+            ->reject(fn (Seccion $s) => strtolower($s->slug) === 'nav')
+            ->map(fn (Seccion $s): array => [
+                'slug' => $s->slug,
+                'nombre' => $s->nombre,
+            ])
+            ->values()
+            ->toArray();
+
+        $hasProductosInNav = collect($seccionesArray)->contains(
+            fn ($s) => in_array(strtolower($s['slug'] ?? ''), ['productos', 'tienda', 'tiendas'])
+        );
+        if (! empty($tiendaIds) && ! $hasProductosInNav) {
+            array_splice($seccionesArray, 1, 0, [[
+                'slug' => 'productos',
+                'nombre' => 'Productos',
+            ]]);
+        }
+
+        $hasServiciosInNav = collect($seccionesArray)->contains(
+            fn ($s) => in_array(strtolower($s['slug'] ?? ''), ['servicios', 'servicio'])
+        );
+        if (! $serviciosSitio->isEmpty() && ! $hasServiciosInNav) {
+            $insertPos = 1;
+            foreach ($seccionesArray as $idx => $sec) {
+                if (in_array(strtolower($sec['slug'] ?? ''), ['productos', 'tienda', 'tiendas'])) {
+                    $insertPos = $idx + 1;
+                    break;
+                }
+            }
+            array_splice($seccionesArray, $insertPos, 0, [[
+                'slug' => 'servicios',
+                'nombre' => 'Servicios',
+            ]]);
+        }
+
         return Inertia::render(SitePageController::paginaPlantilla($plantilla), [
             'site' => [
                 'id' => null,
@@ -139,13 +175,7 @@ class PlantillasController extends Controller
             'dominio' => 'plantillas',
             'siteSlug' => $plantilla->slug,
             'tieneTienda' => ! empty($tiendaIds),
-            'secciones' => $seccionesNav
-                ->reject(fn (Seccion $s) => strtolower($s->slug) === 'nav')
-                ->map(fn (Seccion $s): array => [
-                    'slug' => $s->slug,
-                    'nombre' => $s->nombre,
-                ])
-                ->values(),
+            'secciones' => $seccionesArray,
             'seccionActiva' => $seccionActiva,
             'seccionesData' => $seccionesData,
             'productos' => ProductoResource::collection($productos)->resolve(),

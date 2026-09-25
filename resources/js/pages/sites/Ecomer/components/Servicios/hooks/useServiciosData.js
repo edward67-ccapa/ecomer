@@ -67,13 +67,18 @@ export function useServiciosData(seccion, seccionesData, serviciosSitio = []) {
         items: serviciosList.map((item, idx) => {
             const rawImg = item.Imagen || item.imagen;
             const img = Array.isArray(rawImg) ? rawImg[0] : rawImg;
+            const rawBoton = item.Boton !== undefined ? item.Boton : item.boton;
+            const botonTxt = typeof rawBoton === 'string' ? rawBoton.trim() : (rawBoton ? String(rawBoton).trim() : null);
+            const rawIcono = item.BotonIcono !== undefined ? item.BotonIcono : item.botonIcono;
+            const iconoTxt = typeof rawIcono === 'string' ? rawIcono.trim() : (rawIcono ? String(rawIcono).trim() : null);
+
             return {
                 numero: `No - ${String(idx + 1).padStart(2, '0')}`,
                 imagen: img,
                 titulo: item.Titulo || item.titulo || '',
                 descripcion: item.Descripcion || item.descripcion || '',
-                boton: item.Boton || item.boton || 'Saber más',
-                botonIcono: item.BotonIcono || item.botonIcono || 'FaChevronRight',
+                boton: botonTxt || null,
+                botonIcono: iconoTxt || (botonTxt ? 'FaChevronRight' : null),
             };
         }),
         raw: serviciosDataObj,

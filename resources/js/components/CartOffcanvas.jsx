@@ -314,7 +314,7 @@ export default function CartOffcanvas() {
                                                 rows={2}
                                                 value={idea}
                                                 onChange={(e) => setIdea(e.target.value)}
-                                                placeholder="Cuéntanos tu idea / detalles de la torta..."
+                                                placeholder="Cuéntanos tu idea ..."
                                                 className="w-full px-3.5 py-2.5 border border-gray-200 focus:border-rose-500 focus:ring-2 focus:ring-rose-100 outline-none text-xs text-gray-800 placeholder-gray-400 transition resize-none"
                                                 style={{ borderRadius: 'var(--radio-bordes)' }}
                                             />

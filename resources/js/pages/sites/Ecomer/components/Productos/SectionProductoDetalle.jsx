@@ -540,8 +540,8 @@ export default function SectionProductoDetalle({
                                         🛡️
                                     </span>
                                     <div>
-                                        <p className="font-semibold text-gray-800">Garantía de frescura</p>
-                                        <p className="text-[11px] text-gray-500">Elaborado con insumos 100% naturales bajo altos estándares.</p>
+                                        <p className="font-semibold text-gray-800">Garantía de calidad</p>
+                                        <p className="text-[11px] text-gray-500">Productos 100% garantizados bajo altos estándares de calidad.</p>
                                     </div>
                                 </div>
                             </div>
@@ -572,8 +572,7 @@ export default function SectionProductoDetalle({
                                     exit={{ opacity: 0, height: 0 }}
                                     className="pt-3 text-sm text-gray-600 leading-relaxed space-y-3"
                                 >
-                                    <p>{producto.descripcion || producto.descripcion_corta || 'Este delicioso producto está elaborado artesanalmente con los mejores ingredientes del mercado, garantizando suavidad, frescura y un sabor inigualable para tus celebraciones.'}</p>
-                                    <p className="text-xs text-gray-500 italic">Recomendación: Conservar en refrigeración entre 4°C y 8°C. Consumir dentro de las 72 horas para disfrutar su máxima frescura.</p>
+                                    <p>{producto.descripcion || producto.descripcion_corta || 'Sin descripción disponible.'}</p>
                                 </motion.div>
                             )}
                         </AnimatePresence>
@@ -602,20 +601,30 @@ export default function SectionProductoDetalle({
                                 >
                                     <table className="w-full text-xs sm:text-sm border-collapse">
                                         <tbody>
-                                            <tr className="border-b border-gray-100">
-                                                <td className="py-2.5 font-semibold text-gray-500 w-1/3">Categoría</td>
-                                                <td className="py-2.5 text-gray-800">{producto.categoria || 'Repostería Artesanal'}</td>
-                                            </tr>
+                                            {producto.categoria && (
+                                                <tr className="border-b border-gray-100">
+                                                    <td className="py-2.5 font-semibold text-gray-500 w-1/3">Categoría</td>
+                                                    <td className="py-2.5 text-gray-800">{producto.categoria}</td>
+                                                </tr>
+                                            )}
+                                            {producto.subcategoria && (
+                                                <tr className="border-b border-gray-100">
+                                                    <td className="py-2.5 font-semibold text-gray-500 w-1/3">Subcategoría</td>
+                                                    <td className="py-2.5 text-gray-800">{producto.subcategoria}</td>
+                                                </tr>
+                                            )}
+                                            {producto.marca && (
+                                                <tr className="border-b border-gray-100">
+                                                    <td className="py-2.5 font-semibold text-gray-500 w-1/3">Marca</td>
+                                                    <td className="py-2.5 text-gray-800">{producto.marca}</td>
+                                                </tr>
+                                            )}
                                             {varianteSeleccionada && (
                                                 <tr className="border-b border-gray-100">
                                                     <td className="py-2.5 font-semibold text-gray-500">Variante seleccionada</td>
                                                     <td className="py-2.5 text-gray-800 font-bold">{varianteSeleccionada.nombre}</td>
                                                 </tr>
                                             )}
-                                            <tr className="border-b border-gray-100">
-                                                <td className="py-2.5 font-semibold text-gray-500">Tipo de elaboración</td>
-                                                <td className="py-2.5 text-gray-800">100% Artesanal y Fresco</td>
-                                            </tr>
                                             <tr className="border-b border-gray-100">
                                                 <td className="py-2.5 font-semibold text-gray-500">Código de Referencia</td>
                                                 <td className="py-2.5 text-gray-800">PROD-{producto.id.toString().padStart(5, '0')}</td>

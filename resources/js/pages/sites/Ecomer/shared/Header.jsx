@@ -174,8 +174,21 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
             list.splice(1, 0, { slug: 'productos', nombre: 'Productos' });
         }
 
+        const hasServiciosInList = list.some((s) => {
+            const slug = (s.slug || '').toLowerCase();
+            return slug === 'servicios' || slug === 'servicio';
+        });
+
+        const hasServiciosData = Array.isArray(serviciosSitio) && serviciosSitio.length > 0;
+
+        if (hasServiciosData && !hasServiciosInList) {
+            const prodIndex = list.findIndex((s) => ['productos', 'tienda', 'tiendas'].includes((s.slug || '').toLowerCase()));
+            const insertIdx = prodIndex !== -1 ? prodIndex + 1 : (list.length > 1 ? 1 : list.length);
+            list.splice(insertIdx, 0, { slug: 'servicios', nombre: 'Servicios' });
+        }
+
         return list;
-    }, [secciones, hasStore]);
+    }, [secciones, hasStore, serviciosSitio]);
 
     const getDisplayName = (seccion) => {
         const slugLower = (seccion?.slug || '').toLowerCase().trim();
