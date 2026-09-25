@@ -17,8 +17,8 @@
       "_vendor-framer-motion-C1JIXETN.js"
     ]
   },
-  "_CartOffcanvas-BNQpR3Oa.js": {
-    "file": "assets/CartOffcanvas-BNQpR3Oa.js",
+  "_CartOffcanvas-BA4G0YxF.js": {
+    "file": "assets/CartOffcanvas-BA4G0YxF.js",
     "name": "CartOffcanvas",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
@@ -334,7 +334,7 @@
     "src": "_vendor-swiper-DBDkIWrS.css"
   },
   "resources/css/app.css": {
-    "file": "assets/app-BuRSmrm3.css",
+    "file": "assets/app-DYuKw_Bh.css",
     "name": "app",
     "names": [
       "app.css"
@@ -352,7 +352,7 @@
     "isEntry": true
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-DwXHlLm_.js",
+    "file": "assets/app-COO266Tj.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -494,7 +494,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/Index.jsx": {
-    "file": "assets/Index-DjLHMbdJ.js",
+    "file": "assets/Index-Cp_pqqR7.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Ecomer/Index.jsx",
     "isDynamicEntry": true,
@@ -557,7 +557,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Productos/SectionProductoDetalle.jsx": {
-    "file": "assets/SectionProductoDetalle--6g-f12S.js",
+    "file": "assets/SectionProductoDetalle-q8yt5_il.js",
     "name": "SectionProductoDetalle",
     "src": "resources/js/pages/sites/Ecomer/components/Productos/SectionProductoDetalle.jsx",
     "isDynamicEntry": true,
@@ -583,7 +583,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Servicios/SectionServicios.jsx": {
-    "file": "assets/SectionServicios-GDNrEc51.js",
+    "file": "assets/SectionServicios-DpgZjv62.js",
     "name": "SectionServicios",
     "src": "resources/js/pages/sites/Ecomer/components/Servicios/SectionServicios.jsx",
     "isDynamicEntry": true,
@@ -622,7 +622,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/shared/Header.jsx": {
-    "file": "assets/Header-DLTTpom9.js",
+    "file": "assets/Header-Bao-S7Yr.js",
     "name": "Header",
     "src": "resources/js/pages/sites/Ecomer/shared/Header.jsx",
     "isDynamicEntry": true,
@@ -632,7 +632,7 @@
       "_vendor-framer-motion-C1JIXETN.js",
       "_DynamicIcon-D53Gpl9c.js",
       "_useCartStore-DfqRC0U3.js",
-      "_CartOffcanvas-BNQpR3Oa.js"
+      "_CartOffcanvas-BA4G0YxF.js"
     ]
   },
   "resources/js/pages/sites/Ecomer/shared/components.jsx": {
@@ -656,7 +656,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/Index.jsx": {
-    "file": "assets/Index-DBBveFPb.js",
+    "file": "assets/Index-CYNOfL5w.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Tortas/Index.jsx",
     "isDynamicEntry": true,
@@ -749,7 +749,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/shared/Header.jsx": {
-    "file": "assets/Header-D-ITuFjX.js",
+    "file": "assets/Header-D35mwUGE.js",
     "name": "Header",
     "src": "resources/js/pages/sites/Tortas/shared/Header.jsx",
     "isDynamicEntry": true,
@@ -759,7 +759,7 @@
       "_vendor-framer-motion-C1JIXETN.js",
       "_DynamicIcon-D53Gpl9c.js",
       "_useCartStore-DfqRC0U3.js",
-      "_CartOffcanvas-BNQpR3Oa.js"
+      "_CartOffcanvas-BA4G0YxF.js"
     ]
   },
   "resources/js/pages/sites/Tortas/shared/components.jsx": {
