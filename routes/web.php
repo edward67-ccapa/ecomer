@@ -22,41 +22,70 @@ Route::get('/plantillas/{plantilla:slug}/{seccion?}', [PlantillasController::cla
     ->name('plantillas.preview');
 
 Route::get('/storage/{path}', function (string $path) {
-    $disk = Storage::disk('public');
+    $cleanPath = ltrim($path, '/');
+    $filename = basename($cleanPath);
 
-    $targetFile = null;
-    if ($disk->exists($path)) {
-        $targetFile = $path;
-    } else {
-        $filename = basename($path);
-        foreach ($disk->allFiles() as $file) {
-            if (basename($file) === $filename) {
-                $targetFile = $file;
-                break;
+    $candidatePaths = [
+        storage_path('app/public/' . $cleanPath),
+        public_path('storage/' . $cleanPath),
+        storage_path($cleanPath),
+    ];
+
+    $resolvedPath = null;
+    foreach ($candidatePaths as $candidate) {
+        if (file_exists($candidate) && is_file($candidate)) {
+            $resolvedPath = $candidate;
+            break;
+        }
+    }
+
+    if (! $resolvedPath) {
+        $searchDirs = [
+            storage_path('app/public'),
+            storage_path('sites'),
+            storage_path('productos'),
+            storage_path(),
+            public_path('storage'),
+        ];
+
+        foreach ($searchDirs as $dir) {
+            if (is_dir($dir)) {
+                try {
+                    $iterator = new RecursiveIteratorIterator(
+                        new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS)
+                    );
+                    foreach ($iterator as $file) {
+                        if ($file->isFile() && $file->getFilename() === $filename) {
+                            $resolvedPath = $file->getRealPath();
+                            break 2;
+                        }
+                    }
+                } catch (\Throwable $e) {
+                    // Ignore iterator exceptions
+                }
             }
         }
     }
 
-    if (! $targetFile) {
-        $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
-        if (in_array($extension, ['png', 'jpg', 'jpeg', 'webp', 'svg', 'gif'])) {
-            $placeholderSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="400" height="300" fill="#F3F4F6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9CA3AF" font-family="sans-serif" font-size="16">Imagen no encontrada</text></svg>';
-
-            return response($placeholderSvg, 200, [
-                'Content-Type' => 'image/svg+xml',
-                'Cache-Control' => 'no-cache',
-            ]);
-        }
-        abort(404);
+    if ($resolvedPath && file_exists($resolvedPath) && is_file($resolvedPath)) {
+        $mimeType = @mime_content_type($resolvedPath) ?: 'image/webp';
+        return response()->file($resolvedPath, [
+            'Content-Type' => $mimeType,
+            'Cache-Control' => 'public, max-age=31536000',
+        ]);
     }
 
-    $fullPath = $disk->path($targetFile);
-    $mimeType = $disk->mimeType($targetFile) ?: 'application/octet-stream';
+    $extension = strtolower(pathinfo($cleanPath, PATHINFO_EXTENSION));
+    if (in_array($extension, ['png', 'jpg', 'jpeg', 'webp', 'svg', 'gif'])) {
+        $placeholderSvg = '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="300" viewBox="0 0 400 300"><rect width="400" height="300" fill="#F3F4F6"/><text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" fill="#9CA3AF" font-family="sans-serif" font-size="16">Imagen no encontrada</text></svg>';
 
-    return response($disk->get($targetFile), 200, [
-        'Content-Type' => $mimeType,
-        'Cache-Control' => 'public, max-age=31536000',
-    ]);
+        return response($placeholderSvg, 200, [
+            'Content-Type' => 'image/svg+xml',
+            'Cache-Control' => 'no-cache',
+        ]);
+    }
+
+    abort(404);
 })->where('path', '.*')->name('storage.local');
 
 Route::get('/{param1}/{param2}/catalogo/descargar-pdf', [SitePageController::class, 'descargarCatalogo'])->name('catalogo.descargar2');
