@@ -238,8 +238,8 @@
       "_DynamicIcon-D53Gpl9c.js"
     ]
   },
-  "_TikTokSection-T2zXCebo.js": {
-    "file": "assets/TikTokSection-T2zXCebo.js",
+  "_TikTokSection-B2__vaaA.js": {
+    "file": "assets/TikTokSection-B2__vaaA.js",
     "name": "TikTokSection",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
@@ -334,7 +334,7 @@
     "src": "_vendor-swiper-DBDkIWrS.css"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DLX0QWM6.css",
+    "file": "assets/app-DjqRX8rI.css",
     "name": "app",
     "names": [
       "app.css"
@@ -352,7 +352,7 @@
     "isEntry": true
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-CA_sOV1O.js",
+    "file": "assets/app-BtKktYOC.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -379,7 +379,7 @@
       "_MarcasSection-BsGpQprl.js",
       "_OfertasSection-DTAuE22F.js",
       "_ProductosDestacadosSection-BKHjyswg.js",
-      "_TikTokSection-T2zXCebo.js",
+      "_TikTokSection-B2__vaaA.js",
       "resources/js/pages/sites/Ecomer/components/Nosotros/SectionNosotros.jsx",
       "_AccionSection-NqxhKTZA.js",
       "_ElegirnosSection-LKI8u91h.js",
@@ -494,7 +494,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/Index.jsx": {
-    "file": "assets/Index-CqGCxkyG.js",
+    "file": "assets/Index-CtN1-VTZ.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Ecomer/Index.jsx",
     "isDynamicEntry": true,
@@ -525,7 +525,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Inicio/SectionInicio.jsx": {
-    "file": "assets/SectionInicio-Bis-Lw6K.js",
+    "file": "assets/SectionInicio-B2WrVeh6.js",
     "name": "SectionInicio",
     "src": "resources/js/pages/sites/Ecomer/components/Inicio/SectionInicio.jsx",
     "isDynamicEntry": true,
@@ -536,7 +536,7 @@
       "_OfertasSection-DTAuE22F.js",
       "_MarcasSection-BsGpQprl.js",
       "_CategoriaSection-BYA5dYA4.js",
-      "_TikTokSection-T2zXCebo.js",
+      "_TikTokSection-B2__vaaA.js",
       "_ProductosDestacadosSection-BKHjyswg.js",
       "_BanerPieSection-D5bCNXax.js"
     ]
@@ -622,7 +622,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/shared/Header.jsx": {
-    "file": "assets/Header-BoDwReh8.js",
+    "file": "assets/Header-MhzFX7s0.js",
     "name": "Header",
     "src": "resources/js/pages/sites/Ecomer/shared/Header.jsx",
     "isDynamicEntry": true,
@@ -656,7 +656,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/Index.jsx": {
-    "file": "assets/Index-DutI_mX-.js",
+    "file": "assets/Index-CCxn6Jyh.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Tortas/Index.jsx",
     "isDynamicEntry": true,
@@ -749,7 +749,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/shared/Header.jsx": {
-    "file": "assets/Header-D35mwUGE.js",
+    "file": "assets/Header-Cpp7WWsZ.js",
     "name": "Header",
     "src": "resources/js/pages/sites/Tortas/shared/Header.jsx",
     "isDynamicEntry": true,
