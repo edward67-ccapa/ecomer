@@ -327,7 +327,7 @@ export default function MarcasSection({
                                             <div
                                                 key={prod.id || idx}
                                                 onClick={() => handleCardClick(prod)}
-                                                className="shrink-0 w-[240px] sm:w-[280px] bg-white border border-gray-200 rounded-xl p-3.5 sm:p-4 flex flex-col justify-between relative cursor-pointer shadow-xs hover:shadow-md transition-shadow duration-200"
+                                                className="shrink-0 w-[240px] sm:w-[280px] bg-white border border-gray-200 rounded-xl p-3.5 sm:p-4 flex flex-col justify-between relative cursor-pointer hover:shadow-lg transition-all duration-300 group"
                                             >
                                                 <div>
                                                     {/* Imagen del Producto */}
@@ -369,7 +369,7 @@ export default function MarcasSection({
                                                                 height={400}
                                                                 loading="lazy"
                                                                 decoding="async"
-                                                                className="w-full h-full max-w-full max-h-full object-cover"
+                                                                className="w-full h-full max-w-full max-h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                                                 style={{ maxWidth: '100%', maxHeight: '100%', width: '100%', height: '100%', objectFit: 'cover' }}
                                                             />
                                                         ) : (
@@ -382,7 +382,7 @@ export default function MarcasSection({
 
                                                     {/* Nombre del Producto */}
                                                     <h4
-                                                        className="text-xs sm:text-sm font-semibold text-gray-900 line-clamp-2 min-h-[2.4rem] leading-snug mb-1.5"
+                                                        className="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-[var(--color-primario)] transition-colors line-clamp-2 min-h-[2.4rem] leading-snug mb-1.5"
                                                         title={prod.nombre}
                                                     >
                                                         {prod.nombre}

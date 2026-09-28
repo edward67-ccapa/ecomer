@@ -270,6 +270,31 @@ class SiteForm
                                     ->visible(fn (Get $get) => filled($get('plantilla_id')))
                                     ->schema([
                                         Grid::make(3)->schema([
+                                            FileUpload::make('estilos.favicon')
+                                                ->label('Favicon / Ícono del Sitio (.ico, .png, .svg)')
+                                                ->image()
+                                                ->disk('public')
+                                                ->directory('sites/favicons')
+                                                ->visibility('public')
+                                                ->preserveFilenames()
+                                                ->formatStateUsing(function ($state) {
+                                                    if (is_array($state)) {
+                                                        return array_values($state)[0] ?? null;
+                                                    }
+                                                    if (is_string($state) && str_starts_with(trim($state), '{')) {
+                                                        $decoded = json_decode($state, true);
+                                                        if (is_array($decoded)) {
+                                                            return array_values($decoded)[0] ?? null;
+                                                        }
+                                                    }
+                                                    return $state;
+                                                })
+                                                ->dehydrateStateUsing(function ($state) {
+                                                    if (is_array($state)) {
+                                                        return array_values($state)[0] ?? null;
+                                                    }
+                                                    return $state;
+                                                }),
                                             ColorPicker::make('estilos.color_primario'),
                                             ColorPicker::make('estilos.color_secundario'),
                                             Select::make('estilos.tipografia_titulos')

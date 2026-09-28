@@ -106,9 +106,9 @@ export default function ProductosDestacadosSection({
                                 <SwiperSlide key={prod.id || idx} className="h-auto" style={{ width: '20%', flexShrink: 0 }}>
                                     <div
                                         onClick={() => handleCardClick(prod)}
-                                        className="bg-white border border-gray-200 rounded-xl p-3.5 sm:p-4 flex flex-col justify-between h-full relative cursor-pointer"
+                                        className="bg-white border border-gray-200 rounded-xl p-3.5 sm:p-4 flex flex-col justify-between h-full relative cursor-pointer hover:shadow-lg transition-all duration-300 group"
                                     >
-                                        {/* Imagen del Producto (estática sin hover) */}
+                                        {/* Imagen del Producto */}
                                         <div className="relative aspect-square w-full mb-3 flex items-center justify-center bg-white rounded-lg overflow-hidden" style={{ aspectRatio: '1/1', width: '100%', maxHeight: '280px' }}>
                                             {/* Badge Categoría Premium arriba a la izquierda */}
                                             {categoriaTexto && (
@@ -147,7 +147,7 @@ export default function ProductosDestacadosSection({
                                                     height={400}
                                                     loading="lazy"
                                                     decoding="async"
-                                                    className="w-full h-full max-w-full max-h-full object-cover"
+                                                    className="w-full h-full max-w-full max-h-full object-cover group-hover:scale-105 transition-transform duration-500"
                                                     style={{ maxWidth: '100%', maxHeight: '280px', width: '100%', height: '100%', objectFit: 'cover', aspectRatio: '1/1' }}
                                                 />
                                             ) : (
@@ -158,9 +158,9 @@ export default function ProductosDestacadosSection({
                                             )}
                                         </div>
 
-                                        {/* Nombre del Producto (sin hover) */}
+                                        {/* Nombre del Producto */}
                                         <h3
-                                            className="text-xs sm:text-sm font-semibold text-gray-900 line-clamp-2 min-h-[2.4rem] leading-snug mb-1.5"
+                                            className="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-[var(--color-primario)] transition-colors line-clamp-2 min-h-[2.4rem] leading-snug mb-1.5"
                                             title={prod.nombre}
                                         >
                                             {prod.nombre}

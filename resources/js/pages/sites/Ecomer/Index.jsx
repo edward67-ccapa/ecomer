@@ -129,9 +129,43 @@ export default function Ecomer({
         ? `${productoSeleccionado.nombre} — ${site.nombre}`
         : `${site.nombre} — ${seccionActiva?.nombre || 'Inicio'}`;
 
+    const getFaviconUrl = (val) => {
+        if (!val) return null;
+        let str = val;
+        if (Array.isArray(val)) {
+            str = val[0];
+        } else if (typeof val === 'object' && val !== null) {
+            str = Object.values(val)[0] || val.url || null;
+        }
+        if (typeof str !== 'string' || !str || str.trim() === '') return null;
+        str = str.trim();
+        if (str.startsWith('http://') || str.startsWith('https://') || str.startsWith('data:')) {
+            return str;
+        }
+        return `/storage/${str.replace(/^\/?storage\//, '')}`;
+    };
+
+    const getFaviconType = (url) => {
+        if (!url) return undefined;
+        const cleanUrl = url.split('?')[0].toLowerCase();
+        if (cleanUrl.endsWith('.png')) return 'image/png';
+        if (cleanUrl.endsWith('.svg')) return 'image/svg+xml';
+        if (cleanUrl.endsWith('.ico')) return 'image/x-icon';
+        if (cleanUrl.endsWith('.jpg') || cleanUrl.endsWith('.jpeg')) return 'image/jpeg';
+        if (cleanUrl.endsWith('.webp')) return 'image/webp';
+        return undefined;
+    };
+
+    const faviconUrl = getFaviconUrl(estilos?.favicon) || getFaviconUrl(site?.imagen) || '/favicon.svg';
+    const faviconType = getFaviconType(faviconUrl) || 'image/svg+xml';
+
     return (
         <>
             <Head title={pageTitle}>
+                <link rel="icon" href="/favicon.svg" type="image/svg+xml" key="favicon-svg-default" />
+                {faviconUrl && <link rel="icon" href={faviconUrl} type={faviconType} key="favicon" />}
+                {faviconUrl && <link rel="shortcut icon" href={faviconUrl} type={faviconType} key="shortcut-icon" />}
+                {faviconUrl && <link rel="apple-touch-icon" href={faviconUrl} key="apple-touch-icon" />}
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
                 {fontQuery && (

@@ -8,14 +8,22 @@ export default function HeroSection({ hero }) {
     if (!imagen && !titulo && !descripcion) return null;
 
     return (
-        <section className="relative overflow-hidden bg-black text-white min-h-[360px] sm:min-h-[420px] lg:min-h-[460px] flex items-center justify-center pt-32 pb-16">
-            {/* Imagen de Fondo */}
+        <section className="relative overflow-hidden bg-black text-white h-[80vh] min-h-[80vh] w-full flex items-center justify-center">
             {imagen && (
-                <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 z-0 h-full w-full">
                     <img
                         src={imagen}
                         alt={titulo || ''}
-                        className="h-full w-full object-cover object-center filter brightness-75 contrast-105"
+                        fetchPriority="high"
+                        decoding="async"
+                        loading="eager"
+                        className="h-full w-full object-cover brightness-105"
+                        style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover',
+                            objectPosition: 'center bottom', // 👈 clave: ancla abajo
+                        }}
                     />
                 </div>
             )}
@@ -23,7 +31,7 @@ export default function HeroSection({ hero }) {
             {/* Overlays de Degradado para legibilidad */}
             <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-t from-black via-black/60 to-black/40" />
 
-            {/* Contenido Principal (solo datos del Hero) */}
+            {/* Contenido Principal */}
             <div className="relative z-10 mx-auto max-w-4xl px-4 text-center sm:px-6 lg:px-8">
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
@@ -31,7 +39,6 @@ export default function HeroSection({ hero }) {
                     transition={{ duration: 0.6, ease: 'easeOut' }}
                     className="flex flex-col items-center"
                 >
-                    {/* Título Principal */}
                     {titulo && (
                         <h1
                             className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white drop-shadow-xl mb-4 leading-tight"
@@ -41,7 +48,6 @@ export default function HeroSection({ hero }) {
                         </h1>
                     )}
 
-                    {/* Descripción */}
                     {descripcion && (
                         <p
                             className="max-w-2xl mx-auto text-sm sm:text-base lg:text-lg text-gray-200 font-medium leading-relaxed drop-shadow-md"

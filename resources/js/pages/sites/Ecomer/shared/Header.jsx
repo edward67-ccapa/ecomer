@@ -387,10 +387,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                     </div>
                 )}
 
-                {/* 3. ABAJO: EL MENÚ A LA IZQUIERDA, LOGO AL MEDIO, BUSCADOR Y CARRITO A LA DERECHA */}
+                {/* 3. ABAJO: LOGO A LA IZQUIERDA, MENÚ AL MEDIO, BUSCADOR Y CARRITO A LA DERECHA */}
                 <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-4 px-4 py-2.5 sm:px-6 transition-all duration-300">
-                    {/* 3.1. IZQUIERDA: MENÚ DE NAVEGACIÓN */}
-                    <div className="flex flex-1 items-center justify-start">
+                    {/* 3.1. IZQUIERDA: BOTÓN HAMBURGUESA MÓVIL Y LOGO */}
+                    <div className="flex flex-1 items-center justify-start gap-2 sm:gap-3">
                         {/* Botón Hamburguesa Móvil */}
                         <button
                             type="button"
@@ -412,8 +412,32 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                             )}
                         </button>
 
-                        {/* Enlaces Desktop */}
-                        <nav className="hidden md:flex flex-wrap items-center gap-1">
+                        {/* Logo del Sitio */}
+                        <Link
+                            href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}` : (siteSlug ? `/${dominio}/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}` : `/${dominio}/${secciones?.[0]?.slug || 'inicio'}`)}
+                            className="flex items-center justify-center transition-transform hover:scale-102"
+                        >
+                            {logoNav || site?.imagen ? (
+                                <img
+                                    src={logoNav || site?.imagen}
+                                    alt={site?.nombre || ''}
+                                    width={180}
+                                    height={48}
+                                    decoding="async"
+                                    className="h-10 sm:h-12 w-auto max-h-18 object-contain transition-all duration-300"
+                                />
+                            ) : (
+                                <span className={`text-xl font-extrabold tracking-tight transition-colors duration-300 ${isTransparentMode ? 'text-white drop-shadow-sm' : 'text-gray-900'
+                                    }`}>
+                                    {site?.nombre}
+                                </span>
+                            )}
+                        </Link>
+                    </div>
+
+                    {/* 3.2. AL MEDIO: NAVEGACIÓN DESKTOP */}
+                    <div className="flex shrink-0 items-center justify-center">
+                        <nav className="hidden md:flex flex-wrap items-center justify-center gap-1">
                             {navSecciones?.map((seccion) => {
                                 const slugLower = seccion.slug?.toLowerCase() || '';
                                 const displayName = getDisplayName(seccion);
@@ -512,30 +536,6 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                         </nav>
                     </div>
 
-                    {/* 3.2. AL MEDIO: EL LOGO */}
-                    <div className="flex shrink-0 items-center justify-center">
-                        <Link
-                            href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}` : (siteSlug ? `/${dominio}/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}` : `/${dominio}/${secciones?.[0]?.slug || 'inicio'}`)}
-                            className="flex items-center justify-center transition-transform hover:scale-102"
-                        >
-                            {logoNav || site?.imagen ? (
-                                <img
-                                    src={logoNav || site?.imagen}
-                                    alt={site?.nombre || ''}
-                                    width={180}
-                                    height={48}
-                                    decoding="async"
-                                    className="h-10 sm:h-12 w-auto max-h-18 object-contain transition-all duration-300"
-                                />
-                            ) : (
-                                <span className={`text-xl font-extrabold tracking-tight transition-colors duration-300 ${isTransparentMode ? 'text-white drop-shadow-sm' : 'text-gray-900'
-                                    }`}>
-                                    {site?.nombre}
-                                </span>
-                            )}
-                        </Link>
-                    </div>
-
                     {/* 3.3. A LA DERECHA: BUSCADOR Y CARRITO */}
                     <div className="flex flex-1 items-center justify-end gap-2 sm:gap-3">
                         {/* Buscador Desktop */}
@@ -545,7 +545,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 placeholder="Buscar..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className={`w-36 lg:w-52 rounded-full py-1.5 pl-8 pr-3 text-xs outline-none transition duration-300 ${isTransparentMode
+                                className={`w-36 lg:w-48 rounded-full py-1.5 pl-8 pr-3 text-xs outline-none transition duration-300 ${isTransparentMode
                                     ? 'border border-white/30 bg-white/20 backdrop-blur-md text-white placeholder-white/70 focus:border-white focus:bg-white/30 focus:ring-2 focus:ring-white/20'
                                     : 'border border-gray-300/80 bg-white/90 text-gray-900 placeholder-gray-400 focus:border-[var(--color-primario)] focus:ring-2 focus:ring-[var(--color-primario)]/20 shadow-2xs'
                                     }`}

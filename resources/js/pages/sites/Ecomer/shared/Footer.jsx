@@ -247,19 +247,6 @@ export default function Footer({
         ? rawMarcas
         : (rawMarcas && typeof rawMarcas === 'object' ? Object.values(rawMarcas) : []);
 
-    // Categorías únicas extraídas de los productos
-    const categorias = useMemo(() => {
-        if (!productos || !Array.isArray(productos) || productos.length === 0) {
-            return ['Infantil', 'Especiales', 'Matrimonio Elegante', 'Eventos y Fiestas', 'Postres Finos'];
-        }
-        const set = new Set();
-        productos.forEach((p) => {
-            const catName = p.categoria?.nombre || (typeof p.categoria === 'string' ? p.categoria : null);
-            if (catName) set.add(catName);
-        });
-        const arr = Array.from(set);
-        return arr.length > 0 ? arr.slice(0, 7) : ['Infantil', 'Especiales', 'Matrimonio Elegante', 'Eventos y Fiestas', 'Postres Finos'];
-    }, [productos]);
 
     // Configuración Catálogo PDF
     const catalogoConfig = estilos?.catalogo || {};
@@ -380,48 +367,48 @@ export default function Footer({
                         {displayActions.length > 0 && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-4 sm:gap-6 text-xs text-neutral-300">
                                 {displayActions.map((action, idx) => {
-                                const itemBody = (
-                                    <div className="flex items-center gap-2.5 group/item transition-colors hover:text-white">
-                                        <DynamicIcon
-                                            name={action.icon}
-                                            className="h-4 w-4 text-white shrink-0 transition-transform group-hover/item:scale-110"
-                                        />
-                                        <div className="flex items-center gap-1.5 leading-tight">
-                                            {action.label ? (
-                                                <>
-                                                    <span className="font-semibold text-white/90 whitespace-nowrap">
-                                                        {action.label}:
-                                                    </span>
-                                                    <span className="font-medium text-neutral-300 group-hover/item:text-white transition-colors truncate max-w-[200px]">
+                                    const itemBody = (
+                                        <div className="flex items-center gap-2.5 group/item transition-colors hover:text-white">
+                                            <DynamicIcon
+                                                name={action.icon}
+                                                className="h-4 w-4 text-white shrink-0 transition-transform group-hover/item:scale-110"
+                                            />
+                                            <div className="flex items-center gap-1.5 leading-tight">
+                                                {action.label ? (
+                                                    <>
+                                                        <span className="font-semibold text-white/90 whitespace-nowrap">
+                                                            {action.label}:
+                                                        </span>
+                                                        <span className="font-medium text-neutral-300 group-hover/item:text-white transition-colors truncate max-w-[200px]">
+                                                            {action.texto}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span className="font-medium text-neutral-300 group-hover/item:text-white transition-colors truncate max-w-[220px]">
                                                         {action.texto}
                                                     </span>
-                                                </>
-                                            ) : (
-                                                <span className="font-medium text-neutral-300 group-hover/item:text-white transition-colors truncate max-w-[220px]">
-                                                    {action.texto}
-                                                </span>
-                                            )}
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-
-                                if (action.href) {
-                                    return (
-                                        <a
-                                            key={idx}
-                                            href={action.href}
-                                            target={action.href.startsWith('http') ? '_blank' : '_self'}
-                                            rel={action.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                                            className="focus:outline-none"
-                                        >
-                                            {itemBody}
-                                        </a>
                                     );
-                                }
 
-                                return <div key={idx}>{itemBody}</div>;
-                            })}
-                        </div>
+                                    if (action.href) {
+                                        return (
+                                            <a
+                                                key={idx}
+                                                href={action.href}
+                                                target={action.href.startsWith('http') ? '_blank' : '_self'}
+                                                rel={action.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                                                className="focus:outline-none"
+                                            >
+                                                {itemBody}
+                                            </a>
+                                        );
+                                    }
+
+                                    return <div key={idx}>{itemBody}</div>;
+                                })}
+                            </div>
                         )}
                     </div>
                 </div>

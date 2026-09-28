@@ -243,23 +243,6 @@ export default function Footer({
 
     // Marcas de la sección 'Marcas'
     const rawMarcas = activeMarcas?.contenido?.find((c) => c.label === 'Imagenes' || c.label === 'imagenes')?.valor;
-    const marcasList = Array.isArray(rawMarcas)
-        ? rawMarcas
-        : (rawMarcas && typeof rawMarcas === 'object' ? Object.values(rawMarcas) : []);
-
-    // Categorías únicas extraídas de los productos
-    const categorias = useMemo(() => {
-        if (!productos || !Array.isArray(productos) || productos.length === 0) {
-            return ['Infantil', 'Especiales', 'Matrimonio Elegante', 'Eventos y Fiestas', 'Postres Finos'];
-        }
-        const set = new Set();
-        productos.forEach((p) => {
-            const catName = p.categoria?.nombre || (typeof p.categoria === 'string' ? p.categoria : null);
-            if (catName) set.add(catName);
-        });
-        const arr = Array.from(set);
-        return arr.length > 0 ? arr.slice(0, 7) : ['Infantil', 'Especiales', 'Matrimonio Elegante', 'Eventos y Fiestas', 'Postres Finos'];
-    }, [productos]);
 
     // Configuración Catálogo PDF
     const catalogoConfig = estilos?.catalogo || {};
@@ -366,7 +349,7 @@ export default function Footer({
     return (
         <footer className="w-full bg-[#050505] text-[#d4d4d8] font-sans antialiased border-t border-neutral-900 selection:bg-neutral-800 selection:text-white">
             <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
-                
+
                 {/* --- 1. BARRA SUPERIOR: VALOR Y BENEFICIOS BASADOS EN NAV / ACCIONES --- */}
                 <div className="pb-10 border-b border-neutral-800/80">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -380,55 +363,55 @@ export default function Footer({
                         {displayActions.length > 0 && (
                             <div className="grid grid-cols-1 sm:grid-cols-2 lg:flex lg:flex-wrap items-center gap-4 sm:gap-6 text-xs text-neutral-300">
                                 {displayActions.map((action, idx) => {
-                                const itemBody = (
-                                    <div className="flex items-center gap-2.5 group/item transition-colors hover:text-white">
-                                        <DynamicIcon
-                                            name={action.icon}
-                                            className="h-4 w-4 text-white shrink-0 transition-transform group-hover/item:scale-110"
-                                        />
-                                        <div className="flex items-center gap-1.5 leading-tight">
-                                            {action.label ? (
-                                                <>
-                                                    <span className="font-semibold text-white/90 whitespace-nowrap">
-                                                        {action.label}:
-                                                    </span>
-                                                    <span className="font-medium text-neutral-300 group-hover/item:text-white transition-colors truncate max-w-[200px]">
+                                    const itemBody = (
+                                        <div className="flex items-center gap-2.5 group/item transition-colors hover:text-white">
+                                            <DynamicIcon
+                                                name={action.icon}
+                                                className="h-4 w-4 text-white shrink-0 transition-transform group-hover/item:scale-110"
+                                            />
+                                            <div className="flex items-center gap-1.5 leading-tight">
+                                                {action.label ? (
+                                                    <>
+                                                        <span className="font-semibold text-white/90 whitespace-nowrap">
+                                                            {action.label}:
+                                                        </span>
+                                                        <span className="font-medium text-neutral-300 group-hover/item:text-white transition-colors truncate max-w-[200px]">
+                                                            {action.texto}
+                                                        </span>
+                                                    </>
+                                                ) : (
+                                                    <span className="font-medium text-neutral-300 group-hover/item:text-white transition-colors truncate max-w-[220px]">
                                                         {action.texto}
                                                     </span>
-                                                </>
-                                            ) : (
-                                                <span className="font-medium text-neutral-300 group-hover/item:text-white transition-colors truncate max-w-[220px]">
-                                                    {action.texto}
-                                                </span>
-                                            )}
+                                                )}
+                                            </div>
                                         </div>
-                                    </div>
-                                );
-
-                                if (action.href) {
-                                    return (
-                                        <a
-                                            key={idx}
-                                            href={action.href}
-                                            target={action.href.startsWith('http') ? '_blank' : '_self'}
-                                            rel={action.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-                                            className="focus:outline-none"
-                                        >
-                                            {itemBody}
-                                        </a>
                                     );
-                                }
 
-                                return <div key={idx}>{itemBody}</div>;
-                            })}
-                        </div>
+                                    if (action.href) {
+                                        return (
+                                            <a
+                                                key={idx}
+                                                href={action.href}
+                                                target={action.href.startsWith('http') ? '_blank' : '_self'}
+                                                rel={action.href.startsWith('http') ? 'noopener noreferrer' : undefined}
+                                                className="focus:outline-none"
+                                            >
+                                                {itemBody}
+                                            </a>
+                                        );
+                                    }
+
+                                    return <div key={idx}>{itemBody}</div>;
+                                })}
+                            </div>
                         )}
                     </div>
                 </div>
 
                 {/* --- 2. CUERPO PRINCIPAL: 3 COLUMNAS LIMPIAS Y EN ESPAÑOL --- */}
                 <div className="py-12 grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-12 border-b border-neutral-800/80 text-sm">
-                    
+
                     {/* COLUMNA 1: SOBRE NOSOTROS & UBICACIÓN */}
                     <div className="space-y-4">
                         <h4 className="text-white font-bold text-sm tracking-wide">
@@ -502,7 +485,7 @@ export default function Footer({
                         <h4 className="text-white font-bold text-sm tracking-wide">
                             Atención al Cliente
                         </h4>
-                        
+
                         <div className="space-y-3 text-xs text-neutral-400">
                             {/* Teléfono */}
                             {phoneNavTexto && (
@@ -599,7 +582,7 @@ export default function Footer({
                     <div>
                         © {currentYear} <span className="text-neutral-400 font-medium">{siteName}</span>. Todos los derechos reservados.
                     </div>
-                    
+
                     <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-neutral-400">
                         <a href="#contacto" className="hover:text-white transition-colors">Política de Envíos</a>
                         <a href="#contacto" className="hover:text-white transition-colors">Políticas de Devolución</a>

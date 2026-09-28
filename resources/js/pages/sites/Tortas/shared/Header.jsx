@@ -88,30 +88,32 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                 )}
 
                 {/* MAIN NAV */}
-                <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-4 px-6 py-3 transition-all duration-300">
-                    {/* LOGO */}
-                    <Link
-                        href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}` : `/${dominio}/${secciones?.[0]?.slug || 'inicio'}`}
-                        className="flex items-center gap-3"
-                    >
-                        {logoNav || site?.imagen ? (
-                            <img
-                                src={logoNav || site?.imagen}
-                                alt={site?.nombre || ''}
-                                width={180}
-                                height={48}
-                                decoding="async"
-                                className="h-12 w-auto max-h-12 object-contain transition-all duration-300"
-                            />
-                        ) : (
-                            <span className="text-lg font-bold tracking-tight text-gray-900">
-                                {site?.nombre}
-                            </span>
-                        )}
-                    </Link>
+                <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-6 py-3 transition-all duration-300">
+                    {/* IZQUIERDA: LOGO */}
+                    <div className="flex flex-1 items-center justify-start">
+                        <Link
+                            href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}` : `/${dominio}/${secciones?.[0]?.slug || 'inicio'}`}
+                            className="flex items-center gap-3"
+                        >
+                            {logoNav || site?.imagen ? (
+                                <img
+                                    src={logoNav || site?.imagen}
+                                    alt={site?.nombre || ''}
+                                    width={180}
+                                    height={48}
+                                    decoding="async"
+                                    className="h-12 w-auto max-h-12 object-contain transition-all duration-300"
+                                />
+                            ) : (
+                                <span className="text-lg font-bold tracking-tight text-gray-900">
+                                    {site?.nombre}
+                                </span>
+                            )}
+                        </Link>
+                    </div>
 
-                    {/* NAV LINKS & CART */}
-                    <div suppressHydrationWarning className="flex items-center gap-3">
+                    {/* CENTRO: NAVEGACIÓN DESKTOP */}
+                    <div className="flex shrink-0 items-center justify-center">
                         <nav className="flex flex-wrap items-center gap-1">
                             {secciones?.map((seccion) => {
                                 const slugLower = seccion.slug?.toLowerCase() || '';
@@ -190,8 +192,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 );
                             })}
                         </nav>
+                    </div>
 
-                        {/* BOTÓN CARRITO SI TIENE TIENDA */}
+                    {/* DERECHA: BOTÓN CARRITO */}
+                    <div className="flex flex-1 items-center justify-end">
                         {hasStore && (
                             <button
                                 type="button"

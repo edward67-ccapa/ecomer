@@ -88,8 +88,18 @@ class Site extends Model
      */
     public function setEstilosAttribute(mixed $value): void
     {
-        $this->attributes['estilos'] = is_null($value)
-            ? null
-            : json_encode(array_filter($value, static fn (mixed $item): bool => $item !== null));
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                $value = $decoded;
+            }
+        }
+
+        if (is_array($value)) {
+            $value = array_filter($value, static fn (mixed $item): bool => $item !== null);
+            $this->attributes['estilos'] = json_encode($value);
+        } else {
+            $this->attributes['estilos'] = $value;
+        }
     }
 }

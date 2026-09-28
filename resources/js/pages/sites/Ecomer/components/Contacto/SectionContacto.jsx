@@ -128,33 +128,46 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
     return (
         <main className="flex-1 bg-white">
             {/* 1. SECCIÓN SUPERIOR: HERO CON IMAGEN DE FONDO */}
-            <section className="relative h-[460px] sm:h-[500px] lg:h-[540px] w-full overflow-hidden bg-gray-900 pt-32 sm:pt-36 flex items-start">
-                <img
-                    src={imagenHero}
-                    alt={titulo}
-                    className="absolute inset-0 h-full w-full object-cover object-center filter brightness-90"
-                />
+            <section className="relative h-[80vh] min-h-[500px] w-full overflow-hidden bg-slate-950 flex items-center">
+                {imagenHero && (
+                    <div className="absolute inset-0 z-0 h-full w-full">
+                        <img
+                            src={imagenHero}
+                            alt={titulo}
+                            fetchPriority="high"
+                            decoding="async"
+                            loading="eager"
+                            className="h-full w-full object-cover brightness-90"
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                objectPosition: 'center bottom',
+                            }}
+                        />
+                    </div>
+                )}
 
                 {/* Dark Gradient Overlay for legibility */}
-                <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black via-black/65 to-black/40" />
+                <div className="pointer-events-none absolute inset-0 z-0 bg-gradient-to-b from-black/80 via-black/55 to-black/75" />
 
                 {/* Top Header Content Overlaid on Image */}
-                <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full pt-4 sm:pt-8">
+                <div className="relative z-10 mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 w-full">
                     <div className="max-w-xl text-white">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             transition={{ duration: 0.6 }}
                         >
-                            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1 text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md border border-white/20 mb-3">
+                            <span className="inline-flex items-center gap-2 rounded-full bg-white/10 px-3.5 py-1 text-[10px] sm:text-xs font-bold uppercase tracking-wider text-white backdrop-blur-md border border-white/20 mb-2 sm:mb-3">
                                 <span className="h-2 w-2 rounded-full bg-[var(--color-primario)] animate-pulse" />
                                 Ubicación & Contacto
                             </span>
-                            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight drop-shadow-md mb-3">
+                            <h1 className="text-2xl sm:text-4xl lg:text-5xl font-extrabold text-white tracking-tight drop-shadow-md mb-2 sm:mb-3">
                                 {titulo}
                             </h1>
                             {descripcion && (
-                                <p className="text-sm sm:text-base text-gray-200 font-medium leading-relaxed max-w-lg drop-shadow">
+                                <p className="text-xs sm:text-base text-gray-200 font-medium leading-relaxed max-w-lg drop-shadow">
                                     {descripcion}
                                 </p>
                             )}

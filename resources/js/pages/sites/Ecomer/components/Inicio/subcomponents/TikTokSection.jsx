@@ -120,17 +120,19 @@ export default function TikTokSection({ seccionData }) {
                                 type="button"
                                 onClick={handleScrollLeft}
                                 aria-label="Anterior"
-                                className="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 hover:text-black transition-colors cursor-pointer active:scale-95 border border-gray-200"
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all duration-300 cursor-pointer active:scale-95 shadow-sm hover:shadow-md hover:brightness-110"
+                                style={{ backgroundColor: 'var(--color-primario)' }}
                             >
-                                <span className="text-2xl leading-none font-light">‹</span>
+                                <span className="text-2xl leading-none font-bold">‹</span>
                             </button>
                             <button
                                 type="button"
                                 onClick={handleScrollRight}
                                 aria-label="Siguiente"
-                                className="w-10 h-10 rounded-full flex items-center justify-center text-gray-700 hover:text-black transition-colors cursor-pointer active:scale-95 border border-gray-200"
+                                className="w-10 h-10 rounded-full flex items-center justify-center text-white transition-all duration-300 cursor-pointer active:scale-95 shadow-sm hover:shadow-md hover:brightness-110"
+                                style={{ backgroundColor: 'var(--color-primario)' }}
                             >
-                                <span className="text-2xl leading-none font-light">›</span>
+                                <span className="text-2xl leading-none font-bold">›</span>
                             </button>
                         </div>
                     </div>
@@ -194,9 +196,9 @@ export default function TikTokSection({ seccionData }) {
 
                                         {/* Enlace de Acción bajo la tarjeta */}
                                         {tituloFinal && (
-                                            <div className="mt-3 flex items-center justify-center text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-black transition-colors gap-1.5 px-1 text-center">
+                                            <div className="mt-3 flex items-center justify-center text-xs sm:text-sm font-semibold text-gray-700 group-hover:text-[var(--color-primario)] transition-colors gap-1.5 px-1 text-center">
                                                 <span className="line-clamp-1">{tituloFinal}</span>
-                                                <span className="text-xs shrink-0">→</span>
+                                                <span className="text-xs shrink-0 transition-transform group-hover:translate-x-1" style={{ color: 'var(--color-primario)' }}>→</span>
                                             </div>
                                         )}
                                     </div>
