@@ -81,13 +81,13 @@ export default function Tortas({
         return undefined;
     };
 
-    const faviconUrl = getFaviconUrl(estilos?.favicon) || getFaviconUrl(site?.imagen) || '/favicon.svg';
+    const faviconUrl = getFaviconUrl(estilos?.favicon) || getFaviconUrl(site?.imagen) || '/favicon.svg?v=2';
     const faviconType = getFaviconType(faviconUrl) || 'image/svg+xml';
 
     return (
         <>
             <Head title={`${site.nombre} — ${seccionActiva?.nombre || 'Inicio'}`}>
-                <link rel="icon" href="/favicon.svg" type="image/svg+xml" key="favicon-svg-default" />
+                <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" key="favicon-svg-default" />
                 {faviconUrl && <link rel="icon" href={faviconUrl} type={faviconType} key="favicon" />}
                 {faviconUrl && <link rel="shortcut icon" href={faviconUrl} type={faviconType} key="shortcut-icon" />}
                 {faviconUrl && <link rel="apple-touch-icon" href={faviconUrl} key="apple-touch-icon" />}
