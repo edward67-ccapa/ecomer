@@ -165,14 +165,22 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
     const navSecciones = useMemo(() => {
         let list = Array.isArray(secciones) ? [...secciones] : [];
 
+        const prodOrden = estilos?.seccion_productos?.orden !== undefined && estilos?.seccion_productos?.orden !== ''
+            ? Number(estilos.seccion_productos.orden)
+            : 2;
+
         const hasProductosOrTienda = list.some((s) => {
             const slug = (s.slug || '').toLowerCase();
             return slug === 'productos' || slug === 'tienda' || slug === 'tiendas';
         });
 
         if (hasStore && !hasProductosOrTienda) {
-            list.splice(1, 0, { slug: 'productos', nombre: 'Productos' });
+            list.push({ slug: 'productos', nombre: 'Productos', orden: prodOrden });
         }
+
+        const servOrden = estilos?.seccion_servicios?.orden !== undefined && estilos?.seccion_servicios?.orden !== ''
+            ? Number(estilos.seccion_servicios.orden)
+            : 3;
 
         const hasServiciosInList = list.some((s) => {
             const slug = (s.slug || '').toLowerCase();
@@ -182,13 +190,37 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
         const hasServiciosData = Array.isArray(serviciosSitio) && serviciosSitio.length > 0;
 
         if (hasServiciosData && !hasServiciosInList) {
-            const prodIndex = list.findIndex((s) => ['productos', 'tienda', 'tiendas'].includes((s.slug || '').toLowerCase()));
-            const insertIdx = prodIndex !== -1 ? prodIndex + 1 : (list.length > 1 ? 1 : list.length);
-            list.splice(insertIdx, 0, { slug: 'servicios', nombre: 'Servicios' });
+            list.push({ slug: 'servicios', nombre: 'Servicios', orden: servOrden });
         }
 
+        const catOrden = estilos?.catalogo?.orden !== undefined && estilos?.catalogo?.orden !== ''
+            ? Number(estilos.catalogo.orden)
+            : 4;
+
+        const hasCatalogoInList = list.some((s) => (s.slug || '').toLowerCase() === 'catalogo');
+
+        if (isCatalogoActivo && !hasCatalogoInList) {
+            list.push({ slug: 'catalogo', nombre: catalogoTitulo, isCatalogo: true, orden: catOrden });
+        }
+
+        list = list.map((s) => {
+            const slug = (s.slug || '').toLowerCase();
+            if (slug === 'productos' || slug === 'tienda' || slug === 'tiendas') {
+                return { ...s, orden: estilos?.seccion_productos?.orden !== undefined && estilos?.seccion_productos?.orden !== '' ? Number(estilos.seccion_productos.orden) : (s.orden ?? 2) };
+            }
+            if (slug === 'servicios' || slug === 'servicio') {
+                return { ...s, orden: estilos?.seccion_servicios?.orden !== undefined && estilos?.seccion_servicios?.orden !== '' ? Number(estilos.seccion_servicios.orden) : (s.orden ?? 3) };
+            }
+            if (slug === 'catalogo') {
+                return { ...s, isCatalogo: true, orden: estilos?.catalogo?.orden !== undefined && estilos?.catalogo?.orden !== '' ? Number(estilos.catalogo.orden) : (s.orden ?? 4) };
+            }
+            return { ...s, orden: s.orden ?? 99 };
+        });
+
+        list.sort((a, b) => Number(a.orden ?? 99) - Number(b.orden ?? 99));
+
         return list;
-    }, [secciones, hasStore, serviciosSitio]);
+    }, [secciones, hasStore, serviciosSitio, estilos, isCatalogoActivo, catalogoTitulo]);
 
     const getDisplayName = (seccion) => {
         const slugLower = (seccion?.slug || '').toLowerCase().trim();
@@ -466,40 +498,48 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                     }`;
                                 const activeStyle = activa ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {};
 
+                                if (slugLower === 'catalogo' || seccion.isCatalogo) {
+                                    if (!isCatalogoActivo) return null;
+                                    return (
+                                        <a
+                                            key="catalogo"
+                                            href={downloadUrl}
+                                            onClick={handleDescargarCatalogo}
+                                            className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 cursor-pointer ${
+                                                isCatalogoUrlActive
+                                                    ? 'text-white shadow-xs'
+                                                    : isTransparentMode
+                                                        ? 'text-white/90 hover:text-white hover:bg-white/20'
+                                                        : 'text-gray-800 hover:text-white hover:bg-[var(--color-primario)]/60'
+                                            }`}
+                                            style={isCatalogoUrlActive ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
+                                        >
+                                            {catalogoTitulo}
+                                        </a>
+                                    );
+                                }
+
                                 if (isProductos) {
                                     return (
-                                        <Fragment key={seccion.slug}>
-                                            <div
-                                                className="relative"
-                                                onMouseEnter={handleMouseEnterMega}
-                                                onMouseLeave={handleMouseLeaveMega}
+                                        <div
+                                            key={seccion.slug}
+                                            className="relative"
+                                            onMouseEnter={handleMouseEnterMega}
+                                            onMouseLeave={handleMouseLeaveMega}
+                                        >
+                                            <Link
+                                                href={getProductosUrl(null, null)}
+                                                className={`inline-flex items-center gap-1.5 ${linkClasses}`}
+                                                style={activeStyle}
                                             >
-                                                <Link
-                                                    href={getProductosUrl(null, null)}
-                                                    className={`inline-flex items-center gap-1.5 ${linkClasses}`}
-                                                    style={activeStyle}
-                                                >
-                                                    <span>{displayName}</span>
-                                                    <DynamicIcon
-                                                        name="FaChevronDown"
-                                                        className={`h-3 w-3 transition-transform duration-300 ${isMegaMenuOpen ? 'rotate-180 text-white' : 'opacity-70'
-                                                            }`}
-                                                    />
-                                                </Link>
-                                            </div>
-
-                                            {isCatalogoActivo && (
-                                                <a
-                                                    href={downloadUrl}
-                                                    onClick={handleDescargarCatalogo}
-                                                    className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 cursor-pointer ${isTransparentMode
-                                                        ? 'text-white/90 hover:text-white hover:bg-white/20'
-                                                        : 'text-gray-800 hover:text-white hover:bg-[var(--color-primario)]/60'}`}
-                                                >
-                                                    {catalogoTitulo}
-                                                </a>
-                                            )}
-                                        </Fragment>
+                                                <span>{displayName}</span>
+                                                <DynamicIcon
+                                                    name="FaChevronDown"
+                                                    className={`h-3 w-3 transition-transform duration-300 ${isMegaMenuOpen ? 'rotate-180 text-white' : 'opacity-70'
+                                                        }`}
+                                                />
+                                            </Link>
+                                        </div>
                                     );
                                 }
 
@@ -906,10 +946,26 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 }`;
                             const activeStyle = activa ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {};
 
-                            if (isProductos && categoriasArbol.length > 0) {
-                                return (
-                                    <Fragment key={seccion.slug}>
-                                        <div className="space-y-1">
+                                if (slugLower === 'catalogo' || seccion.isCatalogo) {
+                                    if (!isCatalogoActivo) return null;
+                                    return (
+                                        <a
+                                            key="catalogo"
+                                            href={downloadUrl}
+                                            onClick={(e) => {
+                                                setMobileMenuOpen(false);
+                                                handleDescargarCatalogo(e);
+                                            }}
+                                            className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+                                        >
+                                            {catalogoTitulo}
+                                        </a>
+                                    );
+                                }
+
+                                if (isProductos && categoriasArbol.length > 0) {
+                                    return (
+                                        <div key={seccion.slug} className="space-y-1">
                                             <div className="flex items-center justify-between">
                                                 <Link
                                                     href={getProductosUrl(null, null)}
@@ -954,22 +1010,8 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                 </div>
                                             )}
                                         </div>
-
-                                        {isCatalogoActivo && (
-                                            <a
-                                                href={downloadUrl}
-                                                onClick={(e) => {
-                                                    setMobileMenuOpen(false);
-                                                    handleDescargarCatalogo(e);
-                                                }}
-                                                className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
-                                            >
-                                                {catalogoTitulo}
-                                            </a>
-                                        )}
-                                    </Fragment>
-                                );
-                            }
+                                    );
+                                }
 
                             if (hasStandalonePage) {
                                 return (

@@ -189,36 +189,90 @@ class SitePageController extends Controller
             ->map(fn (Seccion $s): array => [
                 'slug' => $s->slug,
                 'nombre' => $s->nombre,
+                'orden' => $s->orden !== null ? (int) $s->orden : 99,
             ])
             ->values()
             ->toArray();
+
+        $prodOrden = isset($estilos['seccion_productos']['orden']) && $estilos['seccion_productos']['orden'] !== ''
+            ? (int) $estilos['seccion_productos']['orden']
+            : 2;
 
         $hasProductosInNav = collect($seccionesArray)->contains(
             fn ($s) => in_array(strtolower($s['slug'] ?? ''), ['productos', 'tienda', 'tiendas'])
         );
         if (! empty($tiendaIds) && ! $hasProductosInNav) {
-            array_splice($seccionesArray, 1, 0, [[
+            $seccionesArray[] = [
                 'slug' => 'productos',
                 'nombre' => 'Productos',
-            ]]);
+                'orden' => $prodOrden,
+            ];
+        } else {
+            foreach ($seccionesArray as &$sec) {
+                if (in_array(strtolower($sec['slug'] ?? ''), ['productos', 'tienda', 'tiendas'])) {
+                    if (isset($estilos['seccion_productos']['orden']) && $estilos['seccion_productos']['orden'] !== '') {
+                        $sec['orden'] = (int) $estilos['seccion_productos']['orden'];
+                    }
+                }
+            }
+            unset($sec);
         }
+
+        $servOrden = isset($estilos['seccion_servicios']['orden']) && $estilos['seccion_servicios']['orden'] !== ''
+            ? (int) $estilos['seccion_servicios']['orden']
+            : 3;
 
         $hasServiciosInNav = collect($seccionesArray)->contains(
             fn ($s) => in_array(strtolower($s['slug'] ?? ''), ['servicios', 'servicio'])
         );
         if (! empty($serviciosSitio) && ! $hasServiciosInNav) {
-            $insertPos = 1;
-            foreach ($seccionesArray as $idx => $sec) {
-                if (in_array(strtolower($sec['slug'] ?? ''), ['productos', 'tienda', 'tiendas'])) {
-                    $insertPos = $idx + 1;
-                    break;
-                }
-            }
-            array_splice($seccionesArray, $insertPos, 0, [[
+            $seccionesArray[] = [
                 'slug' => 'servicios',
                 'nombre' => 'Servicios',
-            ]]);
+                'orden' => $servOrden,
+            ];
+        } else {
+            foreach ($seccionesArray as &$sec) {
+                if (in_array(strtolower($sec['slug'] ?? ''), ['servicios', 'servicio'])) {
+                    if (isset($estilos['seccion_servicios']['orden']) && $estilos['seccion_servicios']['orden'] !== '') {
+                        $sec['orden'] = (int) $estilos['seccion_servicios']['orden'];
+                    }
+                }
+            }
+            unset($sec);
         }
+
+        $catalogoConfig = $estilos['catalogo'] ?? [];
+        if (! empty($catalogoConfig['activo'])) {
+            $catOrden = isset($catalogoConfig['orden']) && $catalogoConfig['orden'] !== ''
+                ? (int) $catalogoConfig['orden']
+                : 4;
+            $catTitulo = ! empty($catalogoConfig['titulo']) ? $catalogoConfig['titulo'] : 'Catálogo';
+
+            $hasCatalogoInNav = collect($seccionesArray)->contains(
+                fn ($s) => strtolower($s['slug'] ?? '') === 'catalogo'
+            );
+            if (! $hasCatalogoInNav) {
+                $seccionesArray[] = [
+                    'slug' => 'catalogo',
+                    'nombre' => $catTitulo,
+                    'orden' => $catOrden,
+                    'isCatalogo' => true,
+                ];
+            } else {
+                foreach ($seccionesArray as &$sec) {
+                    if (strtolower($sec['slug'] ?? '') === 'catalogo') {
+                        $sec['isCatalogo'] = true;
+                        if (isset($catalogoConfig['orden']) && $catalogoConfig['orden'] !== '') {
+                            $sec['orden'] = (int) $catalogoConfig['orden'];
+                        }
+                    }
+                }
+                unset($sec);
+            }
+        }
+
+        usort($seccionesArray, fn ($a, $b) => ($a['orden'] ?? 99) <=> ($b['orden'] ?? 99));
 
         return Inertia::render(self::paginaPlantilla($site->plantilla), [
             'site' => [

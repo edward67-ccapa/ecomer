@@ -140,7 +140,7 @@ class PlantillaForm
                                                             ->relationship('tiendas', 'nombre')
                                                             ->searchable(),
 
-                                                        Grid::make(3)->schema([
+                                                        Grid::make(4)->schema([
                                                             TextInput::make('estilos.seccion_productos.sub_titulo')
                                                                 ->label('Subtítulo de Productos / Tienda')
                                                                 ->placeholder('Ej: Catálogo Completo'),
@@ -149,6 +149,10 @@ class PlantillaForm
                                                                 ->placeholder('Ej: Nuestras Tortas y Creaciones'),
                                                             IconPicker::make('estilos.seccion_productos.icono')
                                                                 ->label('Ícono de Productos / Tienda'),
+                                                            TextInput::make('estilos.seccion_productos.orden')
+                                                                ->label('Orden en el Menú')
+                                                                ->numeric()
+                                                                ->placeholder('Ej: 2'),
                                                         ]),
                                                     ])
                                                     ->columnSpanFull(),
@@ -157,11 +161,17 @@ class PlantillaForm
                                                     ->icon('heroicon-o-wrench-screwdriver')
                                                     ->collapsible()
                                                     ->schema([
-                                                        MultiSelect::make('servicios')
-                                                            ->label('Servicios asociados')
-                                                            ->relationship('servicios', 'nombre')
-                                                            ->searchable()
-                                                            ->preload(),
+                                                        Grid::make(2)->schema([
+                                                            MultiSelect::make('servicios')
+                                                                ->label('Servicios asociados')
+                                                                ->relationship('servicios', 'nombre')
+                                                                ->searchable()
+                                                                ->preload(),
+                                                            TextInput::make('estilos.seccion_servicios.orden')
+                                                                ->label('Orden en el Menú')
+                                                                ->numeric()
+                                                                ->placeholder('Ej: 3'),
+                                                        ]),
                                                     ])
                                                     ->columnSpanFull(),
 
@@ -188,7 +198,7 @@ class PlantillaForm
                                                             ->default(false)
                                                             ->live(),
 
-                                                        Grid::make(2)->schema([
+                                                        Grid::make(3)->schema([
                                                             TextInput::make('estilos.catalogo.titulo')
                                                                 ->label('Título en el Menú')
                                                                 ->placeholder('Ej: Catálogo, Ver Catálogo, Catálogo PDF')
@@ -201,6 +211,12 @@ class PlantillaForm
                                                                 ->helperText('Si ingresas un enlace, el botón abrirá este archivo/URL. Si lo dejas vacío, cargará el catálogo dinámico de productos.')
                                                                 ->visible(fn (Get $get) => (bool) $get('estilos.catalogo.activo'))
                                                                 ->live(onBlur: true),
+
+                                                            TextInput::make('estilos.catalogo.orden')
+                                                                ->label('Orden en el Menú')
+                                                                ->numeric()
+                                                                ->placeholder('Ej: 4')
+                                                                ->visible(fn (Get $get) => (bool) $get('estilos.catalogo.activo')),
                                                         ]),
 
                                                         Section::make('Filtro de Productos para el Catálogo')

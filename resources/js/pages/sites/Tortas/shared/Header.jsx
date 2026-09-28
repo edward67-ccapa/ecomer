@@ -1,4 +1,4 @@
-import React, { Fragment, useEffect, useState } from 'react';
+import React, { Fragment, useEffect, useState, useMemo } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
 import { useCartStore } from '@/stores/useCartStore';
@@ -22,6 +22,62 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
     const openCart = useCartStore((state) => state.openCart);
     const cartCount = useCartStore((state) => state.getItemCount());
     const hasStore = Boolean(site?.tiene_tienda ?? tieneTienda ?? (productos && productos.length > 0) ?? true);
+
+    const catalogoConfig = estilos?.catalogo || {};
+    const isCatalogoActivo = Boolean(catalogoConfig.activo);
+    const catalogoTitulo = catalogoConfig.titulo || 'Catálogo';
+    const catalogoEnlace = catalogoConfig.enlace ? String(catalogoConfig.enlace).trim() : null;
+    const isCatalogoUrlActive = Boolean(currentUrl && currentUrl.includes('catalogo=1'));
+    const catalogoUrl = catalogoEnlace
+        ? catalogoEnlace
+        : (dominio === 'plantillas'
+            ? `/plantillas/${siteSlug}/productos?catalogo=1`
+            : (siteSlug ? `/${dominio}/${siteSlug}/productos?catalogo=1` : `/${dominio}/productos?catalogo=1`));
+
+    const navSecciones = useMemo(() => {
+        let list = Array.isArray(secciones) ? [...secciones] : [];
+
+        const prodOrden = estilos?.seccion_productos?.orden !== undefined && estilos?.seccion_productos?.orden !== ''
+            ? Number(estilos.seccion_productos.orden)
+            : 2;
+
+        const hasProductosOrTienda = list.some((s) => {
+            const slug = (s.slug || '').toLowerCase();
+            return slug === 'productos' || slug === 'tienda' || slug === 'tiendas';
+        });
+
+        if (hasStore && !hasProductosOrTienda) {
+            list.push({ slug: 'productos', nombre: 'Productos', orden: prodOrden });
+        }
+
+        const catOrden = estilos?.catalogo?.orden !== undefined && estilos?.catalogo?.orden !== ''
+            ? Number(estilos.catalogo.orden)
+            : 4;
+
+        const hasCatalogoInList = list.some((s) => (s.slug || '').toLowerCase() === 'catalogo');
+
+        if (isCatalogoActivo && !hasCatalogoInList) {
+            list.push({ slug: 'catalogo', nombre: catalogoTitulo, isCatalogo: true, orden: catOrden });
+        }
+
+        list = list.map((s) => {
+            const slug = (s.slug || '').toLowerCase();
+            if (slug === 'productos' || slug === 'tienda' || slug === 'tiendas') {
+                return { ...s, orden: estilos?.seccion_productos?.orden !== undefined && estilos?.seccion_productos?.orden !== '' ? Number(estilos.seccion_productos.orden) : (s.orden ?? 2) };
+            }
+            if (slug === 'servicios' || slug === 'servicio') {
+                return { ...s, orden: estilos?.seccion_servicios?.orden !== undefined && estilos?.seccion_servicios?.orden !== '' ? Number(estilos.seccion_servicios.orden) : (s.orden ?? 3) };
+            }
+            if (slug === 'catalogo') {
+                return { ...s, isCatalogo: true, orden: estilos?.catalogo?.orden !== undefined && estilos?.catalogo?.orden !== '' ? Number(estilos.catalogo.orden) : (s.orden ?? 4) };
+            }
+            return { ...s, orden: s.orden ?? 99 };
+        });
+
+        list.sort((a, b) => Number(a.orden ?? 99) - Number(b.orden ?? 99));
+
+        return list;
+    }, [secciones, hasStore, estilos, isCatalogoActivo, catalogoTitulo]);
 
     // --- DATA EXTRACTION ---
     const activeNav = seccionesData?.nav || seccionesData?.['nav'] || null;
@@ -95,9 +151,9 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                             href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}` : `/${dominio}/${secciones?.[0]?.slug || 'inicio'}`}
                             className="flex items-center gap-3"
                         >
-                            {logoNav || site?.imagen ? (
+                            {site?.imagen ? (
                                 <img
-                                    src={logoNav || site?.imagen}
+                                    src={site?.imagen}
                                     alt={site?.nombre || ''}
                                     width={180}
                                     height={48}
@@ -115,10 +171,34 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                     {/* CENTRO: NAVEGACIÓN DESKTOP */}
                     <div className="flex shrink-0 items-center justify-center">
                         <nav className="flex flex-wrap items-center gap-1">
-                            {secciones?.map((seccion) => {
+                            {navSecciones?.map((seccion) => {
                                 const slugLower = seccion.slug?.toLowerCase() || '';
                                 const anchorId = slugLower === 'contactos' ? 'contacto' : slugLower;
                                 const isInicioPage = !seccionActiva || seccionActiva.slug?.toLowerCase() === 'inicio';
+
+                                if (slugLower === 'catalogo' || seccion.isCatalogo) {
+                                    if (!isCatalogoActivo) return null;
+                                    return catalogoEnlace ? (
+                                        <a
+                                            key="catalogo"
+                                            href={catalogoEnlace}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 text-gray-800 hover:text-white hover:bg-[var(--color-primario)]/60"
+                                        >
+                                            {catalogoTitulo} ↗
+                                        </a>
+                                    ) : (
+                                        <Link
+                                            key="catalogo"
+                                            href={catalogoUrl}
+                                            className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 ${isCatalogoUrlActive ? 'text-white' : 'text-gray-800 hover:text-white'}`}
+                                            style={isCatalogoUrlActive ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
+                                        >
+                                            {catalogoTitulo}
+                                        </Link>
+                                    );
+                                }
 
                                 // Páginas que tienen componente/archivo propio independiente
                                 const PAGE_SECTIONS = ['inicio', 'productos', 'servicios'];
@@ -129,48 +209,15 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 const activeStyle = activa ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {};
 
                                 if (hasStandalonePage) {
-                                    const isProductos = slugLower === 'productos';
-                                    const catalogoConfig = estilos?.catalogo || {};
-                                    const isCatalogoActivo = Boolean(catalogoConfig.activo);
-                                    const catalogoTitulo = catalogoConfig.titulo || 'Catálogo';
-                                    const catalogoEnlace = catalogoConfig.enlace ? String(catalogoConfig.enlace).trim() : null;
-                                    const isCatalogoUrlActive = Boolean(currentUrl && currentUrl.includes('catalogo=1'));
-                                    const catalogoUrl = catalogoEnlace
-                                        ? catalogoEnlace
-                                        : (dominio === 'plantillas'
-                                            ? `/plantillas/${siteSlug}/productos?catalogo=1`
-                                            : (siteSlug ? `/${dominio}/${siteSlug}/productos?catalogo=1` : `/${dominio}/productos?catalogo=1`));
-
                                     return (
-                                        <Fragment key={seccion.slug}>
-                                            <Link
-                                                href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`}
-                                                className={linkClasses}
-                                                style={activeStyle}
-                                            >
-                                                {seccion.nombre}
-                                            </Link>
-                                            {isProductos && isCatalogoActivo && (
-                                                catalogoEnlace ? (
-                                                    <a
-                                                        href={catalogoEnlace}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 text-gray-800 hover:text-white hover:bg-[var(--color-primario)]/60"
-                                                    >
-                                                        {catalogoTitulo} ↗
-                                                    </a>
-                                                ) : (
-                                                    <Link
-                                                        href={catalogoUrl}
-                                                        className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 ${isCatalogoUrlActive ? 'text-white' : 'text-gray-800 hover:text-white'}`}
-                                                        style={isCatalogoUrlActive ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
-                                                    >
-                                                        {catalogoTitulo}
-                                                    </Link>
-                                                )
-                                            )}
-                                        </Fragment>
+                                        <Link
+                                            key={seccion.slug}
+                                            href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${seccion.slug}` : `/${dominio}/${seccion.slug}`}
+                                            className={linkClasses}
+                                            style={activeStyle}
+                                        >
+                                            {seccion.nombre}
+                                        </Link>
                                     );
                                 }
 
