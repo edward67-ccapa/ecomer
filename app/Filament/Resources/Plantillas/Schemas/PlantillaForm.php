@@ -261,7 +261,8 @@ class PlantillaForm
                                                                         ->required(),
                                                                     Textarea::make('texto')
                                                                         ->label('Número(s) o Correo(s)')
-                                                                        ->placeholder("Ej. 987654321 o correo@gmail.com\n(Soporta múltiples líneas)")
+                                                                        ->placeholder("Ej. 987654321 o correo@gmail.com\n(Múltiples contactos ej: edward 916628409\nluciana 916354345)")
+                                                                        ->helperText('Puedes poner nombre y número por línea para diferenciarlos en el WhatsApp flotante.')
                                                                         ->rows(2)
                                                                         ->required(),
                                                                 ]),

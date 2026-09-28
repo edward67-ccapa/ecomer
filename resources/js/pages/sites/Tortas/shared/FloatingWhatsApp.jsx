@@ -1,6 +1,80 @@
 import React, { useState, useMemo } from 'react';
 import DynamicIcon from '@/components/DynamicIcon';
 
+// Helper para parsear líneas de contacto con nombre y número (ej. "edward 916628409")
+export function parseWaContactLine(line, defaultItemLabel = 'WhatsApp', lIdx = 0, totalLines = 1) {
+    const rawLine = String(line || '').trim();
+    if (!rawLine) return null;
+
+    let url = '';
+    let cleanNum = '';
+    let displayNum = '';
+    let extractedName = '';
+
+    const urlMatch = rawLine.match(/(https?:\/\/[^\s]+)/i);
+    if (urlMatch) {
+        url = urlMatch[0];
+        const numFromUrl = url.replace(/\D/g, '');
+        cleanNum = numFromUrl ? (numFromUrl.length === 9 ? '51' + numFromUrl : numFromUrl) : '';
+        displayNum = numFromUrl ? (numFromUrl.length === 9 ? '+51 ' + numFromUrl : numFromUrl) : url;
+
+        const textWithoutUrl = rawLine.replace(urlMatch[0], '');
+        extractedName = textWithoutUrl.replace(/^[\s:\-,\(\)]+|[\s:\-,\(\)]+$/g, '').trim();
+    } else {
+        const phoneMatch = rawLine.match(/(?:\+?\d[\d\s\-\(\)]{6,}\d|\d{7,})/);
+        if (phoneMatch) {
+            displayNum = phoneMatch[0].trim();
+            const digitsOnly = displayNum.replace(/\D/g, '');
+            cleanNum = digitsOnly ? (digitsOnly.length === 9 ? '51' + digitsOnly : digitsOnly) : '';
+            url = cleanNum ? `https://wa.me/${cleanNum}` : '';
+
+            const textWithoutPhone = rawLine.replace(phoneMatch[0], '');
+            extractedName = textWithoutPhone.replace(/^[\s:\-,\(\)]+|[\s:\-,\(\)]+$/g, '').trim();
+        } else {
+            const digitsOnly = rawLine.replace(/\D/g, '');
+            if (digitsOnly) {
+                cleanNum = digitsOnly.length === 9 ? '51' + digitsOnly : digitsOnly;
+                url = `https://wa.me/${cleanNum}`;
+                displayNum = rawLine;
+            } else {
+                return null;
+            }
+        }
+    }
+
+    let formattedName = '';
+    if (extractedName) {
+        formattedName = extractedName.replace(/\b\w/g, (c) => c.toUpperCase());
+    }
+
+    const itemLabel = String(defaultItemLabel || 'WhatsApp').trim();
+    const isGenericLabel = /^(whatsapp|whatsap|contacto|teléfono|telefono|celular|móvil|movil)$/i.test(itemLabel);
+
+    let finalLabel = '';
+    if (formattedName) {
+        if (isGenericLabel) {
+            finalLabel = formattedName;
+        } else {
+            const cleanItemLabel = itemLabel.replace(/whatsapp/gi, '').trim();
+            if (cleanItemLabel && !formattedName.toLowerCase().includes(cleanItemLabel.toLowerCase())) {
+                finalLabel = `${formattedName} (${cleanItemLabel})`;
+            } else {
+                finalLabel = formattedName;
+            }
+        }
+    } else {
+        finalLabel = totalLines > 1 ? `${itemLabel} (${lIdx + 1})` : itemLabel;
+    }
+
+    return {
+        label: finalLabel,
+        name: formattedName,
+        numero: displayNum || cleanNum,
+        cleanNum,
+        url,
+    };
+}
+
 export default function FloatingWhatsApp({ site, dominio, siteSlug, seccionesData, estilos }) {
     const [viewState, setViewState] = useState('closed'); // 'closed' | 'selector' | 'chat'
     const [mensaje, setMensaje] = useState('');
@@ -27,20 +101,7 @@ export default function FloatingWhatsApp({ site, dominio, siteSlug, seccionesDat
         });
 
         const list = [];
-
-        // 1. Prioridad: WhatsApp oficial configurado en Redes Sociales (General)
-        const redesWa = estilos?.redes_sociales?.whatsapp || site?.estilos?.redes_sociales?.whatsapp;
-        if (redesWa) {
-            const cleanNum = String(redesWa).replace(/\D/g, '');
-            const finalNum = cleanNum ? (cleanNum.length === 9 ? '51' + cleanNum : cleanNum) : '';
-            const url = String(redesWa).startsWith('http') ? String(redesWa) : `https://wa.me/${finalNum}`;
-            list.push({
-                label: 'WhatsApp Oficial',
-                numero: redesWa,
-                cleanNum: finalNum,
-                url,
-            });
-        }
+        const seenCleanNums = new Set();
 
         waItems.forEach((item) => {
             const rawText = item.texto || item.Texto || '';
@@ -48,41 +109,49 @@ export default function FloatingWhatsApp({ site, dominio, siteSlug, seccionesDat
             const itemLabel = item.Label || item.label || 'WhatsApp';
 
             lines.forEach((line, lIdx) => {
-                const cleanNum = line.replace(/\D/g, '');
-                if (cleanNum || line.startsWith('http')) {
-                    const finalNum = cleanNum ? (cleanNum.length === 9 ? '51' + cleanNum : cleanNum) : '';
-                    const url = line.startsWith('http') ? line : `https://wa.me/${finalNum}`;
-                    list.push({
-                        label: lines.length > 1 ? `${itemLabel} (${lIdx + 1})` : itemLabel,
-                        numero: line,
-                        cleanNum: finalNum,
-                        url,
-                    });
+                const parsed = parseWaContactLine(line, itemLabel, lIdx, lines.length);
+                if (parsed && parsed.cleanNum) {
+                    if (!seenCleanNums.has(parsed.cleanNum)) {
+                        seenCleanNums.add(parsed.cleanNum);
+                        list.push(parsed);
+                    }
                 }
             });
         });
 
-        // Fallback a contacto si no hay acciones de nav/globales
+        const redesWa = estilos?.redes_sociales?.whatsapp || site?.estilos?.redes_sociales?.whatsapp;
+        if (redesWa) {
+            const lines = String(redesWa).split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+            lines.forEach((line, lIdx) => {
+                const parsed = parseWaContactLine(line, 'WhatsApp Oficial', lIdx, lines.length);
+                if (parsed && parsed.cleanNum) {
+                    if (!seenCleanNums.has(parsed.cleanNum)) {
+                        seenCleanNums.add(parsed.cleanNum);
+                        list.unshift(parsed);
+                    }
+                }
+            });
+        }
+
         if (list.length === 0 && initialContacto) {
             const itemContacto = initialContacto?.contenido?.find(
                 (c) => c.label?.toLowerCase() === 'whatsap' || c.label?.toLowerCase() === 'whatsapp'
             );
             const rawVal = itemContacto?.enlace || (Array.isArray(itemContacto?.valor) ? itemContacto.valor[0]?.texto : null);
             if (rawVal) {
-                const cleanNum = String(rawVal).replace(/\D/g, '');
-                const finalNum = cleanNum ? (cleanNum.length === 9 ? '51' + cleanNum : cleanNum) : '';
-                const url = rawVal.startsWith('http') ? rawVal : `https://wa.me/${finalNum}`;
-                list.push({
-                    label: 'WhatsApp',
-                    numero: rawVal,
-                    cleanNum: finalNum,
-                    url,
+                const lines = String(rawVal).split(/\r?\n/).map((s) => s.trim()).filter(Boolean);
+                lines.forEach((line, lIdx) => {
+                    const parsed = parseWaContactLine(line, 'WhatsApp', lIdx, lines.length);
+                    if (parsed && parsed.cleanNum && !seenCleanNums.has(parsed.cleanNum)) {
+                        seenCleanNums.add(parsed.cleanNum);
+                        list.push(parsed);
+                    }
                 });
             }
         }
 
         return list;
-    }, [seccionesData, estilos]);
+    }, [seccionesData, estilos, site]);
 
     const handleMainButtonClick = () => {
         if (viewState === 'chat' || viewState === 'selector') {
@@ -248,11 +317,43 @@ export default function FloatingWhatsApp({ site, dominio, siteSlug, seccionesDat
                 </div>
             )}
 
+
+            {/* ESTILOS DE ANIMACIÓN DE PULSO Y VIBRACIÓN / MENSAJE EN VIVO */}
+            <style>{`
+                @keyframes waPulseGlow {
+                    0% {
+                        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.8), 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+                    }
+                    70% {
+                        box-shadow: 0 0 0 20px rgba(37, 211, 102, 0), 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+                    }
+                    100% {
+                        box-shadow: 0 0 0 0 rgba(37, 211, 102, 0), 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+                    }
+                }
+
+                @keyframes waVibrateShake {
+                    0%, 100% { transform: rotate(0deg) scale(1); }
+                    3% { transform: rotate(-14deg) scale(1.12); }
+                    6% { transform: rotate(14deg) scale(1.12); }
+                    9% { transform: rotate(-12deg) scale(1.08); }
+                    12% { transform: rotate(12deg) scale(1.08); }
+                    15% { transform: rotate(-6deg) scale(1.04); }
+                    18% { transform: rotate(6deg) scale(1.04); }
+                    21% { transform: rotate(0deg) scale(1); }
+                }
+
+                .wa-pulse-active {
+                    animation: waPulseGlow 2s infinite, waVibrateShake 4.2s infinite ease-in-out;
+                }
+            `}</style>
+
             {/* BOTÓN FLOTANTE TRIGGER */}
             <button
                 type="button"
                 onClick={handleMainButtonClick}
-                className="flex items-center justify-center rounded-full bg-[#25D366] p-3.5 text-white shadow-xl transition-all duration-300 hover:bg-[#20ba5a] hover:scale-105 hover:shadow-2xl cursor-pointer"
+                className={`relative flex items-center justify-center rounded-full bg-[#25D366] p-3.5 text-white shadow-xl transition-all duration-300 hover:bg-[#20ba5a] hover:scale-110 cursor-pointer ${viewState === 'closed' ? 'wa-pulse-active' : ''
+                    }`}
                 title={viewState !== 'closed' ? "Cerrar" : "Abrir chat de WhatsApp"}
                 aria-label="Chat de WhatsApp"
             >
@@ -262,9 +363,9 @@ export default function FloatingWhatsApp({ site, dominio, siteSlug, seccionesDat
                     ) : (
                         <>
                             <DynamicIcon name="FaWhatsapp" className="h-7 w-7 text-white" />
-                            <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
-                                <span className="relative inline-flex rounded-full h-3 w-3 bg-white"></span>
+                            {/* BADGE DE NOTIFICACIÓN DE MENSAJE NO LEÍDO */}
+                            <span className="absolute -top-3 -right-3 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-extrabold text-white shadow-md border-2 border-white animate-bounce">
+                                1
                             </span>
                         </>
                     )}

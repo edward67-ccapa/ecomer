@@ -219,9 +219,9 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
                                         const getLineHref = (lineStr) => {
                                             const lineLower = lineStr.toLowerCase();
                                             const isEmail = lineLower.includes('@');
-                                            const isPhone = (iconLower.includes('whatsapp') || iconLower.includes('phone')) && /^\+?[\d\s-]{7,}$/.test(lineStr);
-                                            const isLink = lineLower.includes('.com') || lineLower.includes('.pe') || lineLower.startsWith('http');
                                             const clean = lineStr.replace(/\D/g, '');
+                                            const isPhone = (iconLower.includes('whatsapp') || iconLower.includes('phone') || iconLower.includes('mobile')) && clean.length >= 7;
+                                            const isLink = lineLower.includes('.com') || lineLower.includes('.pe') || lineLower.startsWith('http');
 
                                             if (isEmail) return `mailto:${lineStr}`;
                                             if (isPhone && clean.length >= 7) {

@@ -634,7 +634,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                     >
                                         <div className="flex items-center gap-2.5">
                                             <DynamicIcon name="FaGrip" className="h-4 w-4" />
-                                            <span>Ver Todsso el Catálogo</span>
+                                            <span>Ver todo el Catálogo</span>
                                         </div>
                                         <DynamicIcon name="FaChevronRight" className="h-3 w-3 opacity-70" />
                                     </Link>

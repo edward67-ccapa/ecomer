@@ -334,7 +334,7 @@
     "src": "_vendor-swiper-DBDkIWrS.css"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DYuKw_Bh.css",
+    "file": "assets/app-CcR8gMZU.css",
     "name": "app",
     "names": [
       "app.css"
@@ -352,7 +352,7 @@
     "isEntry": true
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-COO266Tj.js",
+    "file": "assets/app-Duv1XXig.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -494,7 +494,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/Index.jsx": {
-    "file": "assets/Index-Cp_pqqR7.js",
+    "file": "assets/Index-DUDxFBjm.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Ecomer/Index.jsx",
     "isDynamicEntry": true,
@@ -514,7 +514,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Contacto/SectionContacto.jsx": {
-    "file": "assets/SectionContacto-NfysxdJB.js",
+    "file": "assets/SectionContacto-D3vhKoeM.js",
     "name": "SectionContacto",
     "src": "resources/js/pages/sites/Ecomer/components/Contacto/SectionContacto.jsx",
     "isDynamicEntry": true,
@@ -598,7 +598,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/shared/FloatingWhatsApp.jsx": {
-    "file": "assets/FloatingWhatsApp-nnAtzUYR.js",
+    "file": "assets/FloatingWhatsApp-psiSzW02.js",
     "name": "FloatingWhatsApp",
     "src": "resources/js/pages/sites/Ecomer/shared/FloatingWhatsApp.jsx",
     "isDynamicEntry": true,
@@ -622,7 +622,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/shared/Header.jsx": {
-    "file": "assets/Header-Bao-S7Yr.js",
+    "file": "assets/Header-BoDwReh8.js",
     "name": "Header",
     "src": "resources/js/pages/sites/Ecomer/shared/Header.jsx",
     "isDynamicEntry": true,
@@ -656,7 +656,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/Index.jsx": {
-    "file": "assets/Index-CYNOfL5w.js",
+    "file": "assets/Index-DemFfdCG.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Tortas/Index.jsx",
     "isDynamicEntry": true,
@@ -725,7 +725,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/shared/FloatingWhatsApp.jsx": {
-    "file": "assets/FloatingWhatsApp-CtFCR9P6.js",
+    "file": "assets/FloatingWhatsApp-DkTijc4n.js",
     "name": "FloatingWhatsApp",
     "src": "resources/js/pages/sites/Tortas/shared/FloatingWhatsApp.jsx",
     "isDynamicEntry": true,
