@@ -55,9 +55,10 @@
             }
         </style>
 
-        <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
-        <link rel="icon" href="/favicon.ico?v=2" sizes="any">
-        <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+        <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
+        <link rel="icon" href="/favicon.ico?v=3" type="image/x-icon" sizes="any">
+        <link rel="shortcut icon" href="/favicon.ico?v=3">
+        <link rel="apple-touch-icon" href="/favicon.png?v=3">
 
         @fonts
 

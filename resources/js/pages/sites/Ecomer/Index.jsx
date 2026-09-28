@@ -156,13 +156,14 @@ export default function Ecomer({
         return undefined;
     };
 
-    const faviconUrl = getFaviconUrl(estilos?.favicon) || getFaviconUrl(site?.imagen) || '/favicon.svg?v=2';
+    const faviconUrl = getFaviconUrl(estilos?.favicon) || getFaviconUrl(site?.imagen) || '/favicon.svg?v=3';
     const faviconType = getFaviconType(faviconUrl) || 'image/svg+xml';
 
     return (
         <>
             <Head title={pageTitle}>
-                <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml" key="favicon-svg-default" />
+                <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" key="favicon-svg-default" />
+                <link rel="icon" href="/favicon.ico?v=3" type="image/x-icon" key="favicon-ico-default" />
                 {faviconUrl && <link rel="icon" href={faviconUrl} type={faviconType} key="favicon" />}
                 {faviconUrl && <link rel="shortcut icon" href={faviconUrl} type={faviconType} key="shortcut-icon" />}
                 {faviconUrl && <link rel="apple-touch-icon" href={faviconUrl} key="apple-touch-icon" />}

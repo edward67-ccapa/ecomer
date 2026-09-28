@@ -334,7 +334,7 @@
     "src": "_vendor-swiper-DBDkIWrS.css"
   },
   "resources/css/app.css": {
-    "file": "assets/app-DjqRX8rI.css",
+    "file": "assets/app-C8Cq4HoH.css",
     "name": "app",
     "names": [
       "app.css"
@@ -352,7 +352,7 @@
     "isEntry": true
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-BtKktYOC.js",
+    "file": "assets/app-954-eNvD.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -494,7 +494,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/Index.jsx": {
-    "file": "assets/Index-CtN1-VTZ.js",
+    "file": "assets/Index-zNFaTqn-.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Ecomer/Index.jsx",
     "isDynamicEntry": true,
@@ -656,7 +656,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/Index.jsx": {
-    "file": "assets/Index-CCxn6Jyh.js",
+    "file": "assets/Index-CK0DHyQ6.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Tortas/Index.jsx",
     "isDynamicEntry": true,
