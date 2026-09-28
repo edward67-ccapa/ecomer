@@ -86,7 +86,8 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
     });
 
     const rawWa = redesConfig.whatsapp || waFromActions?.texto || waFromActions?.Texto || '';
-    const cleanDigits = String(rawWa).replace(/\D/g, '');
+    const firstSegment = String(rawWa).split(/[\r\n/;,|]+/).map((s) => s.trim()).filter(Boolean)[0] || String(rawWa);
+    const cleanDigits = firstSegment.replace(/\D/g, '');
     const waNum = cleanDigits ? (cleanDigits.length === 9 ? '51' + cleanDigits : cleanDigits) : null;
 
     // Form state

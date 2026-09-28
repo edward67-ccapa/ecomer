@@ -118,6 +118,27 @@ export default function SectionProductoDetalle({
     };
 
     const getWhatsAppNumber = () => {
+        const redesWa = estilos?.redes_sociales?.whatsapp
+            || site?.estilos?.redes_sociales?.whatsapp
+            || estilos?.telefono
+            || site?.telefono;
+
+        const parseDigits = (raw) => {
+            if (!raw) return '';
+            const str = String(raw).trim();
+            if (!str) return '';
+            const segments = str.split(/[\r\n/;,|]+/).map((s) => s.trim()).filter(Boolean);
+            const firstSegment = segments[0] || str;
+            const digits = firstSegment.replace(/\D/g, '');
+            if (!digits) return '';
+            return digits.length === 9 ? '51' + digits : digits;
+        };
+
+        if (redesWa) {
+            const parsed = parseDigits(redesWa);
+            if (parsed) return parsed;
+        }
+
         const rawCmsNavActions = seccionesData?.nav?.contenido?.find((c) => c.label === 'accion_nav')?.valor;
         const cmsNavActions = Array.isArray(rawCmsNavActions) ? rawCmsNavActions : [];
         const globalActions = Array.isArray(estilos?.acciones_nav) ? estilos.acciones_nav : [];
@@ -132,10 +153,7 @@ export default function SectionProductoDetalle({
             return ico.includes('whatsapp') || ico.includes('phone') || txt.includes('wa.me');
         });
 
-        const rawWa = waItem?.texto || waItem?.Texto || '';
-        const firstLineWa = String(rawWa).split(/\r?\n/).map((s) => s.trim()).filter(Boolean)[0] || '';
-        const cleanDigits = firstLineWa.replace(/\D/g, '');
-        return cleanDigits ? (cleanDigits.length === 9 ? '51' + cleanDigits : cleanDigits) : '';
+        return parseDigits(waItem?.texto || waItem?.Texto || '');
     };
 
     const handleWhatsApp = () => {

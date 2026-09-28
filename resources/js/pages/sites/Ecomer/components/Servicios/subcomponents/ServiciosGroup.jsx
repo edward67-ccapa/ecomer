@@ -51,23 +51,20 @@ export default function ServiciosGroup({ serviciosBlock }) {
                                 transition={{ duration: 0.5, delay: idx * 0.1 }}
                                 className="group relative overflow-hidden rounded-[2rem] shadow-xl aspect-[4/3] cursor-pointer"
                             >
-                                {/* Imagen de Fondo — ocupa toda la tarjeta en cover */}
+                                {/* Imagen de Fondo — ocupa toda la tarjeta en cover y escala 1.05 al hacer hover */}
                                 {item.imagen ? (
                                     <img
                                         src={item.imagen}
                                         alt={item.titulo || 'Servicio'}
-                                        className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-700 group-hover:scale-110"
+                                        className="absolute inset-0 h-full w-full object-cover object-center transition-transform duration-500 group-hover:scale-105"
                                         loading="lazy"
                                     />
                                 ) : (
                                     <div className="absolute inset-0 bg-gray-900" />
                                 )}
 
-                                {/* Overlay base — siempre visible, sutil */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent transition-opacity duration-500 group-hover:opacity-0" />
-
-                                {/* Overlay hover — se intensifica al hacer hover */}
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/60 to-black/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
+                                {/* Overlay degradado — siempre visible */}
+                                <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/40 to-transparent" />
 
                                 {/* Insignia Superior: "No - 01" */}
                                 <div className="absolute top-6 left-6 z-20">
@@ -76,13 +73,13 @@ export default function ServiciosGroup({ serviciosBlock }) {
                                     </span>
                                 </div>
 
-                                {/* Contenido Inferior — aparece desde abajo con hover */}
+                                {/* Contenido Inferior — siempre visible */}
                                 <div className="absolute inset-x-0 bottom-0 z-10 p-6 sm:p-7">
-                                    <div className="translate-y-6 opacity-0 transition-all duration-500 ease-out group-hover:translate-y-0 group-hover:opacity-100">
+                                    <div className="space-y-3">
                                         {/* Título */}
                                         {item.titulo && (
                                             <h3
-                                                className="text-xl sm:text-2xl font-bold text-white mb-2 leading-snug tracking-tight"
+                                                className="text-xl sm:text-2xl font-bold text-white leading-snug tracking-tight"
                                                 style={{ fontFamily: 'var(--tipografia-titulos)' }}
                                             >
                                                 {item.titulo}
@@ -92,7 +89,7 @@ export default function ServiciosGroup({ serviciosBlock }) {
                                         {/* Descripción */}
                                         {item.descripcion && (
                                             <p
-                                                className="text-xs sm:text-sm text-gray-200 leading-relaxed font-normal mb-5 line-clamp-2"
+                                                className="text-xs sm:text-sm text-gray-200 leading-relaxed font-normal line-clamp-2"
                                                 style={{ fontFamily: 'var(--tipografia-texto)' }}
                                             >
                                                 {item.descripcion}
@@ -101,9 +98,9 @@ export default function ServiciosGroup({ serviciosBlock }) {
 
                                         {/* Botón en Color Primario Global con Ícono en Círculo */}
                                         {item.boton && (
-                                            <div className="flex items-center">
+                                            <div className="flex items-center pt-1">
                                                 <span
-                                                    className="inline-flex items-center gap-2.5 rounded-full text-white px-4 py-2 text-xs sm:text-sm font-bold shadow-md transition-all duration-300 hover:scale-105 cursor-pointer"
+                                                    className="inline-flex items-center gap-2.5 rounded-full text-white px-4 py-2 text-xs sm:text-sm font-bold shadow-md cursor-pointer"
                                                     style={{ backgroundColor: 'var(--color-primario)', fontFamily: 'var(--tipografia-texto)' }}
                                                 >
                                                     <span>{item.boton}</span>

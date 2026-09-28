@@ -219,7 +219,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
             </header>
 
             {/* OFFCANVAS DRAWER DEL CARRITO */}
-            <CartOffcanvas />
+            <CartOffcanvas site={site} estilos={estilos} seccionesData={seccionesData} />
         </>
     );
 }

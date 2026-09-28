@@ -1,10 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { usePage } from '@inertiajs/react';
 import { useCartStore } from '@/stores/useCartStore';
 import DynamicIcon from '@/components/DynamicIcon';
 import { fetchSectionData } from '@/pages/sites/Tortas/shared/apiBase';
 
-export default function CartOffcanvas() {
+export default function CartOffcanvas({ site: propSite, estilos: propEstilos, seccionesData: propSeccionesData }) {
+    const inertiaPage = usePage();
+    const pageProps = inertiaPage?.props || {};
+    const site = propSite || pageProps.site || {};
+    const estilos = propEstilos || pageProps.estilos || site.estilos || {};
+    const seccionesData = propSeccionesData || pageProps.seccionesData || {};
+
     const { items, isOpen, closeCart, removeItem, updateQuantity, clearCart, getTotal, getItemCount } =
         useCartStore();
 
@@ -19,72 +26,96 @@ export default function CartOffcanvas() {
     const count = getItemCount();
     const total = getTotal();
 
+    const processRawVal = (rawVal) => {
+        if (!rawVal) return false;
+        let str = String(rawVal).trim();
+        if (!str) return false;
+
+        if (str.startsWith('http://') || str.startsWith('https://')) {
+            const digits = str.replace(/\D/g, '');
+            if (digits) {
+                const finalNum = digits.length === 9 ? `51${digits}` : digits;
+                setWhatsappUrl(`https://wa.me/${finalNum}`);
+                return true;
+            }
+            setWhatsappUrl(str);
+            return true;
+        }
+
+        const segments = str.split(/[\r\n/;,|]+/).map((s) => s.trim()).filter(Boolean);
+        const firstSegment = segments[0] || str;
+        const cleanNum = firstSegment.replace(/\D/g, '');
+
+        if (cleanNum) {
+            const finalNum = cleanNum.length === 9 ? `51${cleanNum}` : cleanNum;
+            setWhatsappUrl(`https://wa.me/${finalNum}`);
+            return true;
+        }
+        return false;
+    };
+
     // Obtener número de WhatsApp dinámico desde Datos de Contacto Globales o API
     useEffect(() => {
-        if (typeof window !== 'undefined') {
-            const processRawVal = (rawVal) => {
-                if (!rawVal) return false;
-                const firstLine = String(rawVal).split(/\r?\n/).map((s) => s.trim()).filter(Boolean)[0] || rawVal;
-                if (firstLine.startsWith('http')) {
-                    setWhatsappUrl(firstLine);
-                    return true;
-                }
-                const cleanNum = firstLine.replace(/\D/g, '');
-                if (cleanNum) {
-                    const finalNum = cleanNum.length === 9 ? `51${cleanNum}` : cleanNum;
-                    setWhatsappUrl(`https://wa.me/${finalNum}`);
-                    return true;
-                }
-                return false;
-            };
+        const extractNum = () => {
+            // 1. Redes Sociales WhatsApp (prioridad idéntica a SectionContacto.jsx)
+            const redesWa = estilos?.redes_sociales?.whatsapp
+                || site?.estilos?.redes_sociales?.whatsapp
+                || estilos?.telefono
+                || site?.telefono;
 
-            // 1. Priorizar lectura desde props de Inertia (Datos de Contacto Globales + CMS)
-            if (window.__page__?.props) {
-                const pageProps = window.__page__.props;
-                const globalActions = Array.isArray(pageProps.estilos?.acciones_nav) ? pageProps.estilos.acciones_nav : [];
-                const cmsNavActions = Array.isArray(pageProps.seccionesData?.nav?.contenido?.find((c) => c.label === 'accion_nav')?.valor)
-                    ? pageProps.seccionesData.nav.contenido.find((c) => c.label === 'accion_nav').valor
-                    : [];
-                const combined = [...globalActions, ...cmsNavActions];
-
-                const waNav = combined.find((a) => {
-                    const ico = (a.icon || a.icono || '').toLowerCase();
-                    const txt = (a.texto || a.Texto || '').toLowerCase();
-                    return ico.includes('whatsapp') || ico.includes('phone') || txt.includes('wa.me');
-                });
-
-                if (waNav && processRawVal(waNav.texto || waNav.Texto)) {
-                    return;
-                }
+            if (redesWa && processRawVal(redesWa)) {
+                return true;
             }
 
-            // 2. Fallback por API
-            const pathParts = window.location.pathname.split('/').filter(Boolean);
-            if (pathParts.length >= 2) {
-                const dom = pathParts[0];
-                const slug = pathParts[1];
+            // 2. Acciones Nav Globales o CMS
+            const globalActions = Array.isArray(estilos?.acciones_nav)
+                ? estilos.acciones_nav
+                : (Array.isArray(site?.estilos?.acciones_nav) ? site.estilos.acciones_nav : []);
+            const cmsNavActions = Array.isArray(seccionesData?.nav?.contenido?.find((c) => c.label === 'accion_nav')?.valor)
+                ? seccionesData.nav.contenido.find((c) => c.label === 'accion_nav').valor
+                : [];
+            const combined = [...globalActions, ...cmsNavActions];
 
-                fetchSectionData(dom, slug, 'nav')
-                    .then((navRes) => {
-                        const nav = navRes?.seccionActiva || navRes;
-                        const contenido = nav?.contenido || [];
-                        const accionesNav =
-                            contenido.find((c) => c.label?.toLowerCase() === 'accion')?.valor ||
-                            contenido.find((c) => c.label?.toLowerCase() === 'acciones')?.valor ||
-                            contenido.find((c) => c.label?.toLowerCase() === 'accion_nav')?.valor || [];
+            const waNav = combined.find((a) => {
+                const ico = (a.icon || a.icono || '').toLowerCase();
+                const txt = (a.texto || a.Texto || '').toLowerCase();
+                return ico.includes('whatsapp') || ico.includes('phone') || txt.includes('wa.me');
+            });
 
-                        const waNav = Array.isArray(accionesNav)
-                            ? accionesNav.find((a) => (a.icon || a.icono)?.toLowerCase() === 'fawhatsapp' || (a.icon || a.icono)?.toLowerCase() === 'whatsapp' || (typeof a.texto === 'string' && a.texto.includes('wa.me')))
-                            : null;
-
-                        if (waNav) {
-                            processRawVal(waNav.texto || waNav.Texto || waNav.url);
-                        }
-                    })
-                    .catch(() => null);
+            if (waNav && processRawVal(waNav.texto || waNav.Texto)) {
+                return true;
             }
+            return false;
+        };
+
+        if (extractNum()) return;
+
+        // 3. Fallback por API
+        const pathParts = typeof window !== 'undefined' ? window.location.pathname.split('/').filter(Boolean) : [];
+        if (pathParts.length >= 2) {
+            const dom = pathParts[0];
+            const slug = pathParts[1];
+
+            fetchSectionData(dom, slug, 'nav')
+                .then((navRes) => {
+                    const nav = navRes?.seccionActiva || navRes;
+                    const contenido = nav?.contenido || [];
+                    const accionesNav =
+                        contenido.find((c) => c.label?.toLowerCase() === 'accion')?.valor ||
+                        contenido.find((c) => c.label?.toLowerCase() === 'acciones')?.valor ||
+                        contenido.find((c) => c.label?.toLowerCase() === 'accion_nav')?.valor || [];
+
+                    const waNav = Array.isArray(accionesNav)
+                        ? accionesNav.find((a) => (a.icon || a.icono)?.toLowerCase() === 'fawhatsapp' || (a.icon || a.icono)?.toLowerCase() === 'whatsapp' || (typeof a.texto === 'string' && a.texto.includes('wa.me')))
+                        : null;
+
+                    if (waNav) {
+                        processRawVal(waNav.texto || waNav.Texto || waNav.url);
+                    }
+                })
+                .catch(() => null);
         }
-    }, [isOpen]);
+    }, [isOpen, site, estilos, seccionesData]);
 
     const handleEnviarWhatsApp = (e) => {
         e.preventDefault();
@@ -103,6 +134,23 @@ export default function CartOffcanvas() {
         if (idea) mensaje += `*Idea / Detalles:* ${idea}\n`;
 
         let urlBase = whatsappUrl || 'https://wa.me/';
+        const cleanNumberOnly = urlBase.replace(/^https?:\/\/(wa\.me|api\.whatsapp\.com\/send\?phone=)\/?/, '').replace(/\D/g, '');
+        
+        if (!cleanNumberOnly) {
+            const redesWa = estilos?.redes_sociales?.whatsapp
+                || site?.estilos?.redes_sociales?.whatsapp
+                || estilos?.telefono
+                || site?.telefono;
+            if (redesWa) {
+                const seg = String(redesWa).split(/[\r\n/;,|]+/).map((s) => s.trim()).filter(Boolean)[0] || String(redesWa);
+                const digits = seg.replace(/\D/g, '');
+                if (digits) {
+                    const finalNum = digits.length === 9 ? `51${digits}` : digits;
+                    urlBase = `https://wa.me/${finalNum}`;
+                }
+            }
+        }
+
         if (!urlBase.includes('wa.me') && !urlBase.includes('whatsapp.com')) {
             urlBase = 'https://wa.me/';
         }
