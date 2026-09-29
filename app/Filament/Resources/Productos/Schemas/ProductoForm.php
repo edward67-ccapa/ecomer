@@ -119,11 +119,14 @@ class ProductoForm
                             TextInput::make('orden')
                                 ->numeric()
                                 ->default(0),
-                            Grid::make(2)->schema([
+                            Grid::make(3)->schema([
                                 Toggle::make('activo')
                                     ->default(true),
                                 Toggle::make('destacado')
                                     ->label('Destacado')
+                                    ->default(false),
+                                Toggle::make('es_liquidacion')
+                                    ->label('Liquidación')
                                     ->default(false),
                             ]),
                         ]),
@@ -136,13 +139,17 @@ class ProductoForm
                         TextInput::make('precio')
                             ->label('Precio en Soles (S/)')
                             ->numeric()
-                            ->required(fn (Get $get, ?Producto $record) => self::tieneMoneda($get, $record, 'PEN'))
+                            ->nullable()
+                            ->placeholder('Liquidación / Dejar vacío')
+                            ->helperText('Dejar vacío para productos en liquidación / consultar precio.')
                             ->prefix('S/')
                             ->minValue(0)
                             ->visible(fn (Get $get, ?Producto $record) => self::tieneMoneda($get, $record, 'PEN')),
                         TextInput::make('precio_oferta')
                             ->label('Precio de oferta (S/)')
                             ->numeric()
+                            ->nullable()
+                            ->placeholder('Opcional')
                             ->prefix('S/')
                             ->minValue(0)
                             ->visible(fn (Get $get, ?Producto $record) => self::tieneMoneda($get, $record, 'PEN')),

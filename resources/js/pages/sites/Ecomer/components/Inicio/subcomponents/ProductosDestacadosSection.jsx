@@ -87,20 +87,48 @@ export default function ProductosDestacadosSection({
                     >
                         {productos.map((prod, idx) => {
                             const inCart = isInCart(prod);
-                            const tieneOferta = Boolean(prod.precio_oferta || prod.precio_oferta_soles);
-                            const precioRegular = Number(prod.precio_soles || prod.precio || 0);
-                            const precioOferta = tieneOferta
-                                ? Number(prod.precio_oferta_soles || prod.precio_oferta)
+                            const pSolesReg = prod.precio_soles != null && prod.precio_soles !== '' ? Number(prod.precio_soles) : (prod.precio != null && prod.precio !== '' ? Number(prod.precio) : 0);
+                            const pSolesOfe = prod.precio_oferta_soles != null && prod.precio_oferta_soles !== '' ? Number(prod.precio_oferta_soles) : (prod.precio_oferta != null && prod.precio_oferta !== '' ? Number(prod.precio_oferta) : 0);
+
+                            const pDolReg = prod.precio_dolares != null && prod.precio_dolares !== '' ? Number(prod.precio_dolares) : 0;
+                            const pDolOfe = prod.precio_oferta_dolares != null && prod.precio_oferta_dolares !== '' ? Number(prod.precio_oferta_dolares) : 0;
+
+                            const tieneOfertaSoles = pSolesOfe > 0 && (pSolesReg === 0 || pSolesOfe < pSolesReg);
+                            const precioSolesEfectivo = tieneOfertaSoles ? pSolesOfe : pSolesReg;
+                            const descSolesPercent = tieneOfertaSoles && pSolesReg > 0 && pSolesReg > pSolesOfe
+                                ? Math.round(((pSolesReg - pSolesOfe) / pSolesReg) * 100)
                                 : null;
 
-                            // Cálculo de descuentos
-                            const descOferta = tieneOferta && precioRegular > 0
-                                ? Math.round(((precioRegular - precioOferta) / precioRegular) * 100)
+                            const tieneOfertaDolares = pDolOfe > 0 && (pDolReg === 0 || pDolOfe < pDolReg);
+                            const precioDolaresEfectivo = tieneOfertaDolares ? pDolOfe : pDolReg;
+                            const descDolaresPercent = tieneOfertaDolares && pDolReg > 0 && pDolReg > pDolOfe
+                                ? Math.round(((pDolReg - pDolOfe) / pDolReg) * 100)
                                 : null;
-                            const descRegular = descOferta ? Math.max(5, Math.round(descOferta * 0.75)) : null;
-                            const precioListaReferencial = Math.round(precioRegular * 1.3);
+
+                            const tieneOferta = tieneOfertaSoles || tieneOfertaDolares || Boolean(prod.en_oferta || prod.es_oferta);
+                            const descOferta = descSolesPercent || descDolaresPercent;
 
                             const categoriaTexto = prod.categoria || 'REPOSTERÍA';
+                            const esProdLiquidacion = Boolean(prod.es_liquidacion || prod.liquidacion);
+
+                            const stockVal = prod.stock !== undefined && prod.stock !== null
+                                ? Number(prod.stock)
+                                : (prod.cantidad !== undefined && prod.cantidad !== null ? Number(prod.cantidad) : null);
+
+                            let stockTexto = null;
+                            let stockColor = 'text-emerald-700 bg-emerald-50 border-emerald-200';
+                            if (stockVal !== null) {
+                                if (stockVal <= 0) {
+                                    stockTexto = 'Agotado';
+                                    stockColor = 'text-rose-700 bg-rose-50 border-rose-200';
+                                } else if (stockVal <= 5) {
+                                    stockTexto = `¡Últimas ${stockVal} unids!`;
+                                    stockColor = 'text-amber-700 bg-amber-50 border-amber-200';
+                                } else {
+                                    stockTexto = `Stock: ${stockVal} unids.`;
+                                    stockColor = 'text-emerald-700 bg-emerald-50 border-emerald-200';
+                                }
+                            }
 
                             return (
                                 <SwiperSlide key={prod.id || idx} className="h-auto" style={{ width: '20%', flexShrink: 0 }}>
@@ -110,18 +138,27 @@ export default function ProductosDestacadosSection({
                                     >
                                         {/* Imagen del Producto */}
                                         <div className="relative aspect-square w-full mb-3 flex items-center justify-center bg-white rounded-lg overflow-hidden" style={{ aspectRatio: '1/1', width: '100%', maxHeight: '280px' }}>
-                                            {/* Badge Categoría Premium arriba a la izquierda */}
-                                            {categoriaTexto && (
+                                            {/* Badge Liquidación o Categoría arriba a la izquierda */}
+                                            {esProdLiquidacion ? (
                                                 <span
-                                                    className="absolute top-2.5 left-2.5 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-white/95 backdrop-blur-md shadow-xs border border-gray-100 text-gray-800"
+                                                    className="absolute top-2.5 left-2.5 z-10 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-red-600 text-white shadow-sm"
                                                     style={{ fontFamily: 'var(--tipografia-texto)' }}
                                                 >
-                                                    <span
-                                                        className="w-1.5 h-1.5 rounded-full"
-                                                        style={{ backgroundColor: 'var(--color-primario)' }}
-                                                    />
-                                                    <span>{categoriaTexto}</span>
+                                                    <span>🏷️ LIQUIDACIÓN</span>
                                                 </span>
+                                            ) : (
+                                                categoriaTexto && (
+                                                    <span
+                                                        className="absolute top-2.5 left-2.5 z-10 inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-white/95 backdrop-blur-md shadow-xs border border-gray-100 text-gray-800"
+                                                        style={{ fontFamily: 'var(--tipografia-texto)' }}
+                                                    >
+                                                        <span
+                                                            className="w-1.5 h-1.5 rounded-full"
+                                                            style={{ backgroundColor: 'var(--color-primario)' }}
+                                                        />
+                                                        <span>{categoriaTexto}</span>
+                                                    </span>
+                                                )
                                             )}
 
                                             {/* Badge OFERTA arriba a la derecha */}
@@ -169,59 +206,70 @@ export default function ProductosDestacadosSection({
                                         {/* Descripción Corta */}
                                         {(prod.descripcion_corta || prod.descripcion) && (
                                             <p
-                                                className="text-[11px] text-gray-500 line-clamp-2 min-h-[2rem] leading-relaxed mb-3"
+                                                className="text-[11px] text-gray-500 line-clamp-2 min-h-[2rem] leading-relaxed mb-2"
                                                 title={prod.descripcion_corta || prod.descripcion}
                                             >
                                                 {prod.descripcion_corta || prod.descripcion}
                                             </p>
                                         )}
 
+                                        {/* Stock Pill */}
+                                        {stockTexto && (
+                                            <div className="mb-2">
+                                                <span className={`inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold border ${stockColor}`}>
+                                                    {stockTexto}
+                                                </span>
+                                            </div>
+                                        )}
+
                                         {/* Bloque de Precios */}
-                                        <div className="mt-auto pt-2">
-                                            {tieneOferta ? (
-                                                <>
-                                                    {/* Precio Principal */}
-                                                    <div className="flex items-baseline gap-1.5 mb-1 flex-wrap">
-                                                        <span className="text-xs font-black text-[#0089CF]">S/</span>
-                                                        <span className="text-2xl sm:text-3xl font-black text-[#0089CF] tracking-tight leading-none">
-                                                            {precioOferta.toFixed(0)}
+                                        <div className="mt-auto pt-2 flex flex-col gap-1 mb-2">
+                                            {/* 1. Precio en Soles */}
+                                            {precioSolesEfectivo > 0 && (
+                                                <div className="flex items-baseline gap-1.5 flex-wrap">
+                                                    <span className="text-xs font-black text-[#0089CF]">S/</span>
+                                                    <span className="text-2xl sm:text-3xl font-black text-[#0089CF] tracking-tight leading-none">
+                                                        {precioSolesEfectivo.toFixed(0)}
+                                                    </span>
+                                                    {tieneOfertaSoles && descSolesPercent && (
+                                                        <span className="bg-[#0089CF] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-xs leading-none">
+                                                            -{descSolesPercent}%
                                                         </span>
-                                                        {descOferta && (
-                                                            <span className="bg-[#0089CF] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-xs leading-none">
-                                                                -{descOferta}%
-                                                            </span>
-                                                        )}
-                                                    </div>
+                                                    )}
+                                                    {tieneOfertaSoles && pSolesReg > precioSolesEfectivo && (
+                                                        <span className="text-xs text-gray-400 line-through font-semibold ml-1">
+                                                            S/ {pSolesReg.toFixed(0)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                            )}
 
-                                                    {/* Precio Regular Secundario */}
-                                                    <div className="flex items-baseline gap-1.5 mb-0.5">
-                                                        <span className="text-xs font-bold text-gray-900">S/</span>
-                                                        <span className="text-lg font-extrabold text-gray-900 leading-none">
-                                                            {precioRegular.toFixed(0)}
+                                            {/* 2. Precio en Dólares (sin conversión, con $) */}
+                                            {precioDolaresEfectivo > 0 && (
+                                                <div className="flex items-baseline gap-1 flex-wrap text-emerald-700 font-black">
+                                                    <span className="text-xs font-black text-emerald-600">$</span>
+                                                    <span className="text-lg sm:text-xl font-black tracking-tight leading-none text-emerald-700">
+                                                        {precioDolaresEfectivo}
+                                                    </span>
+                                                    <span className="text-[10px] font-extrabold text-emerald-600">USD</span>
+                                                    {tieneOfertaDolares && descDolaresPercent && (
+                                                        <span className="bg-emerald-600 text-white text-[9px] font-extrabold px-1 py-0.5 rounded-xs leading-none ml-1">
+                                                            -{descDolaresPercent}%
                                                         </span>
-                                                        {descRegular && (
-                                                            <span
-                                                                className="text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-xs leading-none"
-                                                                style={{ backgroundColor: 'var(--color-primario)' }}
-                                                            >
-                                                                -{descRegular}%
-                                                            </span>
-                                                        )}
-                                                    </div>
-
-                                                    {/* Precio Lista Tachado */}
-                                                    <div className="text-[11px] text-gray-400 line-through leading-none mb-2">
-                                                        s/ {precioListaReferencial}
-                                                    </div>
-                                                </>
-                                            ) : (
-                                                <div className="mb-3">
-                                                    <div className="flex items-baseline gap-1.5">
-                                                        <span className="text-xs font-black text-gray-900">S/</span>
-                                                        <span className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight leading-none">
-                                                            {precioRegular.toFixed(0)}
+                                                    )}
+                                                    {tieneOfertaDolares && pDolReg > precioDolaresEfectivo && (
+                                                        <span className="text-xs text-gray-400 line-through font-normal ml-1">
+                                                            $ {pDolReg}
                                                         </span>
-                                                    </div>
+                                                    )}
+                                                </div>
+                                            )}
+                                            {/* 3. Liquidación / Sin precio */}
+                                            {(!precioSolesEfectivo || precioSolesEfectivo <= 0) && (!precioDolaresEfectivo || precioDolaresEfectivo <= 0) && (
+                                                <div>
+                                                    <span className="inline-block px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
+                                                        Consultar precio / Liquidación
+                                                    </span>
                                                 </div>
                                             )}
 

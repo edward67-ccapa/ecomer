@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-#[Fillable(['site_id', 'tienda_id', 'moneda_id', 'categoria_id', 'subcategoria_id', 'marca_id', 'nombre', 'slug', 'descripcion_corta', 'descripcion', 'precio', 'precio_oferta', 'precio_dolares', 'precio_oferta_dolares', 'precio_euros', 'precio_oferta_euros', 'cantidad', 'stock', 'sku', 'imagen', 'imagenes', 'activo', 'destacado', 'orden'])]
+#[Fillable(['site_id', 'tienda_id', 'moneda_id', 'categoria_id', 'subcategoria_id', 'marca_id', 'nombre', 'slug', 'descripcion_corta', 'descripcion', 'precio', 'precio_oferta', 'precio_dolares', 'precio_oferta_dolares', 'precio_euros', 'precio_oferta_euros', 'cantidad', 'stock', 'sku', 'imagen', 'imagenes', 'activo', 'destacado', 'es_liquidacion', 'orden'])]
 class Producto extends Model
 {
     public function site(): BelongsTo
@@ -68,6 +68,7 @@ class Producto extends Model
             'imagenes' => 'array',
             'activo' => 'bool',
             'destacado' => 'bool',
+            'es_liquidacion' => 'bool',
         ];
     }
 }

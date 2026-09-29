@@ -241,6 +241,12 @@ export default function Footer({
         .map((key) => ALL_PAYMENT_BADGES[key])
         .filter(Boolean);
 
+    // Cuentas de pago desde Admin General (estilos.cuentas_pago)
+    const rawCuentas = estilos?.cuentas_pago || site?.estilos?.cuentas_pago || [];
+    const cuentasPago = Array.isArray(rawCuentas)
+        ? rawCuentas
+        : (rawCuentas && typeof rawCuentas === 'object' ? Object.values(rawCuentas) : []);
+
     // Marcas de la sección 'Marcas'
     const rawMarcas = activeMarcas?.contenido?.find((c) => c.label === 'Imagenes' || c.label === 'imagenes')?.valor;
     const marcasList = Array.isArray(rawMarcas)
@@ -413,8 +419,8 @@ export default function Footer({
                     </div>
                 </div>
 
-                {/* --- 2. CUERPO PRINCIPAL: 3 COLUMNAS LIMPIAS Y EN ESPAÑOL --- */}
-                <div className="py-12 grid grid-cols-1 md:grid-cols-3 gap-10 lg:gap-12 border-b border-neutral-800/80 text-sm">
+                {/* --- 2. CUERPO PRINCIPAL: 4 COLUMNAS LIMPIAS Y EN ESPAÑOL --- */}
+                <div className="py-12 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-10 border-b border-neutral-800/80 text-sm">
 
                     {/* COLUMNA 1: SOBRE NOSOTROS & UBICACIÓN */}
                     <div className="space-y-4">
@@ -483,7 +489,7 @@ export default function Footer({
                         </ul>
                     </div>
 
-                    {/* COLUMNA 3: CONTACTO, REDES SOCIALES Y PAGOS */}
+                    {/* COLUMNA 3: CONTACTO Y REDES SOCIALES */}
                     <div className="space-y-4">
                         <h4 className="text-white font-bold text-sm tracking-wide">
                             Atención al Cliente
@@ -563,19 +569,48 @@ export default function Footer({
                                 </div>
                             </div>
                         )}
+                    </div>
 
-                        {/* Métodos de Pago Dinámicos configurados en Admin */}
+                    {/* COLUMNA 4: MÉTODOS Y CUENTAS DE PAGO */}
+                    <div className="space-y-4">
+                        <h4 className="text-white font-bold text-sm tracking-wide">
+                            Métodos de Pago
+                        </h4>
+
+                        {/* Cuentas Bancarias / Información para Pagar */}
+                        {cuentasPago.length > 0 && (
+                            <div className="space-y-2">
+                                {cuentasPago.map((item, idx) => {
+                                    const label = item.label || item.Label || 'Cuenta:';
+                                    const metodo = item.metodo_pago || item.Metodo_pago || item.metodo || 'Banco';
+                                    const info = item.info || item.Info || item.numero || '';
+
+                                    return (
+                                        <div key={idx} className="p-2.5 rounded-xl bg-neutral-900/90 border border-neutral-800/90 text-xs space-y-0.5">
+                                            <div className="flex items-center justify-between gap-1 text-[11px]">
+                                                <span className="text-neutral-400 font-semibold">{label}</span>
+                                                <span className="text-white font-extrabold">{metodo}</span>
+                                            </div>
+                                            <div className="font-mono text-white text-xs font-bold select-all tracking-tight truncate">
+                                                {info}
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+
+                        {/* Métodos de Pago Aceptados (Insignias) */}
                         {renderedBadges.length > 0 && (
-                            <div className="pt-2">
+                            <div className="pt-1">
                                 <span className="block text-[11px] font-semibold uppercase tracking-wider text-neutral-500 mb-2">
-                                    Métodos de Pago Aceptados
+                                    Insignias Aceptadas
                                 </span>
                                 <div className="flex flex-wrap items-center gap-1.5">
                                     {renderedBadges}
                                 </div>
                             </div>
                         )}
-
                     </div>
 
                 </div>

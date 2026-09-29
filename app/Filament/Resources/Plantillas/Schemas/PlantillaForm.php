@@ -870,9 +870,9 @@ class PlantillaForm
 
     public static function metodosPagoSection(): Section
     {
-        return Section::make('Métodos de Pago')
+        return Section::make('Métodos de Pago y Cuentas Bancarias')
             ->icon('heroicon-o-credit-card')
-            ->description('Selecciona las insignias de medios de pago y billeteras digitales que se mostrarán en el pie de página.')
+            ->description('Selecciona las insignias de pago aceptadas e ingresa las cuentas bancarias o billeteras digitales para información de pago.')
             ->collapsible()
             ->schema([
                 CheckboxList::make('estilos.metodos_pago')
@@ -900,6 +900,29 @@ class PlantillaForm
                         'lg' => 6,
                     ])
                     ->default(['visa', 'mastercard', 'amex', 'paypal', 'apple_pay', 'google_pay', 'yape', 'plin']),
+
+                Repeater::make('estilos.cuentas_pago')
+                    ->label('Información de Pago / Cuentas Bancarias')
+                    ->helperText('Agrega los datos de pago para transferencia bancaria o pago directo (ej. Label: Cuenta corriente:, Método: BCP en nuevos soles, Info: 116544651432132).')
+                    ->schema([
+                        Grid::make(3)->schema([
+                            TextInput::make('label')
+                                ->label('Etiqueta')
+                                ->placeholder('Ej. Cuenta corriente:')
+                                ->required(),
+                            TextInput::make('metodo_pago')
+                                ->label('Método de Pago')
+                                ->placeholder('Ej. BCP en nuevos soles')
+                                ->required(),
+                            TextInput::make('info')
+                                ->label('Información / N° Cuenta')
+                                ->placeholder('Ej. 116544651432132')
+                                ->required(),
+                        ]),
+                    ])
+                    ->collapsible()
+                    ->itemLabel(fn (array $state): ?string => (filled($state['metodo_pago'] ?? null) || filled($state['label'] ?? null)) ? (($state['label'] ?? '').' '.($state['metodo_pago'] ?? '').': '.($state['info'] ?? '')) : null)
+                    ->columnSpanFull(),
             ])
             ->columnSpanFull();
     }

@@ -22,7 +22,7 @@ const getCategoryIcon = (nombre = '') => {
     return 'FaBox';
 };
 
-export default function Header({ site, dominio, siteSlug, secciones, seccionActiva, tieneTienda, productos, seccionesData, serviciosSitio, estilos, esDetalleProducto = false }) {
+export default function Header({ site, dominio, siteSlug, secciones, seccionActiva, tieneTienda, productos, seccionesData, serviciosSitio, marcasSitio = [], estilos, esDetalleProducto = false }) {
     const [isScrolled, setIsScrolled] = useState(false);
 
     // --- SCROLL DETECTION ---
@@ -92,7 +92,9 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
 
     // --- MEGA MENU HOVER STATE ---
     const [isMegaMenuOpen, setIsMegaMenuOpen] = useState(false);
+    const [megaMenuTab, setMegaMenuTab] = useState('categorias'); // 'categorias' | 'marcas'
     const [activeHoverCategory, setActiveHoverCategory] = useState(null);
+    const [activeHoverMarca, setActiveHoverMarca] = useState(null);
     const hoverTimeoutRef = useRef(null);
 
     const handleMouseEnterMega = () => {
@@ -119,6 +121,18 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
         const params = new URLSearchParams();
         if (catName) params.set('categoria', catName);
         if (subName) params.set('subcategoria', subName);
+
+        const str = params.toString();
+        return str ? `${baseUrl}?${str}` : baseUrl;
+    };
+
+    const getMarcaUrl = (marcaNombre) => {
+        let baseUrl = dominio === 'plantillas'
+            ? `/plantillas/${siteSlug}/productos`
+            : (siteSlug ? `/${dominio}/${siteSlug}/productos` : `/${dominio}/productos`);
+
+        const params = new URLSearchParams();
+        if (marcaNombre) params.set('marca', marcaNombre);
 
         const str = params.toString();
         return str ? `${baseUrl}?${str}` : baseUrl;
@@ -311,6 +325,79 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
         return categoriasArbol.find((c) => c.nombre === activeHoverCategory) || null;
     }, [activeHoverCategory, categoriasArbol]);
 
+    // --- ÁRBOLES DE MARCAS PARA EL MEGA MENU ---
+    const marcasArbol = useMemo(() => {
+        const map = new Map();
+
+        // 1. Desde marcasSitio (backend)
+        if (Array.isArray(marcasSitio) && marcasSitio.length > 0) {
+            marcasSitio.forEach((m) => {
+                const name = typeof m === 'string' ? m : (m.titulo || m.nombre || '');
+                if (!name) return;
+                const key = name.toLowerCase().trim();
+                const rawImg = typeof m === 'object' ? (m.imagen || m.logo || null) : null;
+                const formattedImg = rawImg ? (rawImg.startsWith('http') || rawImg.startsWith('data:') ? rawImg : `/storage/${rawImg.replace(/^\/?storage\//, '')}`) : null;
+                map.set(key, {
+                    id: typeof m === 'object' ? m.id : null,
+                    nombre: name,
+                    imagen: formattedImg,
+                    slug: typeof m === 'object' ? m.slug : null,
+                    count: 0,
+                    productos: [],
+                });
+            });
+        }
+
+        // 2. Desde los productos
+        if (Array.isArray(productos) && productos.length > 0) {
+            productos.forEach((prod) => {
+                let mName = null;
+                let rawImg = null;
+                let mSlug = null;
+                let mId = null;
+
+                if (prod.marca_objeto && (prod.marca_objeto.titulo || prod.marca_objeto.nombre)) {
+                    mName = prod.marca_objeto.titulo || prod.marca_objeto.nombre;
+                    rawImg = prod.marca_objeto.imagen || prod.marca_objeto.logo || null;
+                    mSlug = prod.marca_objeto.slug || null;
+                    mId = prod.marca_objeto.id || null;
+                } else if (prod.marca && typeof prod.marca === 'string' && prod.marca.trim()) {
+                    mName = prod.marca.trim();
+                    rawImg = prod.marca_imagen || null;
+                }
+
+                if (mName) {
+                    const key = mName.toLowerCase().trim();
+                    const formattedImg = rawImg ? (rawImg.startsWith('http') || rawImg.startsWith('data:') ? rawImg : `/storage/${rawImg.replace(/^\/?storage\//, '')}`) : null;
+
+                    if (!map.has(key)) {
+                        map.set(key, {
+                            id: mId,
+                            nombre: mName,
+                            imagen: formattedImg,
+                            slug: mSlug,
+                            count: 0,
+                            productos: [],
+                        });
+                    }
+                    const mData = map.get(key);
+                    mData.count += 1;
+                    mData.productos.push(prod);
+                    if (!mData.imagen && formattedImg) {
+                        mData.imagen = formattedImg;
+                    }
+                }
+            });
+        }
+
+        return Array.from(map.values());
+    }, [marcasSitio, productos]);
+
+    const activeMarcaData = useMemo(() => {
+        if (!activeHoverMarca) return null;
+        return marcasArbol.find((m) => m.nombre === activeHoverMarca) || null;
+    }, [activeHoverMarca, marcasArbol]);
+
     // --- STYLES BASED ON SCROLL ---
     const activeSlug = (seccionActiva?.slug || '').toLowerCase();
     const activeNombre = (seccionActiva?.nombre || '').toLowerCase();
@@ -472,6 +559,8 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                         <nav className="hidden md:flex flex-wrap items-center justify-center gap-1">
                             {navSecciones?.map((seccion) => {
                                 const slugLower = seccion.slug?.toLowerCase() || '';
+                                const nombreLower = (seccion.nombre || '').toLowerCase();
+                                const filtroProdLower = (seccion.filtro_producto || '').toLowerCase();
                                 const displayName = getDisplayName(seccion);
                                 const normalizedSlug = slugLower.replace(/[\s_]+/g, '-');
                                 const anchorId = slugLower === 'contactos' ? 'contacto' : normalizedSlug;
@@ -482,6 +571,20 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 const isServicios = slugLower === 'servicios' || slugLower === 'servicio';
                                 const isNosotros = slugLower === 'nosotros' || slugLower === 'sobre-nosotros';
                                 const isContacto = slugLower === 'contacto' || slugLower === 'contactos';
+                                const isLiquidaciones =
+                                    slugLower === 'liquidacion' ||
+                                    slugLower === 'liquidaciones' ||
+                                    filtroProdLower === 'liquidaciones' ||
+                                    filtroProdLower === 'liquidacion' ||
+                                    nombreLower.includes('liquidaci');
+
+                                const isOfertas =
+                                    slugLower === 'oferta' ||
+                                    slugLower === 'ofertas' ||
+                                    filtroProdLower === 'ofertas' ||
+                                    filtroProdLower === 'oferta' ||
+                                    nombreLower.includes('oferta');
+
                                 const hasStandalonePage = isInicio || isProductos || isServicios || isNosotros || isContacto;
 
                                 const pageSlugTarget = isInicio ? 'inicio' : (isProductos ? 'productos' : (isServicios ? 'servicios' : (isNosotros ? 'nosotros' : (isContacto ? 'contacto' : seccion.slug))));
@@ -516,6 +619,56 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                         >
                                             {catalogoTitulo}
                                         </a>
+                                    );
+                                }
+
+                                if (isLiquidaciones) {
+                                    const targetUrl = dominio === 'plantillas'
+                                        ? `/plantillas/${siteSlug}/productos?liquidaciones=1`
+                                        : (siteSlug ? `/${dominio}/${siteSlug}/productos?liquidaciones=1` : `/${dominio}/productos?liquidaciones=1`);
+                                    const isLiquidacionesActiva = Boolean(currentUrl && (currentUrl.includes('liquidaciones=1') || currentUrl.includes('liquidacion=1') || currentUrl.includes('filtro_producto=liquidaciones') || currentUrl.includes('filtro_producto=liquidacion')));
+
+                                    const linkClassesLiq = `rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 ${isLiquidacionesActiva
+                                        ? 'text-white shadow-xs'
+                                        : isTransparentMode
+                                            ? 'text-white/90 hover:text-white hover:bg-white/20'
+                                            : 'text-gray-800 hover:text-white hover:bg-[var(--color-primario)]/60'
+                                        }`;
+
+                                    return (
+                                        <Link
+                                            key={seccion.slug || 'liquidaciones'}
+                                            href={targetUrl}
+                                            className={linkClassesLiq}
+                                            style={isLiquidacionesActiva ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
+                                        >
+                                            {displayName}
+                                        </Link>
+                                    );
+                                }
+
+                                if (isOfertas) {
+                                    const targetUrl = dominio === 'plantillas'
+                                        ? `/plantillas/${siteSlug}/productos?ofertas=1`
+                                        : (siteSlug ? `/${dominio}/${siteSlug}/productos?ofertas=1` : `/${dominio}/productos?ofertas=1`);
+                                    const isOfertasActiva = Boolean(currentUrl && (currentUrl.includes('ofertas=1') || currentUrl.includes('oferta=1') || currentUrl.includes('solo_ofertas=1') || currentUrl.includes('filtro_producto=ofertas') || currentUrl.includes('filtro_producto=oferta')));
+
+                                    const linkClassesOf = `rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 ${isOfertasActiva
+                                        ? 'text-white shadow-xs'
+                                        : isTransparentMode
+                                            ? 'text-white/90 hover:text-white hover:bg-white/20'
+                                            : 'text-gray-800 hover:text-white hover:bg-[var(--color-primario)]/60'
+                                        }`;
+
+                                    return (
+                                        <Link
+                                            key={seccion.slug || 'ofertas'}
+                                            href={targetUrl}
+                                            className={linkClassesOf}
+                                            style={isOfertasActiva ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
+                                        >
+                                            {displayName}
+                                        </Link>
                                     );
                                 }
 
@@ -655,71 +808,294 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                             className="absolute top-full left-0 w-full bg-white border-t border-b border-gray-200/80 shadow-2xl z-50 text-gray-800 backdrop-blur-xl"
                         >
                             <div className="max-w-7xl mx-auto flex min-h-[380px] max-h-[540px] overflow-hidden">
-                                {/* COLUMNA IZQUIERDA: LISTADO DE CATEGORÍAS */}
-                                <div className="w-64 sm:w-72 bg-gray-50/90 border-r border-gray-200/70 p-3 overflow-y-auto shrink-0 space-y-1">
-                                    <div className="px-3 py-2 text-[10px] font-extrabold uppercase tracking-wider text-gray-400 flex items-center justify-between">
-                                        <span>Categorías</span>
-                                        <span className="text-[10px] bg-gray-200 px-2 py-0.5 rounded-full text-gray-600 font-semibold">{categoriasArbol.length}</span>
-                                    </div>
-
-                                    {/* Opción Ver Todo el Catálogo */}
-                                    <Link
-                                        href={getProductosUrl(null, null)}
-                                        onClick={handleMegaMenuClick}
-                                        onMouseEnter={() => setActiveHoverCategory(null)}
-                                        className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${activeHoverCategory === null
-                                            ? 'bg-[var(--color-primario)] text-white shadow-md'
-                                            : 'text-gray-700 hover:bg-gray-200/60 hover:text-gray-900'
-                                            }`}
-                                    >
-                                        <div className="flex items-center gap-2.5">
-                                            <DynamicIcon name="FaGrip" className="h-4 w-4" />
-                                            <span>Ver todo el Catálogo</span>
-                                        </div>
-                                        <DynamicIcon name="FaChevronRight" className="h-3 w-3 opacity-70" />
-                                    </Link>
-
-                                    {/* Lista de Categorías */}
-                                    {categoriasArbol.map((cat) => {
-                                        const isSelected = activeHoverCategory === cat.nombre;
-                                        return (
-                                            <div
-                                                key={cat.nombre}
-                                                onMouseEnter={() => setActiveHoverCategory(cat.nombre)}
+                                {/* COLUMNA IZQUIERDA: PESTAÑAS Y LISTADO (CATEGORÍAS Y MARCAS) */}
+                                <div className="w-64 sm:w-72 bg-gray-50/90 border-r border-gray-200/70 p-3 overflow-y-auto shrink-0 space-y-2">
+                                    {/* Pestañas de Selección: Categorías / Marcas */}
+                                    {marcasArbol.length > 0 ? (
+                                        <div className="flex border border-gray-200/90 p-1 bg-gray-200/60 rounded-xl gap-1">
+                                            <button
+                                                type="button"
                                                 onClick={() => {
-                                                    handleMegaMenuClick();
-                                                    router.visit(getProductosUrl(cat.nombre, null));
+                                                    setMegaMenuTab('categorias');
+                                                    setActiveHoverCategory(null);
+                                                    setActiveHoverMarca(null);
                                                 }}
-                                                className={`group/cat w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 ${isSelected
-                                                    ? 'bg-white text-[var(--color-primario)] shadow-sm font-bold border border-gray-200/80 translate-x-1'
-                                                    : 'text-gray-700 hover:bg-gray-200/50 hover:text-gray-900'
-                                                    }`}
+                                                className={`flex-1 py-1.5 text-xs font-extrabold rounded-lg transition-all duration-200 cursor-pointer ${
+                                                    megaMenuTab === 'categorias'
+                                                        ? 'bg-white text-[var(--color-primario)] shadow-xs'
+                                                        : 'text-gray-600 hover:text-gray-900'
+                                                }`}
                                             >
-                                                <div className="flex items-center gap-2.5 min-w-0 pr-2">
-                                                    {cat.icono && (
-                                                        <span className={`p-1.5 rounded-lg transition-colors ${isSelected ? 'bg-[var(--color-primario)]/10 text-[var(--color-primario)]' : 'bg-gray-200/60 text-gray-500 group-hover/cat:text-gray-800'
-                                                            }`}>
-                                                            <DynamicIcon name={cat.icono} className="h-3.5 w-3.5 shrink-0" />
-                                                        </span>
-                                                    )}
-                                                    <span className="truncate">{cat.nombre}</span>
+                                                Categorías ({categoriasArbol.length})
+                                            </button>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    setMegaMenuTab('marcas');
+                                                    setActiveHoverCategory(null);
+                                                    setActiveHoverMarca(null);
+                                                }}
+                                                className={`flex-1 py-1.5 text-xs font-extrabold rounded-lg transition-all duration-200 cursor-pointer ${
+                                                    megaMenuTab === 'marcas'
+                                                        ? 'bg-white text-[var(--color-primario)] shadow-xs'
+                                                        : 'text-gray-600 hover:text-gray-900'
+                                                }`}
+                                            >
+                                                Marcas ({marcasArbol.length})
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <div className="px-3 py-2 text-[10px] font-extrabold uppercase tracking-wider text-gray-400 flex items-center justify-between">
+                                            <span>Categorías</span>
+                                            <span className="text-[10px] bg-gray-200 px-2 py-0.5 rounded-full text-gray-600 font-semibold">{categoriasArbol.length}</span>
+                                        </div>
+                                    )}
+
+                                    {/* LISTADO SEGÚN PESTAÑA SELECCIONADA */}
+                                    {megaMenuTab === 'categorias' ? (
+                                        <>
+                                            {/* Opción Ver Todo el Catálogo */}
+                                            <Link
+                                                href={getProductosUrl(null, null)}
+                                                onClick={handleMegaMenuClick}
+                                                onMouseEnter={() => setActiveHoverCategory(null)}
+                                                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                                                    activeHoverCategory === null
+                                                        ? 'bg-[var(--color-primario)] text-white shadow-md'
+                                                        : 'text-gray-700 hover:bg-gray-200/60 hover:text-gray-900'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2.5">
+                                                    <DynamicIcon name="FaGrip" className="h-4 w-4" />
+                                                    <span>Ver todo el Catálogo</span>
                                                 </div>
-                                                <div className="flex items-center gap-1.5 shrink-0">
-                                                    {cat.ofertaBadge && (
-                                                        <span className="text-[9px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md uppercase">
-                                                            {cat.ofertaBadge}
-                                                        </span>
-                                                    )}
-                                                    <DynamicIcon name="FaChevronRight" className={`h-3 w-3 transition-transform ${isSelected ? 'text-[var(--color-primario)] translate-x-0.5' : 'text-gray-400'}`} />
+                                                <DynamicIcon name="FaChevronRight" className="h-3 w-3 opacity-70" />
+                                            </Link>
+
+                                            {/* Lista de Categorías */}
+                                            {categoriasArbol.map((cat) => {
+                                                const isSelected = activeHoverCategory === cat.nombre;
+                                                return (
+                                                    <div
+                                                        key={cat.nombre}
+                                                        onMouseEnter={() => setActiveHoverCategory(cat.nombre)}
+                                                        onClick={() => {
+                                                            handleMegaMenuClick();
+                                                            router.visit(getProductosUrl(cat.nombre, null));
+                                                        }}
+                                                        className={`group/cat w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 ${
+                                                            isSelected
+                                                                ? 'bg-white text-[var(--color-primario)] shadow-sm font-bold border border-gray-200/80 translate-x-1'
+                                                                : 'text-gray-700 hover:bg-gray-200/50 hover:text-gray-900'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                                                            {cat.icono && (
+                                                                <span className={`p-1.5 rounded-lg transition-colors ${
+                                                                    isSelected ? 'bg-[var(--color-primario)]/10 text-[var(--color-primario)]' : 'bg-gray-200/60 text-gray-500 group-hover/cat:text-gray-800'
+                                                                }`}>
+                                                                    <DynamicIcon name={cat.icono} className="h-3.5 w-3.5 shrink-0" />
+                                                                </span>
+                                                            )}
+                                                            <span className="truncate">{cat.nombre}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 shrink-0">
+                                                            {cat.ofertaBadge && (
+                                                                <span className="text-[9px] font-black bg-red-100 text-red-600 px-1.5 py-0.5 rounded-md uppercase">
+                                                                    {cat.ofertaBadge}
+                                                                </span>
+                                                            )}
+                                                            <DynamicIcon name="FaChevronRight" className={`h-3 w-3 transition-transform ${isSelected ? 'text-[var(--color-primario)] translate-x-0.5' : 'text-gray-400'}`} />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </>
+                                    ) : (
+                                        <>
+                                            {/* Opción Ver Todas las Marcas */}
+                                            <Link
+                                                href={getProductosUrl(null, null)}
+                                                onClick={handleMegaMenuClick}
+                                                onMouseEnter={() => setActiveHoverMarca(null)}
+                                                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
+                                                    activeHoverMarca === null
+                                                        ? 'bg-[var(--color-primario)] text-white shadow-md'
+                                                        : 'text-gray-700 hover:bg-gray-200/60 hover:text-gray-900'
+                                                }`}
+                                            >
+                                                <div className="flex items-center gap-2.5">
+                                                    <DynamicIcon name="FaAward" className="h-4 w-4" />
+                                                    <span>Todas las Marcas</span>
                                                 </div>
-                                            </div>
-                                        );
-                                    })}
+                                                <DynamicIcon name="FaChevronRight" className="h-3 w-3 opacity-70" />
+                                            </Link>
+
+                                            {/* Lista de Marcas */}
+                                            {marcasArbol.map((m) => {
+                                                const isSelected = activeHoverMarca === m.nombre;
+                                                return (
+                                                    <div
+                                                        key={m.nombre}
+                                                        onMouseEnter={() => setActiveHoverMarca(m.nombre)}
+                                                        onClick={() => {
+                                                            handleMegaMenuClick();
+                                                            router.visit(getMarcaUrl(m.nombre));
+                                                        }}
+                                                        className={`group/marca w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 ${
+                                                            isSelected
+                                                                ? 'bg-white text-[var(--color-primario)] shadow-sm font-bold border border-gray-200/80 translate-x-1'
+                                                                : 'text-gray-700 hover:bg-gray-200/50 hover:text-gray-900'
+                                                        }`}
+                                                    >
+                                                        <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                                                            {m.imagen ? (
+                                                                <img src={m.imagen} alt={m.nombre} className="h-4 w-4 object-contain rounded shrink-0 bg-white" />
+                                                            ) : (
+                                                                <span className={`p-1.5 rounded-lg transition-colors ${
+                                                                    isSelected ? 'bg-[var(--color-primario)]/10 text-[var(--color-primario)]' : 'bg-gray-200/60 text-gray-500'
+                                                                }`}>
+                                                                    <DynamicIcon name="FaTag" className="h-3 w-3 shrink-0" />
+                                                                </span>
+                                                            )}
+                                                            <span className="truncate">{m.nombre}</span>
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 shrink-0">
+                                                            {m.count > 0 && (
+                                                                <span className="text-[10px] font-bold text-gray-500 bg-gray-200/80 px-1.5 py-0.5 rounded-md">
+                                                                    {m.count}
+                                                                </span>
+                                                            )}
+                                                            <DynamicIcon name="FaChevronRight" className={`h-3 w-3 transition-transform ${isSelected ? 'text-[var(--color-primario)] translate-x-0.5' : 'text-gray-400'}`} />
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </>
+                                    )}
                                 </div>
 
-                                {/* COLUMNA DERECHA: SUBCATEGORÍAS & OFERTAS */}
+                                {/* COLUMNA DERECHA: SUBCATEGORÍAS & OFERTAS / MARCAS */}
                                 <div className="flex-1 p-6 overflow-y-auto bg-white flex flex-col justify-between">
-                                    {activeCategoryData ? (
+                                    {megaMenuTab === 'marcas' ? (
+                                        activeMarcaData ? (
+                                            <div>
+                                                {/* Header de la Marca Seleccionada */}
+                                                <div className="flex items-center justify-between pb-4 mb-6 border-b border-gray-100">
+                                                    <div className="flex items-center gap-3">
+                                                        {activeMarcaData.imagen ? (
+                                                            <img src={activeMarcaData.imagen} alt={activeMarcaData.nombre} className="h-10 w-10 object-contain rounded-xl p-1 border border-gray-200 bg-white shadow-2xs" />
+                                                        ) : (
+                                                            <span className="p-2.5 rounded-xl bg-[var(--color-primario)]/10 text-[var(--color-primario)]">
+                                                                <DynamicIcon name="FaAward" className="h-5 w-5" />
+                                                            </span>
+                                                        )}
+                                                        <div>
+                                                            <h3 className="text-lg font-bold text-gray-900 flex items-center gap-2">
+                                                                <span>{activeMarcaData.nombre}</span>
+                                                            </h3>
+                                                            <p className="text-xs text-gray-500 font-medium">
+                                                                {activeMarcaData.count} {activeMarcaData.count === 1 ? 'producto disponible' : 'productos disponibles'}
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <Link
+                                                        href={getMarcaUrl(activeMarcaData.nombre)}
+                                                        onClick={handleMegaMenuClick}
+                                                        className="text-xs font-bold text-[var(--color-primario)] hover:underline flex items-center gap-1"
+                                                    >
+                                                        <span>Ver todos los productos de esta marca</span>
+                                                        <DynamicIcon name="FaArrowRight" className="h-3 w-3" />
+                                                    </Link>
+                                                </div>
+
+                                                {/* Muestra de Productos de esta marca */}
+                                                {activeMarcaData.productos && activeMarcaData.productos.length > 0 ? (
+                                                    <div>
+                                                        <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">
+                                                            Productos Destacados de {activeMarcaData.nombre}
+                                                        </h4>
+                                                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                                            {activeMarcaData.productos.slice(0, 4).map((p, idx) => (
+                                                                <Link
+                                                                    key={p.id || idx}
+                                                                    href={getMarcaUrl(activeMarcaData.nombre) + `&producto=${p.slug || p.id}`}
+                                                                    onClick={handleMegaMenuClick}
+                                                                    className="group/prod p-2.5 rounded-xl border border-gray-100 hover:border-gray-200 hover:shadow-md transition-all flex items-center gap-2.5 bg-gray-50/50 hover:bg-white"
+                                                                >
+                                                                    {p.imagen ? (
+                                                                        <img src={p.imagen} alt={p.nombre} className="h-10 w-10 object-cover rounded-lg shrink-0 bg-white" />
+                                                                    ) : (
+                                                                        <div className="h-10 w-10 rounded-lg bg-gray-200 flex items-center justify-center shrink-0 text-gray-400">
+                                                                            <DynamicIcon name="FaBox" className="h-4 w-4" />
+                                                                        </div>
+                                                                    )}
+                                                                    <div className="min-w-0 flex-1">
+                                                                        <p className="text-xs font-semibold text-gray-800 truncate group-hover/prod:text-[var(--color-primario)] transition-colors">
+                                                                            {p.nombre}
+                                                                        </p>
+                                                                        <p className="text-xs font-black text-gray-900">
+                                                                            S/ {Number(p.precio_oferta_soles || p.precio_oferta || p.precio_soles || p.precio || 0).toFixed(2)}
+                                                                        </p>
+                                                                    </div>
+                                                                </Link>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                ) : (
+                                                    <div className="py-8 text-center text-gray-400">
+                                                        <DynamicIcon name="FaTag" className="h-6 w-6 mx-auto mb-2 opacity-50" />
+                                                        <p className="text-xs">Explora todos los productos disponibles de {activeMarcaData.nombre}</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        ) : (
+                                            /* Vista general de Marcas */
+                                            <div>
+                                                <div className="flex items-center justify-between pb-3 mb-4 border-b border-gray-100">
+                                                    <h3 className="text-base font-bold text-gray-900 flex items-center gap-2">
+                                                        <span>Catálogo de Marcas</span>
+                                                        <span className="text-[10px] bg-red-600 text-white font-extrabold px-2 py-0.5 rounded-full uppercase tracking-wider">NUESTRAS MARCAS</span>
+                                                    </h3>
+                                                    <Link
+                                                        href={getProductosUrl(null, null)}
+                                                        onClick={handleMegaMenuClick}
+                                                        className="text-xs font-bold text-[var(--color-primario)] hover:underline flex items-center gap-1"
+                                                    >
+                                                        <span>Ver catálogo completo</span>
+                                                        <DynamicIcon name="FaArrowRight" className="h-3 w-3" />
+                                                    </Link>
+                                                </div>
+
+                                                <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                                                    {marcasArbol.map((m) => (
+                                                        <Link
+                                                            key={m.nombre}
+                                                            href={getMarcaUrl(m.nombre)}
+                                                            onClick={handleMegaMenuClick}
+                                                            className="group/marcard bg-gray-50/70 p-3.5 rounded-2xl border border-gray-100 hover:border-gray-200 hover:bg-white hover:shadow-md transition-all flex items-center gap-3"
+                                                        >
+                                                            {m.imagen ? (
+                                                                <img src={m.imagen} alt={m.nombre} className="h-9 w-9 object-contain rounded-xl p-1 bg-white border border-gray-200/60 shrink-0" />
+                                                            ) : (
+                                                                <div className="h-9 w-9 rounded-xl bg-gray-200/80 flex items-center justify-center shrink-0 text-gray-500 group-hover/marcard:text-[var(--color-primario)]">
+                                                                    <DynamicIcon name="FaAward" className="h-4 w-4" />
+                                                                </div>
+                                                            )}
+                                                            <div className="min-w-0 flex-1">
+                                                                <h4 className="text-xs font-bold text-gray-900 truncate group-hover/marcard:text-[var(--color-primario)] transition-colors">
+                                                                    {m.nombre}
+                                                                </h4>
+                                                                <p className="text-[11px] text-gray-400 font-medium">
+                                                                    {m.count} {m.count === 1 ? 'producto' : 'productos'}
+                                                                </p>
+                                                            </div>
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )
+                                    ) : activeCategoryData ? (
                                         <div>
                                             {/* Header de la Categoría Seleccionada */}
                                             <div className="flex items-center justify-between pb-4 mb-6 border-b border-gray-100">
@@ -923,6 +1299,8 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                     <nav className="md:hidden border-t border-gray-200/80 bg-white px-6 py-4 space-y-1.5 shadow-2xl text-gray-900">
                         {navSecciones?.map((seccion) => {
                             const slugLower = seccion.slug?.toLowerCase() || '';
+                            const nombreLower = (seccion.nombre || '').toLowerCase();
+                            const filtroProdLower = (seccion.filtro_producto || '').toLowerCase();
                             const displayName = getDisplayName(seccion);
                             const normalizedSlug = slugLower.replace(/[\s_]+/g, '-');
                             const anchorId = slugLower === 'contactos' ? 'contacto' : normalizedSlug;
@@ -933,6 +1311,20 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                             const isServicios = slugLower === 'servicios' || slugLower === 'servicio';
                             const isNosotros = slugLower === 'nosotros' || slugLower === 'sobre-nosotros';
                             const isContacto = slugLower === 'contacto' || slugLower === 'contactos';
+                            const isLiquidaciones =
+                                slugLower === 'liquidacion' ||
+                                slugLower === 'liquidaciones' ||
+                                filtroProdLower === 'liquidaciones' ||
+                                filtroProdLower === 'liquidacion' ||
+                                nombreLower.includes('liquidaci');
+
+                            const isOfertas =
+                                slugLower === 'oferta' ||
+                                slugLower === 'ofertas' ||
+                                filtroProdLower === 'ofertas' ||
+                                filtroProdLower === 'oferta' ||
+                                nombreLower.includes('oferta');
+
                             const hasStandalonePage = isInicio || isProductos || isServicios || isNosotros || isContacto;
 
                             const pageSlugTarget = isInicio ? 'inicio' : (isProductos ? 'productos' : (isServicios ? 'servicios' : (isNosotros ? 'nosotros' : (isContacto ? 'contacto' : seccion.slug))));
@@ -963,7 +1355,51 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                     );
                                 }
 
-                                if (isProductos && categoriasArbol.length > 0) {
+                                if (isLiquidaciones) {
+                                    const targetUrl = dominio === 'plantillas'
+                                        ? `/plantillas/${siteSlug}/productos?liquidaciones=1`
+                                        : (siteSlug ? `/${dominio}/${siteSlug}/productos?liquidaciones=1` : `/${dominio}/productos?liquidaciones=1`);
+                                    const isLiquidacionesActiva = Boolean(currentUrl && (currentUrl.includes('liquidaciones=1') || currentUrl.includes('liquidacion=1') || currentUrl.includes('filtro_producto=liquidaciones') || currentUrl.includes('filtro_producto=liquidacion')));
+
+                                    return (
+                                        <Link
+                                            key={seccion.slug || 'liquidaciones'}
+                                            href={targetUrl}
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className={`block rounded-lg px-3 py-2.5 text-sm font-semibold transition ${isLiquidacionesActiva
+                                                ? 'text-white shadow-xs'
+                                                : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
+                                                }`}
+                                            style={isLiquidacionesActiva ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
+                                        >
+                                            {displayName}
+                                        </Link>
+                                    );
+                                }
+
+                                if (isOfertas) {
+                                    const targetUrl = dominio === 'plantillas'
+                                        ? `/plantillas/${siteSlug}/productos?ofertas=1`
+                                        : (siteSlug ? `/${dominio}/${siteSlug}/productos?ofertas=1` : `/${dominio}/productos?ofertas=1`);
+                                    const isOfertasActiva = Boolean(currentUrl && (currentUrl.includes('ofertas=1') || currentUrl.includes('oferta=1') || currentUrl.includes('solo_ofertas=1') || currentUrl.includes('filtro_producto=ofertas') || currentUrl.includes('filtro_producto=oferta')));
+
+                                    return (
+                                        <Link
+                                            key={seccion.slug || 'ofertas'}
+                                            href={targetUrl}
+                                            onClick={() => setMobileMenuOpen(false)}
+                                            className={`block rounded-lg px-3 py-2.5 text-sm font-semibold transition ${isOfertasActiva
+                                                ? 'text-white shadow-xs'
+                                                : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
+                                                }`}
+                                            style={isOfertasActiva ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
+                                        >
+                                            {displayName}
+                                        </Link>
+                                    );
+                                }
+
+                                if (isProductos && (categoriasArbol.length > 0 || marcasArbol.length > 0)) {
                                     return (
                                         <div key={seccion.slug} className="space-y-1">
                                             <div className="flex items-center justify-between">
@@ -978,35 +1414,65 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                 <button
                                                     type="button"
                                                     onClick={() => setMobileSubmenuOpen(!mobileSubmenuOpen)}
-                                                    className="p-2 text-gray-500 hover:text-gray-900"
+                                                    className="p-2 text-gray-500 hover:text-gray-900 cursor-pointer"
                                                 >
                                                     <DynamicIcon name="FaChevronDown" className={`h-4 w-4 transition-transform ${mobileSubmenuOpen ? 'rotate-180' : ''}`} />
                                                 </button>
                                             </div>
                                             {mobileSubmenuOpen && (
-                                                <div className="pl-4 space-y-2 border-l-2 border-[var(--color-primario)]/30 ml-2 my-1.5">
-                                                    {categoriasArbol.map((cat) => (
-                                                        <div key={cat.nombre} className="space-y-1">
-                                                            <Link
-                                                                href={getProductosUrl(cat.nombre, null)}
-                                                                onClick={() => setMobileMenuOpen(false)}
-                                                                className="flex items-center gap-2 text-xs font-bold text-gray-800 hover:text-[var(--color-primario)] py-0.5"
-                                                            >
-                                                                {cat.icono && <DynamicIcon name={cat.icono} className="h-3.5 w-3.5 text-[var(--color-primario)] shrink-0" />}
-                                                                <span>{cat.nombre}</span>
-                                                            </Link>
-                                                            {cat.subcategorias?.map((sub) => (
-                                                                <Link
-                                                                    key={sub.nombre}
-                                                                    href={getProductosUrl(cat.nombre, sub.nombre)}
-                                                                    onClick={() => setMobileMenuOpen(false)}
-                                                                    className="block text-[11px] text-gray-600 hover:text-gray-900 pl-2 py-0.5"
-                                                                >
-                                                                    • {sub.nombre}
-                                                                </Link>
+                                                <div className="pl-4 space-y-3 border-l-2 border-[var(--color-primario)]/30 ml-2 my-1.5 pt-1">
+                                                    {/* Sub-sección Categorías */}
+                                                    {categoriasArbol.length > 0 && (
+                                                        <div className="space-y-1.5">
+                                                            <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider block">Categorías</span>
+                                                            {categoriasArbol.map((cat) => (
+                                                                <div key={cat.nombre} className="space-y-1">
+                                                                    <Link
+                                                                        href={getProductosUrl(cat.nombre, null)}
+                                                                        onClick={() => setMobileMenuOpen(false)}
+                                                                        className="flex items-center gap-2 text-xs font-bold text-gray-800 hover:text-[var(--color-primario)] py-0.5"
+                                                                    >
+                                                                        {cat.icono && <DynamicIcon name={cat.icono} className="h-3.5 w-3.5 text-[var(--color-primario)] shrink-0" />}
+                                                                        <span>{cat.nombre}</span>
+                                                                    </Link>
+                                                                    {cat.subcategorias?.map((sub) => (
+                                                                        <Link
+                                                                            key={sub.nombre}
+                                                                            href={getProductosUrl(cat.nombre, sub.nombre)}
+                                                                            onClick={() => setMobileMenuOpen(false)}
+                                                                            className="block text-[11px] text-gray-600 hover:text-gray-900 pl-2 py-0.5"
+                                                                        >
+                                                                            • {sub.nombre}
+                                                                        </Link>
+                                                                    ))}
+                                                                </div>
                                                             ))}
                                                         </div>
-                                                    ))}
+                                                    )}
+
+                                                    {/* Sub-sección Marcas */}
+                                                    {marcasArbol.length > 0 && (
+                                                        <div className="space-y-1.5 pt-2 border-t border-gray-100">
+                                                            <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider block">Marcas</span>
+                                                            <div className="grid grid-cols-2 gap-1.5">
+                                                                {marcasArbol.map((m) => (
+                                                                    <Link
+                                                                        key={m.nombre}
+                                                                        href={getMarcaUrl(m.nombre)}
+                                                                        onClick={() => setMobileMenuOpen(false)}
+                                                                        className="flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-[var(--color-primario)] p-1 rounded-md hover:bg-gray-100"
+                                                                    >
+                                                                        {m.imagen ? (
+                                                                            <img src={m.imagen} alt={m.nombre} className="h-3.5 w-3.5 object-contain rounded shrink-0" />
+                                                                        ) : (
+                                                                            <DynamicIcon name="FaTag" className="h-3 w-3 text-[var(--color-primario)] shrink-0" />
+                                                                        )}
+                                                                        <span className="truncate">{m.nombre}</span>
+                                                                    </Link>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

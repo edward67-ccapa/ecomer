@@ -2,6 +2,52 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import DynamicIcon from '@/components/DynamicIcon';
 import { useContactoData } from './hooks/useContactoData';
+function CuentaPagoCard({ item }) {
+    const [copiado, setCopiado] = useState(false);
+    const label = item.label || item.Label || 'Cuenta:';
+    const metodo = item.metodo_pago || item.Metodo_pago || item.metodo || 'Banco';
+    const info = item.info || item.Info || item.numero || '';
+
+    const handleCopy = () => {
+        if (info && typeof navigator !== 'undefined' && navigator.clipboard) {
+            navigator.clipboard.writeText(info);
+            setCopiado(true);
+            setTimeout(() => setCopiado(false), 2000);
+        }
+    };
+
+    return (
+        <div className="p-3.5 rounded-2xl bg-gray-50 border border-gray-200/70 hover:border-gray-300 transition-colors shadow-2xs space-y-1">
+            <div className="flex items-center justify-between gap-2">
+                <span className="text-[11px] font-bold text-gray-500 uppercase tracking-wider truncate">
+                    {label}
+                </span>
+                <span className="text-xs font-extrabold text-[var(--color-primario)] shrink-0">
+                    {metodo}
+                </span>
+            </div>
+            <div className="flex items-center justify-between gap-2 pt-0.5">
+                <span className="text-sm font-bold text-gray-900 font-mono select-all truncate">
+                    {info}
+                </span>
+                {info && (
+                    <button
+                        type="button"
+                        onClick={handleCopy}
+                        className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-md border transition cursor-pointer shrink-0 ${
+                            copiado
+                                ? 'bg-emerald-600 text-white border-emerald-600'
+                                : 'bg-white text-gray-600 hover:text-gray-900 border-gray-200 hover:bg-gray-100 shadow-2xs'
+                        }`}
+                        title="Copiar número de cuenta"
+                    >
+                        {copiado ? '¡Copiado!' : 'Copiar'}
+                    </button>
+                )}
+            </div>
+        </div>
+    );
+}
 
 export default function SectionContacto({ site, seccion, seccionesData, estilos }) {
     const { contacto } = useContactoData(seccion, seccionesData);
@@ -120,6 +166,12 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
         setFecha('');
         setMensaje('');
     };
+
+    // Cuentas de pago desde Admin General (estilos.cuentas_pago)
+    const rawCuentas = estilos?.cuentas_pago || site?.estilos?.cuentas_pago || [];
+    const cuentasPago = Array.isArray(rawCuentas)
+        ? rawCuentas
+        : (rawCuentas && typeof rawCuentas === 'object' ? Object.values(rawCuentas) : []);
 
     // Google Map URL
     const googleMapEmbedUrl = mapaUrlConfig && (mapaUrlConfig.includes('google.com/maps/embed') || mapaUrlConfig.includes('output=embed'))
@@ -316,6 +368,20 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
                                                 >
                                                     <DynamicIcon name={item.icono} className="h-5 w-5" />
                                                 </a>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* INFORMACIÓN DE PAGO Y CUENTAS BANCARIAS */}
+                                {cuentasPago.length > 0 && (
+                                    <div className="pt-4 border-t border-gray-100 space-y-3">
+                                        <span className="block text-xs font-bold uppercase tracking-wider text-gray-400">
+                                            Métodos de Pago / Cuentas Bancarias
+                                        </span>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                            {cuentasPago.map((item, idx) => (
+                                                <CuentaPagoCard key={idx} item={item} />
                                             ))}
                                         </div>
                                     </div>

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import DynamicIcon from '@/components/DynamicIcon';
 import { useCartStore } from '@/stores/useCartStore';
@@ -44,6 +44,73 @@ export default function SectionProductoDetalle({
     });
     const [agregadoAnim, setAgregadoAnim] = useState(false);
 
+    const visorRef = useRef(null);
+    const [zoomInlineScale, setZoomInlineScale] = useState(1);
+    const [inlinePan, setInlinePan] = useState({ x: 50, y: 50 });
+
+    useEffect(() => {
+        setZoomInlineScale(1);
+        setInlinePan({ x: 50, y: 50 });
+    }, [imagenActivaIdx]);
+
+    useEffect(() => {
+        const el = visorRef.current;
+        if (!el) return;
+
+        const handleWheelNative = (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+
+            const rect = el.getBoundingClientRect();
+            const x = Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100));
+            const y = Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100));
+            setInlinePan({ x: +x.toFixed(2), y: +y.toFixed(2) });
+
+            if (e.deltaY < 0) {
+                setZoomInlineScale((prev) => Math.min(4, +(prev + 0.25).toFixed(2)));
+            } else {
+                setZoomInlineScale((prev) => Math.max(1, +(prev - 0.25).toFixed(2)));
+            }
+        };
+
+        el.addEventListener('wheel', handleWheelNative, { passive: false });
+        return () => {
+            el.removeEventListener('wheel', handleWheelNative);
+        };
+    }, [producto?.id, imagenActivaIdx]);
+
+    const handleZoomIn = (e) => {
+        e?.stopPropagation();
+        setZoomInlineScale((prev) => Math.min(4, +(prev + 0.5).toFixed(2)));
+    };
+
+    const handleZoomOut = (e) => {
+        e?.stopPropagation();
+        setZoomInlineScale((prev) => Math.max(1, +(prev - 0.5).toFixed(2)));
+    };
+
+    const handleZoomReset = (e) => {
+        e?.stopPropagation();
+        setZoomInlineScale(1);
+        setInlinePan({ x: 50, y: 50 });
+    };
+
+    const handleInlineMouseMove = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100));
+        const y = Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100));
+        setInlinePan({ x: +x.toFixed(2), y: +y.toFixed(2) });
+    };
+
+    const handleInlineClick = (e) => {
+        const rect = e.currentTarget.getBoundingClientRect();
+        const x = Math.min(100, Math.max(0, ((e.clientX - rect.left) / rect.width) * 100));
+        const y = Math.min(100, Math.max(0, ((e.clientY - rect.top) / rect.height) * 100));
+        setInlinePan({ x: +x.toFixed(2), y: +y.toFixed(2) });
+
+        setZoomInlineScale((prev) => (prev > 1 ? 1 : 2.5));
+    };
+
     // Resetear al cambiar de producto y posicionar arriba
     useEffect(() => {
         if (producto?.variantes && producto.variantes.length > 0) {
@@ -63,23 +130,48 @@ export default function SectionProductoDetalle({
 
     if (!producto) return null;
 
-    // Precios basados en la variante si existe, o en el producto base
-    const precioBaseRegular = varianteSeleccionada?.precio
+    const pSolesReg = varianteSeleccionada?.precio
         ? Number(varianteSeleccionada.precio)
-        : Number(producto.precio_soles || producto.precio || 0);
+        : (producto.precio_soles != null && producto.precio_soles !== '' ? Number(producto.precio_soles) : (producto.precio != null && producto.precio !== '' ? Number(producto.precio) : 0));
 
-    const precioBaseOferta = varianteSeleccionada
-        ? (varianteSeleccionada.precio_oferta ? Number(varianteSeleccionada.precio_oferta) : null)
-        : (producto.precio_oferta || producto.precio_oferta_soles ? Number(producto.precio_oferta_soles || producto.precio_oferta) : null);
+    const pSolesOfe = varianteSeleccionada?.precio_oferta
+        ? Number(varianteSeleccionada.precio_oferta)
+        : (producto.precio_oferta_soles != null && producto.precio_oferta_soles !== '' ? Number(producto.precio_oferta_soles) : (producto.precio_oferta != null && producto.precio_oferta !== '' ? Number(producto.precio_oferta) : 0));
 
-    const tieneOferta = Boolean(precioBaseOferta && precioBaseOferta < precioBaseRegular);
-    const precioActual = tieneOferta ? precioBaseOferta : precioBaseRegular;
+    const pDolReg = producto.precio_dolares != null && producto.precio_dolares !== '' ? Number(producto.precio_dolares) : 0;
+    const pDolOfe = producto.precio_oferta_dolares != null && producto.precio_oferta_dolares !== '' ? Number(producto.precio_oferta_dolares) : 0;
 
-    const descOferta = tieneOferta && precioBaseRegular > 0
-        ? Math.round(((precioBaseRegular - precioBaseOferta) / precioBaseRegular) * 100)
+    const tieneOfertaSoles = pSolesOfe > 0 && (pSolesReg === 0 || pSolesOfe < pSolesReg);
+    const precioSolesEfectivo = tieneOfertaSoles ? pSolesOfe : pSolesReg;
+    const descOfertaSoles = tieneOfertaSoles && pSolesReg > 0 && pSolesReg > pSolesOfe
+        ? Math.round(((pSolesReg - pSolesOfe) / pSolesReg) * 100)
         : null;
 
-    const simboloMoneda = producto.precio_dolares && !producto.precio_soles ? '$' : 'S/';
+    const tieneOfertaDolares = pDolOfe > 0 && (pDolReg === 0 || pDolOfe < pDolReg);
+    const precioDolaresEfectivo = tieneOfertaDolares ? pDolOfe : pDolReg;
+    const descOfertaDolares = tieneOfertaDolares && pDolReg > 0 && pDolReg > pDolOfe
+        ? Math.round(((pDolReg - pDolOfe) / pDolReg) * 100)
+        : null;
+
+    const tieneOferta = tieneOfertaSoles || tieneOfertaDolares;
+    const descOferta = descOfertaSoles || descOfertaDolares;
+
+    const simboloMoneda = precioSolesEfectivo > 0 ? 'S/' : (precioDolaresEfectivo > 0 ? '$' : 'S/');
+    const precioActual = precioSolesEfectivo > 0 ? precioSolesEfectivo : (precioDolaresEfectivo > 0 ? precioDolaresEfectivo : 0);
+    const precioBaseRegular = pSolesReg > 0 ? pSolesReg : pDolReg;
+    const precioBaseOferta = pSolesOfe > 0 ? pSolesOfe : pDolOfe;
+
+    const esLiquidacion = Boolean(
+        producto.es_liquidacion ||
+        producto.liquidacion ||
+        producto.is_liquidacion ||
+        producto.precio == null ||
+        producto.precio_soles == null ||
+        (Number(producto.precio || producto.precio_soles || 0) === 0 && !producto.precio_oferta && !producto.precio_oferta_soles)
+    );
+
+    const stockVal = producto.stock !== null && producto.stock !== undefined ? Number(producto.stock) : null;
+    const stockTexto = producto.cantidad ? String(producto.cantidad).trim() : null;
 
     // Galería combinada (imagen principal, adicionales y variantes)
     const imagenesGaleria = [
@@ -248,10 +340,13 @@ export default function SectionProductoDetalle({
                             </div>
                         )}
 
-                        {/* Visor de Imagen Principal */}
-                        <div className="flex-1 relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 flex items-center justify-center group">
+                        <div
+                            ref={visorRef}
+                            className="flex-1 relative aspect-square bg-gray-50 rounded-2xl overflow-hidden border border-gray-100 flex items-center justify-center group select-none"
+                            onMouseMove={handleInlineMouseMove}
+                        >
                             {/* Badges Flotantes sobre la foto */}
-                            <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+                            <div className="absolute top-4 left-4 z-10 flex flex-col gap-2 pointer-events-none">
                                 {producto.categoria && (
                                     <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-white/95 backdrop-blur-md shadow-sm border border-gray-100 text-gray-800">
                                         <span className="w-2 h-2 rounded-full" style={{ backgroundColor: 'var(--color-primario)' }} />
@@ -262,7 +357,7 @@ export default function SectionProductoDetalle({
 
                             {tieneOferta && (
                                 <span
-                                    className="absolute top-4 right-4 z-10 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider text-white shadow-lg"
+                                    className="absolute top-4 right-4 z-10 inline-flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-black uppercase tracking-wider text-white shadow-lg pointer-events-none"
                                     style={{
                                         backgroundColor: 'var(--color-primario)',
                                         fontFamily: 'var(--tipografia-titulos)',
@@ -274,18 +369,64 @@ export default function SectionProductoDetalle({
                                 </span>
                             )}
 
+
+
+                            <div className="absolute bottom-4 right-4 z-20 flex items-center gap-1 bg-white/90 backdrop-blur-md p-1.5 rounded-full shadow-lg border border-gray-200 opacity-90 group-hover:opacity-100 transition-opacity">
+                                <button
+                                    type="button"
+                                    onClick={handleZoomOut}
+                                    disabled={zoomInlineScale <= 1}
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent transition cursor-pointer"
+                                    title="Alejar (-)"
+                                >
+                                    <DynamicIcon name="FaSearchMinus" className="w-3.5 h-3.5" />
+                                </button>
+                                <span className="text-[11px] font-mono font-bold text-gray-700 px-1.5 min-w-[42px] text-center select-none">
+                                    {Math.round(zoomInlineScale * 100)}%
+                                </span>
+                                <button
+                                    type="button"
+                                    onClick={handleZoomIn}
+                                    disabled={zoomInlineScale >= 4}
+                                    className="w-8 h-8 rounded-full flex items-center justify-center text-gray-700 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent transition cursor-pointer"
+                                    title="Acercar (+)"
+                                >
+                                    <DynamicIcon name="FaSearchPlus" className="w-3.5 h-3.5" />
+                                </button>
+                                {zoomInlineScale > 1 && (
+                                    <button
+                                        type="button"
+                                        onClick={handleZoomReset}
+                                        className="px-2 py-1 text-[10px] font-bold text-gray-700 hover:bg-gray-200 bg-gray-100 rounded-full transition cursor-pointer ml-1"
+                                        title="Restablecer (100%)"
+                                    >
+                                        ↺ 100%
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Imagen Visor */}
                             {imagenPrincipal ? (
-                                <img
-                                    src={imagenPrincipal}
-                                    alt={producto.nombre}
-                                    width={600}
-                                    height={600}
-                                    loading="lazy"
-                                    decoding="async"
-                                    style={{ maxWidth: '100%', maxHeight: '100%', width: '100%', height: '100%', objectFit: 'cover' }}
-                                    className="w-full h-full max-w-full max-h-full object-cover group-hover:scale-105 transition-transform duration-500 cursor-zoom-in"
-                                    onClick={() => setModalFotoAbierto(true)}
-                                />
+                                <div
+                                    className={`w-full h-full overflow-hidden flex items-center justify-center relative ${zoomInlineScale > 1 ? 'cursor-zoom-out' : 'cursor-zoom-in'
+                                        }`}
+                                    onClick={handleInlineClick}
+                                >
+                                    <img
+                                        src={imagenPrincipal}
+                                        alt={producto.nombre}
+                                        width={600}
+                                        height={600}
+                                        loading="lazy"
+                                        decoding="async"
+                                        style={{
+                                            transform: `scale(${zoomInlineScale})`,
+                                            transformOrigin: `${inlinePan.x}% ${inlinePan.y}%`,
+                                            transition: zoomInlineScale === 1 ? 'transform 0.25s ease' : 'transform 0.05s ease-out',
+                                        }}
+                                        className="w-full h-full object-cover max-w-full max-h-full"
+                                    />
+                                </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center text-gray-300 gap-2">
                                     <DynamicIcon name="FaBoxOpen" className="h-16 w-16" />
@@ -298,16 +439,22 @@ export default function SectionProductoDetalle({
                                 <>
                                     <button
                                         type="button"
-                                        onClick={() => setImagenActivaIdx((prev) => (prev > 0 ? prev - 1 : imagenesUnicas.length - 1))}
-                                        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center text-gray-700 hover:text-black transition cursor-pointer opacity-0 group-hover:opacity-100"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setImagenActivaIdx((prev) => (prev > 0 ? prev - 1 : imagenesUnicas.length - 1));
+                                        }}
+                                        className="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center text-gray-700 hover:text-black transition cursor-pointer opacity-0 group-hover:opacity-100 z-10"
                                         aria-label="Foto anterior"
                                     >
                                         ‹
                                     </button>
                                     <button
                                         type="button"
-                                        onClick={() => setImagenActivaIdx((prev) => (prev < imagenesUnicas.length - 1 ? prev + 1 : 0))}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center text-gray-700 hover:text-black transition cursor-pointer opacity-0 group-hover:opacity-100"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            setImagenActivaIdx((prev) => (prev < imagenesUnicas.length - 1 ? prev + 1 : 0));
+                                        }}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white shadow-md flex items-center justify-center text-gray-700 hover:text-black transition cursor-pointer opacity-0 group-hover:opacity-100 z-10"
                                         aria-label="Siguiente foto"
                                     >
                                         ›
@@ -320,11 +467,18 @@ export default function SectionProductoDetalle({
                     {/* COLUMNA DERECHA: Datos del Producto y Compra */}
                     <div className="lg:col-span-5 flex flex-col justify-between">
                         <div>
-                            {/* Marca / Tienda y Calificación */}
+                            {/* Marca / Tienda, Liquidación y Calificación */}
                             <div className="flex items-center justify-between gap-2 mb-2">
-                                <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
-                                    {site.nombre || 'Tienda Oficial'}
-                                </span>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
+                                        {site.nombre || 'Tienda Oficial'}
+                                    </span>
+                                    {esLiquidacion && (
+                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500 text-white shadow-2xs">
+                                            🏷️ Liquidación
+                                        </span>
+                                    )}
+                                </div>
                                 <div className="flex items-center gap-1 text-xs text-amber-500 font-semibold">
                                     <span>★ ★ ★ ★ ★</span>
                                     <span className="text-gray-400 text-[11px]">(4.9)</span>
@@ -348,61 +502,98 @@ export default function SectionProductoDetalle({
 
                             {/* Bloque de Precios Destacado */}
                             <div className="p-4 rounded-xl bg-gray-50/80 border border-gray-100 mb-6">
-                                {tieneOferta ? (
-                                    <>
-                                        <div className="flex items-baseline gap-2 mb-1 flex-wrap">
-                                            <span
-                                                className="text-sm font-black"
-                                                style={{ color: 'var(--color-primario)' }}
-                                            >
-                                                {simboloMoneda}
-                                            </span>
-                                            <span
-                                                className="text-3xl sm:text-4xl font-black tracking-tight leading-none"
-                                                style={{ color: 'var(--color-primario)', fontFamily: 'var(--tipografia-titulos)' }}
-                                            >
-                                                {precioActual.toFixed(2)}
-                                            </span>
-                                            {descOferta && (
-                                                <span
-                                                    className="text-white text-xs font-black px-2 py-0.5 rounded-md leading-none"
-                                                    style={{ backgroundColor: 'var(--color-primario)' }}
-                                                >
-                                                    -{descOferta}%
+                                <div className="flex flex-col gap-2.5">
+                                    {/* 1. Precio en Soles */}
+                                    {precioSolesEfectivo > 0 && (
+                                        <div>
+                                            <div className="flex items-baseline gap-2 flex-wrap">
+                                                <span className="text-sm font-black text-[#0089CF]">S/</span>
+                                                <span className="text-3xl sm:text-4xl font-black text-[#0089CF] tracking-tight leading-none">
+                                                    {precioSolesEfectivo.toFixed(2)}
                                                 </span>
+                                                {tieneOfertaSoles && descOfertaSoles && (
+                                                    <span className="bg-[#0089CF] text-white text-xs font-black px-2 py-0.5 rounded-md leading-none">
+                                                        -{descOfertaSoles}%
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {tieneOfertaSoles && pSolesReg > precioSolesEfectivo && (
+                                                <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                                                    <span>Precio regular:</span>
+                                                    <span className="line-through font-semibold text-gray-400">
+                                                        S/ {pSolesReg.toFixed(2)}
+                                                    </span>
+                                                </div>
                                             )}
                                         </div>
-                                        <div className="flex items-center gap-2 text-xs text-gray-500">
-                                            <span>Precio regular:</span>
-                                            <span className="line-through font-semibold text-gray-400">
-                                                {simboloMoneda} {precioBaseRegular.toFixed(2)}
-                                            </span>
-                                            <span className="text-emerald-600 font-bold ml-1">
-                                                (Ahorras {simboloMoneda} {(precioBaseRegular - precioActual).toFixed(2)})
+                                    )}
+
+                                    {/* 2. Precio en Dólares (sin conversión) */}
+                                    {precioDolaresEfectivo > 0 && (
+                                        <div>
+                                            <div className="flex items-baseline gap-1.5 flex-wrap text-emerald-700 font-black">
+                                                <span className="text-sm font-black text-emerald-600">$</span>
+                                                <span className="text-2xl sm:text-3xl font-black tracking-tight leading-none text-emerald-700">
+                                                    {precioDolaresEfectivo}
+                                                </span>
+                                                <span className="text-xs font-extrabold text-emerald-600">USD</span>
+                                                {tieneOfertaDolares && descOfertaDolares && (
+                                                    <span className="bg-emerald-600 text-white text-xs font-black px-2 py-0.5 rounded-md leading-none">
+                                                        -{descOfertaDolares}%
+                                                    </span>
+                                                )}
+                                            </div>
+                                            {tieneOfertaDolares && pDolReg > precioDolaresEfectivo && (
+                                                <div className="flex items-center gap-2 text-xs text-gray-500 mt-0.5">
+                                                    <span>Precio regular:</span>
+                                                    <span className="line-through font-semibold text-gray-400">
+                                                        $ {pDolReg}
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* 3. Liquidación / Sin precio */}
+                                    {(!precioSolesEfectivo || precioSolesEfectivo <= 0) && (!precioDolaresEfectivo || precioDolaresEfectivo <= 0) && (
+                                        <div className="flex items-center gap-2">
+                                            <span className="px-3 py-1 rounded-md text-xs font-bold bg-amber-50 text-amber-600 border border-amber-200">
+                                                Consultar precio / Liquidación
                                             </span>
                                         </div>
-                                    </>
-                                ) : (
-                                    <div className="flex items-baseline gap-2">
-                                        <span
-                                            className="text-sm font-black"
-                                            style={{ color: 'var(--color-primario)' }}
-                                        >
-                                            {simboloMoneda}
-                                        </span>
-                                        <span
-                                            className="text-3xl sm:text-4xl font-black tracking-tight leading-none"
-                                            style={{ color: 'var(--color-primario)', fontFamily: 'var(--tipografia-titulos)' }}
-                                        >
-                                            {precioActual.toFixed(2)}
-                                        </span>
-                                    </div>
-                                )}
+                                    )}
+                                </div>
 
-                                {/* Tag de entrega rápida */}
-                                <div className="mt-3 flex items-center gap-1.5 text-xs text-emerald-700 font-semibold">
-                                    <span className="text-sm">⚡</span>
-                                    <span>Disponible para entrega inmediata o pedido programado</span>
+                                {/* Disponibilidad de Stock */}
+                                <div className="mt-3 pt-3 border-t border-gray-200/80 flex flex-wrap items-center justify-between gap-2 text-xs">
+                                    <span className="font-bold text-gray-700">Stock / Disponibilidad:</span>
+                                    {stockVal !== null ? (
+                                        stockVal > 5 ? (
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-extrabold">
+                                                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
+                                                Stock disponible ({stockVal} unids.)
+                                            </span>
+                                        ) : stockVal > 0 ? (
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-300 font-extrabold animate-pulse">
+                                                <span className="h-2 w-2 rounded-full bg-amber-500" />
+                                                ¡Últimas {stockVal} unidades en stock!
+                                            </span>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 font-extrabold">
+                                                <span className="h-2 w-2 rounded-full bg-red-500" />
+                                                Agotado (Sin stock)
+                                            </span>
+                                        )
+                                    ) : stockTexto ? (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 border border-blue-200 font-extrabold">
+                                            📦 {stockTexto}
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-extrabold">
+                                            <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                                            En Stock (Disponible)
+                                        </span>
+                                    )}
                                 </div>
                             </div>
 
@@ -882,6 +1073,7 @@ export default function SectionProductoDetalle({
                     </div>
                 )}
             </div>
+
         </main>
     );
 }

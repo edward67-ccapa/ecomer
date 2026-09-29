@@ -396,10 +396,13 @@
                                 $imgSrc = $getDomPdfImageSrc($prod);
 
                                 // Soles
-                                $precioSoles = (float) ($prod->precio_soles ?? $prod->precio ?? 0);
-                                $precioOfertaSoles = $prod->precio_oferta_soles ?? $prod->precio_oferta;
-                                $precioOfertaSoles = $precioOfertaSoles !== null ? (float) $precioOfertaSoles : null;
-                                $tieneOfertaSoles = $precioOfertaSoles !== null && $precioOfertaSoles < $precioSoles;
+                                $precioSoles = ($prod->precio_soles !== null && (float)$prod->precio_soles > 0)
+                                    ? (float)$prod->precio_soles
+                                    : (($prod->precio !== null && (float)$prod->precio > 0) ? (float)$prod->precio : null);
+                                $precioOfertaSoles = ($prod->precio_oferta_soles !== null && (float)$prod->precio_oferta_soles > 0)
+                                    ? (float)$prod->precio_oferta_soles
+                                    : (($prod->precio_oferta !== null && (float)$prod->precio_oferta > 0) ? (float)$prod->precio_oferta : null);
+                                $tieneOfertaSoles = $precioOfertaSoles !== null && ($precioSoles === null || $precioOfertaSoles < $precioSoles);
 
                                 // Dólares
                                 $precioDolares = ($prod->precio_dolares !== null && (float)$prod->precio_dolares > 0) ? (float) $prod->precio_dolares : null;
@@ -414,7 +417,9 @@
                                 // Descuento %
                                 $descuentoPorcentaje = ($tieneOfertaSoles && $precioSoles > 0)
                                     ? round((($precioSoles - $precioOfertaSoles) / $precioSoles) * 100)
-                                    : null;
+                                    : (($tieneOfertaDolares && $precioDolares > 0)
+                                        ? round((($precioDolares - $precioOfertaDolares) / $precioDolares) * 100)
+                                        : null);
                             @endphp
 
                             <td class="grid-td">
@@ -448,34 +453,45 @@
                                                 <div class="price-box">
                                                     {{-- Soles --}}
                                                     @if($tieneOfertaSoles)
-                                                        <span class="price-striked">S/ {{ number_format($precioSoles, 2) }}</span>
+                                                        @if($precioSoles && $precioSoles > $precioOfertaSoles)
+                                                            <span class="price-striked">S/ {{ number_format($precioSoles, 2) }}</span>
+                                                        @endif
                                                         <span class="price-soles-offer">S/ {{ number_format($precioOfertaSoles, 2) }}</span>
-                                                    @else
+                                                    @elseif($precioSoles)
                                                         <span class="price-soles">S/ {{ number_format($precioSoles, 2) }}</span>
                                                     @endif
 
                                                     {{-- Dólares --}}
-                                                    @if($precioDolares)
+                                                    @if($tieneOfertaDolares)
                                                         <div class="price-usd">
-                                                            @if($tieneOfertaDolares)
+                                                            @if($precioDolares && $precioDolares > $precioOfertaDolares)
                                                                 <span class="price-striked">$ {{ number_format($precioDolares, 2) }}</span>
-                                                                <span>$ {{ number_format($precioOfertaDolares, 2) }} USD</span>
-                                                            @else
-                                                                <span>$ {{ number_format($precioDolares, 2) }} USD</span>
                                                             @endif
+                                                            <span>$ {{ number_format($precioOfertaDolares, 2) }} USD</span>
+                                                        </div>
+                                                    @elseif($precioDolares)
+                                                        <div class="price-usd">
+                                                            <span>$ {{ number_format($precioDolares, 2) }} USD</span>
                                                         </div>
                                                     @endif
 
                                                     {{-- Euros --}}
-                                                    @if($precioEuros)
+                                                    @if($tieneOfertaEuros)
                                                         <div class="price-euros">
-                                                            @if($tieneOfertaEuros)
+                                                            @if($precioEuros && $precioEuros > $precioOfertaEuros)
                                                                 <span class="price-striked">€ {{ number_format($precioEuros, 2) }}</span>
-                                                                <span>€ {{ number_format($precioOfertaEuros, 2) }} EUR</span>
-                                                            @else
-                                                                <span>€ {{ number_format($precioEuros, 2) }} EUR</span>
                                                             @endif
+                                                            <span>€ {{ number_format($precioOfertaEuros, 2) }} EUR</span>
                                                         </div>
+                                                    @elseif($precioEuros)
+                                                        <div class="price-euros">
+                                                            <span>€ {{ number_format($precioEuros, 2) }} EUR</span>
+                                                        </div>
+                                                    @endif
+
+                                                    {{-- Liquidación / Sin precio --}}
+                                                    @if(!$precioSoles && !$precioOfertaSoles && !$precioDolares && !$precioOfertaDolares && !$precioEuros && !$precioOfertaEuros)
+                                                        <span style="font-size: 8px; color: #d97706; font-weight: bold;">Consultar precio / Liquidación</span>
                                                     @endif
                                                 </div>
                                             </td>

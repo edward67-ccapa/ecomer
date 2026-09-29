@@ -40,12 +40,65 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
         if (typeof window !== 'undefined') {
             const params = new URLSearchParams(window.location.search);
             const cat = params.get('categoria');
-            if (cat) {
-                return { categoria: [cat] };
-            }
+            const sub = params.get('subcategoria');
+            const mrc = params.get('marca');
+            const init = {};
+            if (cat) init.categoria = [cat];
+            if (sub) init.subcategoria = [sub];
+            if (mrc) init.marca = [mrc];
+            return init;
         }
         return {};
     });
+
+    const [soloOfertas, setSoloOfertas] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('oferta') === '1' || params.get('ofertas') === '1' || params.get('solo_ofertas') === '1';
+        }
+        return false;
+    });
+
+    const [soloLiquidacion, setSoloLiquidacion] = useState(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            return params.get('liquidacion') === '1' || params.get('liquidaciones') === '1' || params.get('solo_liquidacion') === '1';
+        }
+        return false;
+    });
+
+    const { url: currentUrl } = usePage();
+    const isCatalogoMode = Boolean(currentUrl && currentUrl.includes('catalogo=1'));
+    const catalogoConfig = estilos?.catalogo || {};
+
+    // Sincronizar filtrosSeleccionados, soloOfertas y soloLiquidacion cuando cambia la URL
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            const params = new URLSearchParams(window.location.search);
+            const cat = params.get('categoria');
+            const sub = params.get('subcategoria');
+            const mrc = params.get('marca');
+            const isOfertaParam = params.get('oferta') === '1' || params.get('ofertas') === '1' || params.get('solo_ofertas') === '1';
+            const isLiquidacionParam = params.get('liquidacion') === '1' || params.get('liquidaciones') === '1' || params.get('solo_liquidacion') === '1';
+
+            setSoloOfertas(isOfertaParam);
+            setSoloLiquidacion(isLiquidacionParam);
+
+            setFiltrosSeleccionados((prev) => {
+                const next = { ...prev };
+                if (cat) next.categoria = [cat];
+                else delete next.categoria;
+
+                if (sub) next.subcategoria = [sub];
+                else delete next.subcategoria;
+
+                if (mrc) next.marca = [mrc];
+                else delete next.marca;
+
+                return next;
+            });
+        }
+    }, [currentUrl]);
     const [acordeonesAbiertos, setAcordeonesAbiertos] = useState({
         precio: true,
         categoria: true,
@@ -88,10 +141,6 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
     useEffect(() => {
         setRangoPrecio([minPrecioAbsoluto, maxPrecioAbsoluto]);
     }, [minPrecioAbsoluto, maxPrecioAbsoluto]);
-
-    const { url: currentUrl } = usePage();
-    const isCatalogoMode = Boolean(currentUrl && currentUrl.includes('catalogo=1'));
-    const catalogoConfig = estilos?.catalogo || {};
 
     const getValor = (label) =>
         seccionData?.contenido?.find(
@@ -165,6 +214,42 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
         }));
     }, [productos]);
 
+    // Árbol de Marcas para tarjetas visuales y filtros
+    const marcasArbol = useMemo(() => {
+        const map = new Map();
+
+        productos.forEach((prod) => {
+            let mName = null;
+            let mImg = null;
+
+            if (prod.marca_objeto && (prod.marca_objeto.titulo || prod.marca_objeto.nombre)) {
+                mName = prod.marca_objeto.titulo || prod.marca_objeto.nombre;
+                mImg = prod.marca_objeto.imagen || prod.marca_objeto.logo || null;
+            } else if (prod.marca && typeof prod.marca === 'string' && prod.marca.trim()) {
+                mName = prod.marca.trim();
+                mImg = prod.marca_imagen || null;
+            }
+
+            if (mName) {
+                const key = mName.toLowerCase().trim();
+                const formattedImg = mImg ? (mImg.startsWith('http') || mImg.startsWith('data:') ? mImg : `/storage/${mImg.replace(/^\/?storage\//, '')}`) : null;
+
+                if (!map.has(key)) {
+                    map.set(key, {
+                        nombre: mName,
+                        imagen: formattedImg,
+                        count: 0,
+                    });
+                }
+                const item = map.get(key);
+                item.count += 1;
+                if (!item.imagen && formattedImg) item.imagen = formattedImg;
+            }
+        });
+
+        return Array.from(map.values());
+    }, [productos]);
+
     // Grupos adicionales de filtros (tags, ocasión, marca, etc.)
     const otrosGruposFiltros = useMemo(() => {
         const clavesFiltro = ['tags', 'ocasion', 'marca'];
@@ -174,7 +259,10 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
             const opcionesMap = new Map();
 
             productos.forEach((prod) => {
-                const val = prod[key];
+                let val = prod[key];
+                if (key === 'marca' && !val && prod.marca_objeto) {
+                    val = prod.marca_objeto.titulo || prod.marca_objeto.nombre;
+                }
                 if (!val) return;
 
                 if (Array.isArray(val)) {
@@ -241,9 +329,15 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
         setFiltrosSeleccionados({});
         setBusqueda('');
         setRangoPrecio([minPrecioAbsoluto, maxPrecioAbsoluto]);
+        setSoloOfertas(false);
+        setSoloLiquidacion(false);
     };
 
-    const totalFiltrosActivos = Object.values(filtrosSeleccionados).flat().length + (isPrecioFiltrado ? 1 : 0);
+    const totalFiltrosActivos =
+        Object.values(filtrosSeleccionados).flat().length +
+        (isPrecioFiltrado ? 1 : 0) +
+        (soloOfertas ? 1 : 0) +
+        (soloLiquidacion ? 1 : 0);
 
     const minPercent = maxPrecioAbsoluto > minPrecioAbsoluto
         ? Math.max(0, Math.min(100, ((rangoPrecio[0] - minPrecioAbsoluto) / (maxPrecioAbsoluto - minPrecioAbsoluto)) * 100))
@@ -303,6 +397,30 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                 }
             }
 
+            // Coincidencia por solo ofertas
+            const esProductoEnOferta = Boolean(
+                (prod.precio_oferta != null && Number(prod.precio_oferta) > 0) ||
+                (prod.precio_oferta_soles != null && Number(prod.precio_oferta_soles) > 0) ||
+                prod.en_oferta ||
+                prod.es_oferta
+            );
+
+            if (soloOfertas && !esProductoEnOferta) {
+                return false;
+            }
+
+            // Coincidencia por solo liquidación
+            const esLiquidacion = Boolean(
+                prod.es_liquidacion ||
+                prod.precio == null ||
+                prod.precio_soles == null ||
+                (Number(prod.precio || prod.precio_soles || 0) === 0 && !prod.precio_oferta && !prod.precio_oferta_soles)
+            );
+
+            if (soloLiquidacion && !esLiquidacion) {
+                return false;
+            }
+
             // Coincidencia por categoría
             const prodCat = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
             const catSeleccionadas = filtrosSeleccionados.categoria || [];
@@ -317,9 +435,18 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                 return false;
             }
 
+            // Coincidencia por marca
+            const marcaSeleccionadas = filtrosSeleccionados.marca || [];
+            if (marcaSeleccionadas.length > 0) {
+                const prodMarcaNombre = prod.marca_objeto?.titulo || prod.marca_objeto?.nombre || (typeof prod.marca === 'string' ? prod.marca : null);
+                if (!prodMarcaNombre || !marcaSeleccionadas.includes(prodMarcaNombre)) {
+                    return false;
+                }
+            }
+
             // Coincidencia por cada otro grupo de filtros seleccionado
             return Object.entries(filtrosSeleccionados).every(([grupoKey, valoresSeleccionados]) => {
-                if (grupoKey === 'categoria' || grupoKey === 'subcategoria') return true;
+                if (grupoKey === 'categoria' || grupoKey === 'subcategoria' || grupoKey === 'marca') return true;
                 if (!valoresSeleccionados || valoresSeleccionados.length === 0) return true;
 
                 const valProducto = prod[grupoKey];
@@ -332,7 +459,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                 return valoresSeleccionados.includes(valProducto);
             });
         });
-    }, [productos, busqueda, filtrosSeleccionados, rangoPrecio, isCatalogoMode, catalogoConfig]);
+    }, [productos, busqueda, filtrosSeleccionados, rangoPrecio, soloOfertas, soloLiquidacion, isCatalogoMode, catalogoConfig]);
 
     if (loading || cargandoPantalla) {
         return (
@@ -476,7 +603,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                 </div>
                             </button>
 
-                             {/* Tarjetas por Categoría */}
+                            {/* Tarjetas por Categoría */}
                             {categoriasArbol.map((cat) => {
                                 const isSelected = (filtrosSeleccionados.categoria || []).includes(cat.nombre);
 
@@ -536,6 +663,61 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                     </div>
                 )}
 
+                {/* SECCIÓN SUPERIOR: EXPLORAR POR MARCA ("Shop by Brand") */}
+                {marcasArbol.length > 0 && (
+                    <div className="mb-10">
+                        <div className="flex items-center justify-between mb-4">
+                            <h2
+                                className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight flex items-center gap-2"
+                                style={{ fontFamily: 'var(--tipografia-titulos)' }}
+                            >
+                                <DynamicIcon name="FaAward" className="h-5 w-5 text-[var(--color-primario)]" />
+                                <span>Explorar por Marca</span>
+                            </h2>
+                            <span className="text-xs font-semibold text-gray-400">
+                                {marcasArbol.length} marcas disponibles
+                            </span>
+                        </div>
+
+                        {/* Tarjetas de Marcas */}
+                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+                            {marcasArbol.map((m) => {
+                                const isSelected = (filtrosSeleccionados.marca || []).includes(m.nombre);
+
+                                return (
+                                    <button
+                                        key={m.nombre}
+                                        type="button"
+                                        onClick={() => toggleFiltro('marca', m.nombre)}
+                                        className={`group relative p-3 rounded-2xl border transition-all duration-300 text-left cursor-pointer flex items-center gap-3 ${isSelected
+                                                ? 'border-[var(--color-primario)] bg-[var(--color-primario)]/5 ring-2 ring-[var(--color-primario)]/30 shadow-md scale-[1.02]'
+                                                : 'border-gray-200/80 bg-gray-50/70 hover:bg-white hover:border-gray-300 hover:shadow-sm'
+                                            }`}
+                                    >
+                                        {m.imagen ? (
+                                            <img src={m.imagen} alt={m.nombre} className="h-9 w-9 object-contain rounded-xl p-1 bg-white border border-gray-200/60 shrink-0" />
+                                        ) : (
+                                            <div className={`h-9 w-9 rounded-xl flex items-center justify-center shrink-0 transition-colors ${isSelected ? 'bg-[var(--color-primario)] text-white' : 'bg-gray-200/80 text-gray-500 group-hover:text-[var(--color-primario)]'
+                                                }`}>
+                                                <DynamicIcon name="FaAward" className="h-4 w-4" />
+                                            </div>
+                                        )}
+                                        <div className="min-w-0 flex-1">
+                                            <h3 className={`text-xs font-bold truncate transition-colors ${isSelected ? 'text-[var(--color-primario)]' : 'text-gray-900 group-hover:text-[var(--color-primario)]'
+                                                }`}>
+                                                {m.nombre}
+                                            </h3>
+                                            <p className="text-[10px] text-gray-400 font-medium">
+                                                {m.count} {m.count === 1 ? 'producto' : 'productos'}
+                                            </p>
+                                        </div>
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+                )}
+
                 {/* Botón Filtros para Móviles */}
                 <div className="lg:hidden mb-6 flex items-center justify-between gap-4">
                     <button
@@ -551,7 +733,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                     </button>
 
                     <span className="text-xs text-gray-500 font-medium">
-                        {productosFiltrados.length} tortas encontradas
+                        {productosFiltrados.length} productos encontrados
                     </span>
                 </div>
 
@@ -582,8 +764,81 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                             )}
                         </div>
 
-                        {/* Acordeones Dinámicos de Filtros (Categorías anidadas con subcategorías + otros grupos) */}
+                        {/* Acordeones Dinámicos de Filtros (Ofertas + Liquidación + Rango de Precio + Categorías + Marcas) */}
                         <div className="space-y-4">
+                            {/* FILTROS DESTACADOS: OFERTAS Y LIQUIDACIÓN */}
+                            <div className="border-b border-gray-100 pb-4 space-y-2.5">
+                                {/* Solo Ofertas */}
+                                <button
+                                    type="button"
+                                    onClick={() => setSoloOfertas((prev) => !prev)}
+                                    className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all duration-300 cursor-pointer ${soloOfertas
+                                            ? 'bg-[var(--color-primario)]/10 border-[var(--color-primario)] ring-2 ring-[var(--color-primario)]/30 shadow-md'
+                                            : 'bg-gray-50/70 border-gray-200/80 hover:bg-white hover:border-gray-300'
+                                        }`}
+                                >
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-[var(--color-primario)] text-white text-xs font-bold shadow-xs">
+                                            🔥
+                                        </span>
+                                        <div className="text-left">
+                                            <span
+                                                className={`text-xs font-extrabold block leading-tight ${soloOfertas ? 'text-[var(--color-primario)]' : 'text-gray-900'
+                                                    }`}
+                                                style={{ fontFamily: 'var(--tipografia-titulos)' }}
+                                            >
+                                                Solo Ofertas
+                                            </span>
+
+                                        </div>
+                                    </div>
+                                    <div
+                                        className={`w-9 h-5 flex items-center rounded-full p-0.5 transition-colors duration-300 ${soloOfertas ? 'bg-[var(--color-primario)]' : 'bg-gray-300'
+                                            }`}
+                                    >
+                                        <div
+                                            className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${soloOfertas ? 'translate-x-4' : 'translate-x-0'
+                                                }`}
+                                        />
+                                    </div>
+                                </button>
+
+                                {/* Solo Liquidación */}
+                                <button
+                                    type="button"
+                                    onClick={() => setSoloLiquidacion((prev) => !prev)}
+                                    className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all duration-300 cursor-pointer ${soloLiquidacion
+                                            ? 'bg-amber-500/10 border-amber-500 ring-2 ring-amber-500/30 shadow-md'
+                                            : 'bg-gray-50/70 border-gray-200/80 hover:bg-white hover:border-gray-300'
+                                        }`}
+                                >
+                                    <div className="flex items-center gap-2.5">
+                                        <span className="flex items-center justify-center w-8 h-8 rounded-xl bg-amber-500 text-white text-xs font-bold shadow-xs">
+                                            🏷️
+                                        </span>
+                                        <div className="text-left">
+                                            <span
+                                                className={`text-xs font-extrabold block leading-tight ${soloLiquidacion ? 'text-amber-600' : 'text-gray-900'
+                                                    }`}
+                                                style={{ fontFamily: 'var(--tipografia-titulos)' }}
+                                            >
+                                                Liquidación
+                                            </span>
+
+                                        </div>
+                                    </div>
+                                    <div
+                                        className={`w-9 h-5 flex items-center rounded-full p-0.5 transition-colors duration-300 ${soloLiquidacion ? 'bg-amber-500' : 'bg-gray-300'
+                                            }`}
+                                    >
+                                        <div
+                                            className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform duration-300 ${soloLiquidacion ? 'translate-x-4' : 'translate-x-0'
+                                                }`}
+                                        />
+                                    </div>
+                                </button>
+                            </div>
+
                             {/* 0. RANGO DE PRECIO (SLIDER DOBLE) */}
                             <div className="border-b border-gray-100 pb-4">
                                 <button
@@ -930,18 +1185,38 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                             <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
                                 {productosFiltrados.map((prod, idx) => {
                                     const inCart = isInCart(prod);
-                                    const tieneOferta = Boolean(prod.precio_oferta || prod.precio_oferta_soles);
-                                    const precioRegular = Number(prod.precio_soles || prod.precio || 0);
-                                    const precioOferta = tieneOferta
-                                        ? Number(prod.precio_oferta_soles || prod.precio_oferta)
+
+                                    const pSolesReg = prod.precio_soles != null && prod.precio_soles !== '' ? Number(prod.precio_soles) : (prod.precio != null && prod.precio !== '' ? Number(prod.precio) : 0);
+                                    const pSolesOfe = prod.precio_oferta_soles != null && prod.precio_oferta_soles !== '' ? Number(prod.precio_oferta_soles) : (prod.precio_oferta != null && prod.precio_oferta !== '' ? Number(prod.precio_oferta) : 0);
+
+                                    const pDolReg = prod.precio_dolares != null && prod.precio_dolares !== '' ? Number(prod.precio_dolares) : 0;
+                                    const pDolOfe = prod.precio_oferta_dolares != null && prod.precio_oferta_dolares !== '' ? Number(prod.precio_oferta_dolares) : 0;
+
+                                    const tieneOfertaSoles = pSolesOfe > 0 && (pSolesReg === 0 || pSolesOfe < pSolesReg);
+                                    const precioSolesEfectivo = tieneOfertaSoles ? pSolesOfe : pSolesReg;
+                                    const descSolesPercent = tieneOfertaSoles && pSolesReg > 0 && pSolesReg > pSolesOfe
+                                        ? Math.round(((pSolesReg - pSolesOfe) / pSolesReg) * 100)
                                         : null;
 
-                                    // Cálculo de descuentos
-                                    const descOferta = tieneOferta && precioRegular > 0
-                                        ? Math.round(((precioRegular - precioOferta) / precioRegular) * 100)
+                                    const tieneOfertaDolares = pDolOfe > 0 && (pDolReg === 0 || pDolOfe < pDolReg);
+                                    const precioDolaresEfectivo = tieneOfertaDolares ? pDolOfe : pDolReg;
+                                    const descDolaresPercent = tieneOfertaDolares && pDolReg > 0 && pDolReg > pDolOfe
+                                        ? Math.round(((pDolReg - pDolOfe) / pDolReg) * 100)
                                         : null;
-                                    const descRegular = descOferta ? Math.max(5, Math.round(descOferta * 0.75)) : null;
-                                    const precioListaReferencial = Math.round(precioRegular * 1.3);
+
+                                     const tieneOferta = tieneOfertaSoles || tieneOfertaDolares || Boolean(prod.en_oferta || prod.es_oferta);
+                                    const descOferta = descSolesPercent || descDolaresPercent;
+
+                                    const esProdLiquidacion = Boolean(
+                                        prod.es_liquidacion ||
+                                        prod.liquidacion ||
+                                        prod.is_liquidacion ||
+                                        prod.precio == null ||
+                                        prod.precio_soles == null ||
+                                        (Number(prod.precio || prod.precio_soles || 0) === 0 && !prod.precio_oferta && !prod.precio_oferta_soles)
+                                    );
+                                    const stockVal = prod.stock !== null && prod.stock !== undefined ? Number(prod.stock) : null;
+                                    const stockTexto = prod.cantidad ? String(prod.cantidad).trim() : null;
 
                                     const categoriaTexto = typeof prod.categoria === 'object' ? prod.categoria?.nombre : prod.categoria;
 
@@ -966,6 +1241,13 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                         >
                                             {/* Imagen del Producto */}
                                             <div className="relative aspect-square w-full mb-3 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden" style={{ aspectRatio: '1/1', width: '100%', maxHeight: '280px' }}>
+
+                                                {/* Badge LIQUIDACIÓN arriba a la izquierda */}
+                                                {esProdLiquidacion && (
+                                                    <span className="absolute top-2.5 left-2.5 z-10 inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-black uppercase tracking-wider bg-amber-500 text-white shadow-md">
+                                                        🏷️ Liquidación
+                                                    </span>
+                                                )}
 
                                                 {/* Badge OFERTA arriba a la derecha */}
                                                 {tieneOferta && (
@@ -1003,12 +1285,36 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
 
                                             {/* Nombre del Producto */}
                                             <h3
-                                                className="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-[var(--color-primario)] transition-colors line-clamp-2 min-h-[2.4rem] leading-snug mb-1.5"
+                                                className="text-xs sm:text-sm font-semibold text-gray-900 group-hover:text-[var(--color-primario)] transition-colors line-clamp-2 min-h-[2.4rem] leading-snug mb-1"
                                                 title={prod.nombre}
                                                 style={{ fontFamily: 'var(--tipografia-titulos)' }}
                                             >
                                                 {prod.nombre}
                                             </h3>
+
+                                            {/* Indicador de Stock */}
+                                            {stockVal !== null ? (
+                                                stockVal > 5 ? (
+                                                    <div className="text-[10px] font-extrabold text-emerald-600 flex items-center gap-1 mb-1">
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                        <span>Stock: {stockVal} unids.</span>
+                                                    </div>
+                                                ) : stockVal > 0 ? (
+                                                    <div className="text-[10px] font-black text-amber-600 flex items-center gap-1 mb-1">
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-amber-500 animate-pulse" />
+                                                        <span>¡Últimas {stockVal} unids!</span>
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-[10px] font-black text-red-600 flex items-center gap-1 mb-1">
+                                                        <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                                                        <span>Agotado</span>
+                                                    </div>
+                                                )
+                                            ) : stockTexto ? (
+                                                <div className="text-[10px] font-semibold text-gray-500 flex items-center gap-1 mb-1">
+                                                    <span>📦 {stockTexto}</span>
+                                                </div>
+                                            ) : null}
 
                                             {/* Descripción Corta */}
                                             {(prod.descripcion_corta || prod.descripcion) && (
@@ -1022,51 +1328,53 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                             )}
 
                                             {/* Bloque de Precios */}
-                                            <div className="mt-auto pt-2">
-                                                {tieneOferta ? (
-                                                    <>
-                                                        {/* Precio Principal */}
-                                                        <div className="flex items-baseline gap-1.5 mb-1 flex-wrap">
-                                                            <span className="text-xs font-black text-[#0089CF]">S/</span>
-                                                            <span className="text-2xl sm:text-3xl font-black text-[#0089CF] tracking-tight leading-none">
-                                                                {precioOferta.toFixed(0)}
+                                            <div className="mt-auto pt-2 flex flex-col gap-1 mb-2">
+                                                {/* 1. Precio en Soles */}
+                                                {precioSolesEfectivo > 0 && (
+                                                    <div className="flex items-baseline gap-1.5 flex-wrap">
+                                                        <span className="text-xs font-black text-[#0089CF]">S/</span>
+                                                        <span className="text-2xl sm:text-3xl font-black text-[#0089CF] tracking-tight leading-none">
+                                                            {precioSolesEfectivo.toFixed(0)}
+                                                        </span>
+                                                        {tieneOfertaSoles && descSolesPercent && (
+                                                            <span className="bg-[#0089CF] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-xs leading-none">
+                                                                -{descSolesPercent}%
                                                             </span>
-                                                            {descOferta && (
-                                                                <span className="bg-[#0089CF] text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-xs leading-none">
-                                                                    -{descOferta}%
-                                                                </span>
-                                                            )}
-                                                        </div>
+                                                        )}
+                                                        {tieneOfertaSoles && pSolesReg > precioSolesEfectivo && (
+                                                            <span className="text-xs text-gray-400 line-through font-semibold ml-1">
+                                                                S/ {pSolesReg.toFixed(0)}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
 
-                                                        {/* Precio Regular Secundario */}
-                                                        <div className="flex items-baseline gap-1.5 mb-0.5">
-                                                            <span className="text-xs font-bold text-gray-900">S/</span>
-                                                            <span className="text-lg font-extrabold text-gray-900 leading-none">
-                                                                {precioRegular.toFixed(0)}
+                                                {/* 2. Precio en Dólares (sin conversión, con $) */}
+                                                {precioDolaresEfectivo > 0 && (
+                                                    <div className="flex items-baseline gap-1 flex-wrap text-emerald-700 font-black">
+                                                        <span className="text-xs font-black text-emerald-600">$</span>
+                                                        <span className="text-lg sm:text-xl font-black tracking-tight leading-none text-emerald-700">
+                                                            {precioDolaresEfectivo}
+                                                        </span>
+                                                        <span className="text-[10px] font-extrabold text-emerald-600">USD</span>
+                                                        {tieneOfertaDolares && descDolaresPercent && (
+                                                            <span className="bg-emerald-600 text-white text-[9px] font-extrabold px-1 py-0.5 rounded-xs leading-none ml-1">
+                                                                -{descDolaresPercent}%
                                                             </span>
-                                                            {descRegular && (
-                                                                <span
-                                                                    className="text-white text-[10px] font-extrabold px-1.5 py-0.5 rounded-xs leading-none"
-                                                                    style={{ backgroundColor: 'var(--color-primario)' }}
-                                                                >
-                                                                    -{descRegular}%
-                                                                </span>
-                                                            )}
-                                                        </div>
-
-                                                        {/* Precio Lista Tachado */}
-                                                        <div className="text-[11px] text-gray-400 line-through leading-none mb-2">
-                                                            s/ {precioListaReferencial}
-                                                        </div>
-                                                    </>
-                                                ) : (
-                                                    <div className="mb-3">
-                                                        <div className="flex items-baseline gap-1.5">
-                                                            <span className="text-xs font-black text-gray-900">S/</span>
-                                                            <span className="text-2xl sm:text-3xl font-black text-gray-900 tracking-tight leading-none">
-                                                                {precioRegular.toFixed(0)}
+                                                        )}
+                                                        {tieneOfertaDolares && pDolReg > precioDolaresEfectivo && (
+                                                            <span className="text-xs text-gray-400 line-through font-normal ml-1">
+                                                                $ {pDolReg}
                                                             </span>
-                                                        </div>
+                                                        )}
+                                                    </div>
+                                                )}
+                                                {/* 3. Liquidación / Sin precio */}
+                                                {(!precioSolesEfectivo || precioSolesEfectivo <= 0) && (!precioDolaresEfectivo || precioDolaresEfectivo <= 0) && (
+                                                    <div>
+                                                        <span className="inline-block px-2.5 py-1 rounded-md text-[11px] font-bold bg-amber-50 text-amber-600 border border-amber-200">
+                                                            Consultar precio / Liquidación
+                                                        </span>
                                                     </div>
                                                 )}
 
