@@ -29,7 +29,6 @@ export function useContactoData(seccion, seccionesData) {
     };
 
     const contacto = seccion || findSeccion('contacto') || findSeccion('contactos') || null;
-    console.log(contacto)
     return {
         contacto,
         loading: false,

@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import DynamicIcon from '@/components/DynamicIcon';
 import { useContactoData } from './hooks/useContactoData';
+
 function CuentaPagoCard({ item }) {
     const [copiado, setCopiado] = useState(false);
     const label = item.label || item.Label || 'Cuenta:';
@@ -52,119 +53,163 @@ function CuentaPagoCard({ item }) {
 export default function SectionContacto({ site, seccion, seccionesData, estilos }) {
     const { contacto } = useContactoData(seccion, seccionesData);
 
-    // Extract raw data from CMS structure
-    const rawValor = contacto?.valor || contacto?.contenido?.find((c) => (c.label || '').toLowerCase() === 'contacto')?.valor;
-    const data = Array.isArray(rawValor) ? rawValor[0] : (rawValor || {});
+    const memoData = useMemo(() => {
+        const rawValor = contacto?.valor || contacto?.contenido?.find((c) => (c.label || '').toLowerCase() === 'contacto')?.valor;
+        const data = Array.isArray(rawValor) ? rawValor[0] : (rawValor || {});
 
-    // Soporte para preguntas directas en la sección o dentro de grupo 'contacto'
-    const directTitulo = contacto?.contenido?.find((c) => (c.label || '').toLowerCase() === 'titulo')?.valor;
-    const directDesc = contacto?.contenido?.find((c) => {
-        const l = (c.label || '').toLowerCase();
-        return l === 'descripcion' || l === 'descripción' || l === 'subtitulo';
-    })?.valor;
+        const directTitulo = contacto?.contenido?.find((c) => (c.label || '').toLowerCase() === 'titulo')?.valor;
+        const directDesc = contacto?.contenido?.find((c) => {
+            const l = (c.label || '').toLowerCase();
+            return l === 'descripcion' || l === 'descripción' || l === 'subtitulo';
+        })?.valor;
 
-    const titulo = data?.Titulo || data?.titulo || (typeof directTitulo === 'string' ? directTitulo : null) || 'Contacto';
-    const descripcion = data?.Descripcion || data?.descripcion || (typeof directDesc === 'string' ? directDesc : null) || 'Ponte en contacto con nosotros. Envíanos tu mensaje o consulta y te responderemos a la brevedad.';
+        const titulo = data?.Titulo || data?.titulo || (typeof directTitulo === 'string' ? directTitulo : null) || 'Contacto';
+        const descripcion = data?.Descripcion || data?.descripcion || (typeof directDesc === 'string' ? directDesc : null) || 'Ponte en contacto con nosotros. Envíanos tu mensaje o consulta y te responderemos a la brevedad.';
 
-    // Búsqueda de imagen directa en contenido (label: imagen, foto, portada, banner o tipo imagen)
-    const directImgItem = contacto?.contenido?.find((c) => {
-        const l = (c.label || '').toLowerCase();
-        return l === 'imagen' || l === 'foto' || l === 'portada' || l === 'banner' || c.tipo === 'imagen';
-    });
-    const directImgVal = directImgItem?.valor;
-    const imagenDirecta = Array.isArray(directImgVal) ? directImgVal[0] : (typeof directImgVal === 'string' ? directImgVal : null);
+        const directImgItem = contacto?.contenido?.find((c) => {
+            const l = (c.label || '').toLowerCase();
+            return l === 'imagen' || l === 'foto' || l === 'portada' || l === 'banner' || c.tipo === 'imagen';
+        });
+        const directImgVal = directImgItem?.valor;
+        const imagenDirecta = Array.isArray(directImgVal) ? directImgVal[0] : (typeof directImgVal === 'string' ? directImgVal : null);
 
-    // Dirección con prioridad absoluta desde estilos configurados en Admin
-    const direccion = estilos?.direccion
-        || site?.estilos?.direccion
-        || data?.Mapa
-        || data?.mapa
-        || null;
-    const mapaUrlConfig = estilos?.mapa_url || site?.estilos?.mapa_url;
+        const direccion = estilos?.direccion
+            || site?.estilos?.direccion
+            || data?.Mapa
+            || data?.mapa
+            || null;
+        const mapaUrlConfig = estilos?.mapa_url || site?.estilos?.mapa_url;
 
-    // Redes Sociales desde General (estilos.redes_sociales)
-    const redesConfig = estilos?.redes_sociales || site?.estilos?.redes_sociales || {};
+        const redesConfig = estilos?.redes_sociales || site?.estilos?.redes_sociales || {};
 
-    const formatSocialUrl = (val, prefix = '') => {
-        if (!val) return null;
-        const str = String(val).trim();
-        if (!str) return null;
-        if (str.startsWith('http://') || str.startsWith('https://')) return str;
-        if (str.startsWith('@')) return `${prefix}${str.slice(1)}`;
-        return `${prefix}${str}`;
-    };
+        const formatSocialUrl = (val, prefix = '') => {
+            if (!val) return null;
+            const str = String(val).trim();
+            if (!str) return null;
+            if (str.startsWith('http://') || str.startsWith('https://')) return str;
+            if (str.startsWith('@')) return `${prefix}${str.slice(1)}`;
+            return `${prefix}${str}`;
+        };
 
-    const redesList = [];
-    if (redesConfig.facebook) redesList.push({ nombre: 'Facebook', icono: 'FaFacebook', url: formatSocialUrl(redesConfig.facebook, 'https://facebook.com/') });
-    if (redesConfig.instagram) redesList.push({ nombre: 'Instagram', icono: 'FaInstagram', url: formatSocialUrl(redesConfig.instagram, 'https://instagram.com/') });
-    if (redesConfig.tiktok) redesList.push({ nombre: 'TikTok', icono: 'FaTiktok', url: formatSocialUrl(redesConfig.tiktok, 'https://tiktok.com/@') });
-    if (redesConfig.youtube) redesList.push({ nombre: 'YouTube', icono: 'FaYoutube', url: formatSocialUrl(redesConfig.youtube, 'https://youtube.com/@') });
-    if (redesConfig.twitter) redesList.push({ nombre: 'X (Twitter)', icono: 'FaXTwitter', url: formatSocialUrl(redesConfig.twitter, 'https://x.com/') });
+        const redesList = [];
+        if (redesConfig.facebook) redesList.push({ nombre: 'Facebook', icono: 'FaFacebook', url: formatSocialUrl(redesConfig.facebook, 'https://facebook.com/') });
+        if (redesConfig.instagram) redesList.push({ nombre: 'Instagram', icono: 'FaInstagram', url: formatSocialUrl(redesConfig.instagram, 'https://instagram.com/') });
+        if (redesConfig.tiktok) redesList.push({ nombre: 'TikTok', icono: 'FaTiktok', url: formatSocialUrl(redesConfig.tiktok, 'https://tiktok.com/@') });
+        if (redesConfig.youtube) redesList.push({ nombre: 'YouTube', icono: 'FaYoutube', url: formatSocialUrl(redesConfig.youtube, 'https://youtube.com/@') });
+        if (redesConfig.twitter) redesList.push({ nombre: 'X (Twitter)', icono: 'FaXTwitter', url: formatSocialUrl(redesConfig.twitter, 'https://x.com/') });
 
-    // Fallback a CMS redes solo si el admin no configuró redes
-    const cmsRedes = Array.isArray(data?.Redes) ? data.Redes : (Array.isArray(data?.redes) ? data.redes : []);
-    const redesFinales = redesList.length > 0 ? redesList : cmsRedes.map(r => ({
-        nombre: r.nombre || 'Red Social',
-        icono: r.Icono || r.icono || 'FaShareNodes',
-        url: r.Texto || r.texto || '#'
-    }));
+        const cmsRedes = Array.isArray(data?.Redes) ? data.Redes : (Array.isArray(data?.redes) ? data.redes : []);
+        const redesFinales = redesList.length > 0 ? redesList : cmsRedes.map(r => ({
+            nombre: r.nombre || 'Red Social',
+            icono: r.Icono || r.icono || 'FaShareNodes',
+            url: r.Texto || r.texto || '#'
+        }));
 
-    // Imagen principal de la cabecera (CMS o fallback de alta calidad)
-    const imagenHero = data?.Imagen
-        || data?.imagen
-        || data?.Foto
-        || data?.foto
-        || imagenDirecta
-        || seccion?.imagen
-        || site?.imagen
-        || 'https://images.unsplash.com/photo-1423666639041-f56000c27a9a?q=80&w=1600&auto=format&fit=crop';
+        const imagenHero = data?.Imagen
+            || data?.imagen
+            || data?.Foto
+            || data?.foto
+            || imagenDirecta
+            || seccion?.imagen
+            || site?.imagen
+            || 'https://images.unsplash.com/photo-1423666639041-f56000c27a9a?q=80&w=1600&auto=format&fit=crop';
 
-    // Acciones de contacto globales desde Admin General (estilos.acciones_nav) - NO DEPENDER DE NAV
-    const globalActions = Array.isArray(estilos?.acciones_nav)
-        ? estilos.acciones_nav
-        : (Array.isArray(site?.estilos?.acciones_nav) ? site.estilos.acciones_nav : []);
+        const globalActions = Array.isArray(estilos?.acciones_nav)
+            ? estilos.acciones_nav
+            : (Array.isArray(site?.estilos?.acciones_nav) ? site.estilos.acciones_nav : []);
 
-    // Extraer número de WhatsApp con prioridad en redes_sociales.whatsapp o acciones_nav
-    const waFromActions = globalActions.find((a) => {
-        const ico = (a.icono || a.icon || '').toLowerCase();
-        const txt = (a.texto || a.Texto || '').toLowerCase();
-        return ico.includes('whatsapp') || txt.includes('wa.me');
-    });
+        const waFromActions = globalActions.find((a) => {
+            const ico = (a.icono || a.icon || '').toLowerCase();
+            const txt = (a.texto || a.Texto || '').toLowerCase();
+            return ico.includes('whatsapp') || txt.includes('wa.me');
+        });
 
-    const rawWa = redesConfig.whatsapp || waFromActions?.texto || waFromActions?.Texto || '';
-    const firstSegment = String(rawWa).split(/[\r\n/;,|]+/).map((s) => s.trim()).filter(Boolean)[0] || String(rawWa);
-    const cleanDigits = firstSegment.replace(/\D/g, '');
-    const waNum = cleanDigits ? (cleanDigits.length === 9 ? '51' + cleanDigits : cleanDigits) : null;
+        const rawWa = redesConfig.whatsapp || waFromActions?.texto || waFromActions?.Texto || '';
+        const firstSegment = String(rawWa).split(/[\r\n/;,|]+/).map((s) => s.trim()).filter(Boolean)[0] || String(rawWa);
+        const cleanDigits = firstSegment.replace(/\D/g, '');
+        const waNum = cleanDigits ? (cleanDigits.length === 9 ? '51' + cleanDigits : cleanDigits) : null;
+
+        const rawCuentas = estilos?.cuentas_pago || site?.estilos?.cuentas_pago || [];
+        const cuentasPago = Array.isArray(rawCuentas)
+            ? rawCuentas
+            : (rawCuentas && typeof rawCuentas === 'object' ? Object.values(rawCuentas) : []);
+
+        const googleMapEmbedUrl = mapaUrlConfig && (mapaUrlConfig.includes('google.com/maps/embed') || mapaUrlConfig.includes('output=embed'))
+            ? mapaUrlConfig
+            : (direccion ? `https://maps.google.com/maps?q=${encodeURIComponent(direccion)}&t=&z=15&ie=UTF8&iwloc=&output=embed` : null);
+
+        return {
+            titulo,
+            descripcion,
+            direccion,
+            mapaUrlConfig,
+            redesFinales,
+            imagenHero,
+            globalActions,
+            waNum,
+            cuentasPago,
+            googleMapEmbedUrl
+        };
+    }, [contacto, seccion, site, estilos]);
+
+    const {
+        titulo,
+        descripcion,
+        direccion,
+        mapaUrlConfig,
+        redesFinales,
+        imagenHero,
+        globalActions,
+        waNum,
+    } = memoData;
 
     // Form state
-    const [nombre, setNombre] = useState('');
-    const [telefono, setTelefono] = useState('');
-    const [fecha, setFecha] = useState('');
-    const [mensaje, setMensaje] = useState('');
     const [enviado, setEnviado] = useState(false);
+    const [enviando, setEnviando] = useState(false);
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
         e.preventDefault();
+        if (enviando || enviado) return;
 
-        if (waNum) {
-            const textoEnvio = `*Nuevo mensaje de contacto desde la web*\n\n` +
-                `👤 *Nombre:* ${nombre}\n` +
-                (telefono ? `📱 *Teléfono / WhatsApp:* ${telefono}\n` : '') +
-                (fecha ? `📅 *Fecha del evento:* ${fecha}\n` : '') +
-                `💬 *Mensaje:* ${mensaje}`;
+        const form = e.currentTarget;
+        const formData = new FormData(form);
 
-            const waUrl = `https://wa.me/${waNum}?text=${encodeURIComponent(textoEnvio)}`;
+        const nombre = formData.get('nombre') || '';
+        const email = formData.get('email') || '';
+        const telefono = formData.get('telefono') || '';
+        const fecha = formData.get('fecha') || '';
+        const mensaje = formData.get('mensaje') || '';
 
-            if (typeof window !== 'undefined') {
-                window.open(waUrl, '_blank', 'noopener,noreferrer');
+        setEnviando(true);
+
+        try {
+            const res = await fetch('/api/contacto', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ nombre, email, telefono, fecha, mensaje })
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                setEnviado(true);
+                form.reset();
+
+                setTimeout(() => {
+                    setEnviado(false);
+                }, 4000);
+            } else {
+                alert('No se pudo enviar el correo: ' + (data.error || 'Error desconocido'));
             }
+        } catch (err) {
+            console.error('Error enviando correo de contacto:', err);
+            alert('Error de red al intentar enviar el correo.');
+        } finally {
+            setEnviando(false);
         }
-
-        setEnviado(true);
-        setNombre('');
-        setTelefono('');
-        setFecha('');
-        setMensaje('');
     };
 
     // Cuentas de pago desde Admin General (estilos.cuentas_pago)
@@ -401,30 +446,25 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
                                     Envíanos un mensaje
                                 </h2>
 
-                                {enviado ? (
-                                    <motion.div
-                                        initial={{ opacity: 0, scale: 0.95 }}
-                                        animate={{ opacity: 1, scale: 1 }}
-                                        className="rounded-2xl bg-emerald-50 p-6 text-center border border-emerald-200"
-                                    >
-                                        <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-emerald-500 text-white shadow-md">
-                                            <DynamicIcon name="FaCheck" className="h-6 w-6" />
-                                        </div>
-                                        <h3 className="text-lg font-bold text-emerald-900 mb-1">¡Mensaje enviado con éxito!</h3>
-                                        <p className="text-xs font-medium text-emerald-700">
-                                            Gracias por comunicarte. Nos pondremos en contacto contigo lo antes posible.
-                                        </p>
-                                    </motion.div>
-                                ) : (
                                     <form onSubmit={handleSubmit} className="space-y-4">
                                         {/* Name */}
                                         <div>
                                             <input
                                                 type="text"
+                                                name="nombre"
                                                 required
-                                                value={nombre}
-                                                onChange={(e) => setNombre(e.target.value)}
                                                 placeholder="Nombre completo"
+                                                className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20"
+                                            />
+                                        </div>
+
+                                        {/* Email */}
+                                        <div>
+                                            <input
+                                                type="email"
+                                                name="email"
+                                                required
+                                                placeholder="Correo electrónico"
                                                 className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20"
                                             />
                                         </div>
@@ -436,9 +476,8 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
                                             </label>
                                             <input
                                                 type="date"
+                                                name="fecha"
                                                 required
-                                                value={fecha}
-                                                onChange={(e) => setFecha(e.target.value)}
                                                 className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3 text-sm text-gray-900 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20"
                                             />
                                         </div>
@@ -447,8 +486,7 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
                                         <div>
                                             <input
                                                 type="tel"
-                                                value={telefono}
-                                                onChange={(e) => setTelefono(e.target.value)}
+                                                name="telefono"
                                                 placeholder="Teléfono / Celular"
                                                 className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20"
                                             />
@@ -457,10 +495,9 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
                                         {/* Message */}
                                         <div>
                                             <textarea
+                                                name="mensaje"
                                                 required
                                                 rows={4}
-                                                value={mensaje}
-                                                onChange={(e) => setMensaje(e.target.value)}
                                                 placeholder="Escribe tu mensaje..."
                                                 className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20 resize-none"
                                             />
@@ -469,13 +506,29 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
                                         {/* Submit Button */}
                                         <button
                                             type="submit"
-                                            className="w-full rounded-2xl py-4 px-6 text-sm font-bold text-white shadow-xl transition-all duration-300 hover:scale-[1.01] active:scale-[0.98] hover:brightness-110 cursor-pointer mt-2"
-                                            style={{ backgroundColor: 'var(--color-primario)' }}
+                                            disabled={enviando || enviado}
+                                            className={`w-full rounded-2xl py-4 px-6 text-sm font-bold text-white shadow-xl transition-all duration-300 cursor-pointer mt-2 flex items-center justify-center gap-2 ${
+                                                enviado
+                                                    ? 'bg-emerald-600 border border-emerald-500'
+                                                    : 'hover:scale-[1.01] active:scale-[0.98] hover:brightness-110'
+                                            }`}
+                                            style={{ backgroundColor: enviado ? '#059669' : 'var(--color-primario)' }}
                                         >
-                                            Enviar mensaje
+                                            {enviando ? (
+                                                <>
+                                                    <DynamicIcon name="FaSpinner" className="h-4 w-4 animate-spin text-white" />
+                                                    <span>Enviando mensaje...</span>
+                                                </>
+                                            ) : enviado ? (
+                                                <>
+                                                    <DynamicIcon name="FaCheck" className="h-4 w-4 text-white" />
+                                                    <span>¡Mensaje Enviado con Éxito!</span>
+                                                </>
+                                            ) : (
+                                                <span>Enviar mensaje</span>
+                                            )}
                                         </button>
                                     </form>
-                                )}
                             </motion.div>
                         </div>
 

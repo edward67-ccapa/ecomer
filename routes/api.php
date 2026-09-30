@@ -5,6 +5,9 @@ use App\Http\Controllers\Api\v1\ProductoApiController;
 use App\Http\Controllers\Api\v1\SiteApiController;
 use Illuminate\Support\Facades\Route;
 
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Mail;
+
 Route::options('{any}', function () {
     return response()->json([], 200, [
         'Access-Control-Allow-Origin' => '*',
@@ -12,6 +15,40 @@ Route::options('{any}', function () {
         'Access-Control-Allow-Headers' => '*',
     ]);
 })->where('any', '.*');
+
+Route::post('/contacto', function (Request $request) {
+    $validated = $request->validate([
+        'nombre' => 'required|string|max:255',
+        'email' => 'nullable|email|max:255',
+        'telefono' => 'nullable|string|max:50',
+        'fecha' => 'nullable|string|max:50',
+        'mensaje' => 'required|string|max:2000',
+    ]);
+
+    $nombre = $validated['nombre'];
+    $email = $validated['email'] ?? 'No especificado';
+    $telefono = $validated['telefono'] ?? 'No especificado';
+    $fecha = $validated['fecha'] ?? 'No especificado';
+    $mensaje = $validated['mensaje'];
+
+    $cuerpo = "Has recibido un nuevo mensaje desde el formulario de contacto de tu sitio web:\n\n"
+        . "👤 Nombre: {$nombre}\n"
+        . "📧 Correo del cliente: {$email}\n"
+        . "📱 Teléfono: {$telefono}\n"
+        . "📅 Fecha del evento/entrega: {$fecha}\n"
+        . "💬 Mensaje:\n{$mensaje}\n";
+
+    try {
+        Mail::raw($cuerpo, function ($msg) use ($nombre) {
+            $msg->to(['llismercorp@gmail.com', 'lismercorp@lismercorp.com'])
+                ->subject("Nuevo Mensaje de Contacto - {$nombre}");
+        });
+        return response()->json(['success' => true, 'message' => 'Correo enviado exitosamente.']);
+    } catch (\Throwable $e) {
+        \Illuminate\Support\Facades\Log::error("Error enviando correo de contacto: " . $e->getMessage());
+        return response()->json(['success' => false, 'error' => $e->getMessage()], 500);
+    }
+});
 
 Route::prefix('v1')->group(function () {
     Route::options('{any}', function () {

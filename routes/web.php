@@ -6,6 +6,8 @@ use App\Models\Site;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
+
+
 Route::get('/', function () {
     $site = Site::where('estado', 'publicado')->with('dominio')->first();
     $dominio = $site?->dominio?->nombre ?? 'TortasLucha';
