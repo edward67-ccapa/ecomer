@@ -123,6 +123,22 @@ Route::get('/limpiar-cache-opcache', function () {
     return 'Caché de vistas compilaras (VIEW_COMPILED_PATH), OPcache y Laravel limpiados exitosamente.';
 });
 
+Route::get('/comprobar-archivos', function () {
+    $filePath = app_path('Filament/Resources/Sites/Schemas/SiteForm.php');
+    if (! file_exists($filePath)) {
+        return response()->json(['error' => 'El archivo no existe en: ' . $filePath]);
+    }
+    $content = file_get_contents($filePath);
+    $hasSelectMultiple = str_contains($content, "Select::make('tiendas')") && str_contains($content, '->multiple()');
+    $hasOldMultiSelect = str_contains($content, "MultiSelect::make('tiendas')");
+
+    return response()->json([
+        'ruta_archivo_en_servidor' => $filePath,
+        'fecha_ultima_modificacion' => date('Y-m-d H:i:s', filemtime($filePath)),
+        'resultado' => $hasSelectMultiple ? '✅ ARCHIVO NUEVO (Usa Select::make multiple)' : ($hasOldMultiSelect ? '❌ ARCHIVO VIEJO (Aún usa MultiSelect::make antiguo)' : 'DESCONOCIDO'),
+    ]);
+});
+
 Route::get('/{param1}/{param2}/catalogo/descargar-pdf', [SitePageController::class, 'descargarCatalogo'])->name('catalogo.descargar2');
 Route::get('/{dominio}/catalogo/descargar-pdf', [SitePageController::class, 'descargarCatalogo'])->name('catalogo.descargar1');
 
