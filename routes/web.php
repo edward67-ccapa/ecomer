@@ -90,6 +90,17 @@ Route::get('/storage/{path}', function (string $path) {
     abort(404);
 })->where('path', '.*')->name('storage.local');
 
+Route::get('/limpiar-cache-opcache', function () {
+    if (function_exists('opcache_reset')) {
+        @opcache_reset();
+    }
+    \Illuminate\Support\Facades\Artisan::call('optimize:clear');
+    \Illuminate\Support\Facades\Artisan::call('view:clear');
+    \Illuminate\Support\Facades\Artisan::call('config:clear');
+    \Illuminate\Support\Facades\Artisan::call('cache:clear');
+    return 'Caché de Laravel y OPcache del servidor limpiados exitosamente.';
+});
+
 Route::get('/{param1}/{param2}/catalogo/descargar-pdf', [SitePageController::class, 'descargarCatalogo'])->name('catalogo.descargar2');
 Route::get('/{dominio}/catalogo/descargar-pdf', [SitePageController::class, 'descargarCatalogo'])->name('catalogo.descargar1');
 
