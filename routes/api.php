@@ -39,8 +39,14 @@ Route::post('/contacto', function (Request $request) {
         . "💬 Mensaje:\n{$mensaje}\n";
 
     try {
-        Mail::raw($cuerpo, function ($msg) use ($nombre) {
-            $msg->to(['llismercorp@gmail.com', 'lismercorp@lismercorp.com'])
+        $destinatario = config('mail.from.address') ?: env('MAIL_FROM_ADDRESS');
+
+        if (! $destinatario) {
+            throw new \Exception('No se ha configurado MAIL_FROM_ADDRESS en el archivo .env');
+        }
+
+        Mail::raw($cuerpo, function ($msg) use ($nombre, $destinatario) {
+            $msg->to($destinatario)
                 ->subject("Nuevo Mensaje de Contacto - {$nombre}");
         });
         return response()->json(['success' => true, 'message' => 'Correo enviado exitosamente.']);

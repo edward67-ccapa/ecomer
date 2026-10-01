@@ -21,7 +21,7 @@ class ProductosTable
                     ->searchable()
                     ->sortable(),
                 TextColumn::make('tiendas.nombre')
-                    ->label('Tiendas')
+                    ->label('Almacenes')
                     ->badge(),
                 TextColumn::make('categoria_id')
                     ->label('Categoría')
@@ -48,7 +48,7 @@ class ProductosTable
             ])->withCount('variantes'))
             ->filters([
                 SelectFilter::make('tiendas')
-                    ->label('Tienda')
+                    ->label('Almacén')
                     ->relationship('tiendas', 'nombre')
                     ->searchable()
                     ->preload(),

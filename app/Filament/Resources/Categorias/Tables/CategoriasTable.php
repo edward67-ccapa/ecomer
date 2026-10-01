@@ -29,7 +29,7 @@ class CategoriasTable
                     ->counts('productos')
                     ->sortable(),
                 TextColumn::make('tienda.nombre')
-                    ->label('Tienda')
+                    ->label('Almacén')
                     ->searchable()
                     ->sortable(),
                 IconColumn::make('activa')

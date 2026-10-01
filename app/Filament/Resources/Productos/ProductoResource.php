@@ -23,7 +23,7 @@ class ProductoResource extends Resource
 
     protected static ?string $navigationLabel = 'Productos';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Tienda';
+    protected static string|UnitEnum|null $navigationGroup = 'Almacén';
 
     protected static ?int $navigationSort = 2;
 

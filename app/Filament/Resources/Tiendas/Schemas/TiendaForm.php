@@ -16,7 +16,7 @@ class TiendaForm
     {
         return $schema
             ->components([
-                Section::make('Detalles de la tienda')
+                Section::make('Detalles del almacén')
                     ->schema([
                         Grid::make(2)->schema([
                             TextInput::make('nombre')
@@ -30,9 +30,10 @@ class TiendaForm
                                 ->maxLength(255),
                             TextInput::make('descripcion')
                                 ->maxLength(255),
-                            MultiSelect::make('monedas')
+                            Select::make('monedas')
                                 ->label('Monedas Aceptadas')
                                 ->relationship('monedas', 'nombre')
+                                ->multiple()
                                 ->searchable()
                                 ->preload(),
                             Toggle::make('estado')

@@ -25,7 +25,7 @@ class ServicioResource extends Resource
 
     protected static ?string $navigationLabel = 'Servicios';
 
-    protected static UnitEnum|string|null $navigationGroup = 'Tienda';
+    protected static UnitEnum|string|null $navigationGroup = 'Almacén';
 
     protected static ?int $navigationSort = 2;
 

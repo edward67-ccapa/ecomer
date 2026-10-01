@@ -21,9 +21,13 @@ class TiendaResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedShoppingBag;
 
-    protected static ?string $navigationLabel = 'Tiendas';
+    protected static ?string $navigationLabel = 'Almacenes';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Tienda';
+    protected static ?string $modelLabel = 'Almacén';
+
+    protected static ?string $pluralModelLabel = 'Almacenes';
+
+    protected static string|UnitEnum|null $navigationGroup = 'Almacén';
 
     protected static ?int $navigationSort = 1;
 

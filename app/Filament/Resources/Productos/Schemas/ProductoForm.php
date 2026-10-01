@@ -72,9 +72,10 @@ class ProductoForm
                                 ->required()
                                 ->unique(ignoreRecord: true)
                                 ->maxLength(255),
-                            MultiSelect::make('tiendas')
-                                ->label('Tiendas')
+                            Select::make('tiendas')
+                                ->label('Almacenes')
                                 ->relationship('tiendas', 'nombre')
+                                ->multiple()
                                 ->required()
                                 ->searchable()
                                 ->preload()

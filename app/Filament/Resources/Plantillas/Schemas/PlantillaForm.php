@@ -130,25 +130,26 @@ class PlantillaForm
                                                     ])
                                                     ->columnSpanFull(),
 
-                                                Section::make('Tiendas')
+                                                Section::make('Almacenes')
                                                     ->icon('heroicon-o-shopping-bag')
-                                                    ->description('Asocia las tiendas de la plantilla y configura el subtítulo, título e ícono por defecto para la sección de Productos / Tiendas.')
+                                                    ->description('Asocia los almacenes de la plantilla y configura el subtítulo, título e ícono por defecto para la sección de Productos / Almacenes.')
                                                     ->collapsible()
                                                     ->schema([
-                                                        MultiSelect::make('tiendas')
-                                                            ->label('Tiendas asociadas')
+                                                        Select::make('tiendas')
+                                                            ->label('Almacenes asociados')
                                                             ->relationship('tiendas', 'nombre')
+                                                            ->multiple()
                                                             ->searchable(),
 
                                                         Grid::make(4)->schema([
                                                             TextInput::make('estilos.seccion_productos.sub_titulo')
-                                                                ->label('Subtítulo de Productos / Tienda')
+                                                                ->label('Subtítulo de Productos / Almacén')
                                                                 ->placeholder('Ej: Catálogo Completo'),
                                                             TextInput::make('estilos.seccion_productos.titulo')
-                                                                ->label('Título de Productos / Tienda')
+                                                                ->label('Título de Productos / Almacén')
                                                                 ->placeholder('Ej: Nuestras Tortas y Creaciones'),
                                                             IconPicker::make('estilos.seccion_productos.icono')
-                                                                ->label('Ícono de Productos / Tienda'),
+                                                                ->label('Ícono de Productos / Almacén'),
                                                             TextInput::make('estilos.seccion_productos.orden')
                                                                 ->label('Orden en el Menú')
                                                                 ->numeric()
@@ -162,9 +163,10 @@ class PlantillaForm
                                                     ->collapsible()
                                                     ->schema([
                                                         Grid::make(2)->schema([
-                                                            MultiSelect::make('servicios')
+                                                            Select::make('servicios')
                                                                 ->label('Servicios asociados')
                                                                 ->relationship('servicios', 'nombre')
+                                                                ->multiple()
                                                                 ->searchable()
                                                                 ->preload(),
                                                             TextInput::make('estilos.seccion_servicios.orden')
@@ -179,9 +181,10 @@ class PlantillaForm
                                                     ->icon('heroicon-o-tag')
                                                     ->collapsible()
                                                     ->schema([
-                                                        MultiSelect::make('marcas')
+                                                        Select::make('marcas')
                                                             ->label('Marcas asociadas')
                                                             ->relationship('marcas', 'titulo')
+                                                            ->multiple()
                                                             ->searchable()
                                                             ->preload(),
                                                     ])

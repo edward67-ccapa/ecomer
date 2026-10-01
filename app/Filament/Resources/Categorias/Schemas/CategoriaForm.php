@@ -35,7 +35,7 @@ class CategoriaForm
                                         ->unique(ignoreRecord: true)
                                         ->maxLength(255),
                                     Select::make('tienda_id')
-                                        ->label('Tienda')
+                                        ->label('Almacén')
                                         ->relationship('tienda', 'nombre')
                                         ->required()
                                         ->searchable()
