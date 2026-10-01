@@ -94,11 +94,33 @@ Route::get('/limpiar-cache-opcache', function () {
     if (function_exists('opcache_reset')) {
         @opcache_reset();
     }
+
+    $compiledPaths = array_filter(array_unique([
+        config('view.compiled'),
+        env('VIEW_COMPILED_PATH'),
+        storage_path('framework/views'),
+        storage_path('framework/cache'),
+        storage_path('framework/sessions'),
+    ]));
+
+    foreach ($compiledPaths as $path) {
+        if ($path && is_dir($path)) {
+            $files = glob($path . '/*');
+            if (is_array($files)) {
+                foreach ($files as $file) {
+                    if (is_file($file)) {
+                        @unlink($file);
+                    }
+                }
+            }
+        }
+    }
+
     \Illuminate\Support\Facades\Artisan::call('optimize:clear');
     \Illuminate\Support\Facades\Artisan::call('view:clear');
     \Illuminate\Support\Facades\Artisan::call('config:clear');
     \Illuminate\Support\Facades\Artisan::call('cache:clear');
-    return 'Caché de Laravel y OPcache del servidor limpiados exitosamente.';
+    return 'Caché de vistas compilaras (VIEW_COMPILED_PATH), OPcache y Laravel limpiados exitosamente.';
 });
 
 Route::get('/{param1}/{param2}/catalogo/descargar-pdf', [SitePageController::class, 'descargarCatalogo'])->name('catalogo.descargar2');
