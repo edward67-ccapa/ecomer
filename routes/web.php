@@ -129,13 +129,14 @@ Route::get('/comprobar-archivos', function () {
         return response()->json(['error' => 'El archivo no existe en: ' . $filePath]);
     }
     $content = file_get_contents($filePath);
-    $hasSelectMultiple = str_contains($content, "Select::make('tiendas')") && str_contains($content, '->multiple()');
+    $hasCheckboxList = str_contains($content, "CheckboxList::make('tiendas')");
+    $hasSelectMultiple = str_contains($content, "Select::make('tiendas')");
     $hasOldMultiSelect = str_contains($content, "MultiSelect::make('tiendas')");
 
     return response()->json([
         'ruta_archivo_en_servidor' => $filePath,
         'fecha_ultima_modificacion' => date('Y-m-d H:i:s', filemtime($filePath)),
-        'resultado' => $hasSelectMultiple ? '✅ ARCHIVO NUEVO (Usa Select::make multiple)' : ($hasOldMultiSelect ? '❌ ARCHIVO VIEJO (Aún usa MultiSelect::make antiguo)' : 'DESCONOCIDO'),
+        'resultado' => $hasCheckboxList ? '✅ ARCHIVO NUEVO CON CHECKBOXLIST (Permite marcar/desmarcar con casillas)' : ($hasSelectMultiple ? 'SEPARADO' : ($hasOldMultiSelect ? '❌ ARCHIVO VIEJO' : 'DESCONOCIDO')),
     ]);
 });
 

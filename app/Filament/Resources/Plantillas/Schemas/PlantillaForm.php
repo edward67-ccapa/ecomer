@@ -135,12 +135,12 @@ class PlantillaForm
                                                     ->description('Asocia los almacenes de la plantilla y configura el subtítulo, título e ícono por defecto para la sección de Productos / Almacenes.')
                                                     ->collapsible()
                                                     ->schema([
-                                                        Select::make('tiendas')
+                                                        CheckboxList::make('tiendas')
                                                             ->label('Almacenes asociados')
                                                             ->relationship('tiendas', 'nombre')
-                                                            ->multiple()
-                                                            ->native(false)
-                                                            ->searchable(),
+                                                            ->columns(3)
+                                                            ->searchable()
+                                                            ->bulkToggleable(),
 
                                                         Grid::make(4)->schema([
                                                             TextInput::make('estilos.seccion_productos.sub_titulo')
@@ -164,13 +164,12 @@ class PlantillaForm
                                                     ->collapsible()
                                                     ->schema([
                                                         Grid::make(2)->schema([
-                                                            Select::make('servicios')
+                                                            CheckboxList::make('servicios')
                                                                 ->label('Servicios asociados')
                                                                 ->relationship('servicios', 'nombre')
-                                                                ->multiple()
-                                                                ->native(false)
+                                                                ->columns(3)
                                                                 ->searchable()
-                                                                ->preload(),
+                                                                ->bulkToggleable(),
                                                             TextInput::make('estilos.seccion_servicios.orden')
                                                                 ->label('Orden en el Menú')
                                                                 ->numeric()
@@ -183,13 +182,12 @@ class PlantillaForm
                                                     ->icon('heroicon-o-tag')
                                                     ->collapsible()
                                                     ->schema([
-                                                        Select::make('marcas')
+                                                        CheckboxList::make('marcas')
                                                             ->label('Marcas asociadas')
                                                             ->relationship('marcas', 'titulo')
-                                                            ->multiple()
-                                                            ->native(false)
+                                                            ->columns(3)
                                                             ->searchable()
-                                                            ->preload(),
+                                                            ->bulkToggleable(),
                                                     ])
                                                     ->columnSpanFull(),
 

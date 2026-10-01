@@ -10,6 +10,7 @@ use App\Models\Plantilla;
 use App\Models\Respuesta;
 use App\Models\Subcategoria;
 use App\Models\User;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\ColorPicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\MultiSelect;
@@ -160,18 +161,17 @@ class SiteForm
                                             ])
                                             ->columnSpanFull(),
 
-                                                Section::make('Almacenes')
+                                        Section::make('Almacenes')
                                             ->icon('heroicon-o-shopping-bag')
                                             ->description('Asocia los almacenes del sitio y personaliza el subtítulo, título e ícono de la sección de Productos / Almacenes.')
                                             ->collapsible()
                                             ->schema([
-                                                Select::make('tiendas')
+                                                CheckboxList::make('tiendas')
                                                     ->label('Almacenes asociados')
                                                     ->relationship('tiendas', 'nombre')
-                                                    ->multiple()
-                                                    ->native(false)
+                                                    ->columns(3)
                                                     ->searchable()
-                                                    ->preload(),
+                                                    ->bulkToggleable(),
 
                                                 Grid::make(4)->schema([
                                                     TextInput::make('estilos.seccion_productos.sub_titulo')
@@ -195,13 +195,12 @@ class SiteForm
                                             ->collapsible()
                                             ->schema([
                                                 Grid::make(2)->schema([
-                                                    Select::make('servicios')
+                                                    CheckboxList::make('servicios')
                                                         ->label('Servicios asociados')
                                                         ->relationship('servicios', 'nombre')
-                                                        ->multiple()
-                                                        ->native(false)
+                                                        ->columns(3)
                                                         ->searchable()
-                                                        ->preload(),
+                                                        ->bulkToggleable(),
                                                     TextInput::make('estilos.seccion_servicios.orden')
                                                         ->label('Orden en el Menú')
                                                         ->numeric()
@@ -214,13 +213,12 @@ class SiteForm
                                             ->icon('heroicon-o-tag')
                                             ->collapsible()
                                             ->schema([
-                                                Select::make('marcas')
+                                                CheckboxList::make('marcas')
                                                     ->label('Marcas asociadas')
                                                     ->relationship('marcas', 'titulo')
-                                                    ->multiple()
-                                                    ->native(false)
+                                                    ->columns(3)
                                                     ->searchable()
-                                                    ->preload(),
+                                                    ->bulkToggleable(),
                                             ])
                                             ->columnSpanFull(),
 
