@@ -76,6 +76,7 @@ class ProductoForm
                                 ->label('Almacenes')
                                 ->relationship('tiendas', 'nombre')
                                 ->multiple()
+                                ->native(false)
                                 ->required()
                                 ->searchable()
                                 ->preload()

@@ -34,6 +34,7 @@ class TiendaForm
                                 ->label('Monedas Aceptadas')
                                 ->relationship('monedas', 'nombre')
                                 ->multiple()
+                                ->native(false)
                                 ->searchable()
                                 ->preload(),
                             Toggle::make('estado')

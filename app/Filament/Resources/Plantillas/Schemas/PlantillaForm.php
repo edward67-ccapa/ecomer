@@ -139,6 +139,7 @@ class PlantillaForm
                                                             ->label('Almacenes asociados')
                                                             ->relationship('tiendas', 'nombre')
                                                             ->multiple()
+                                                            ->native(false)
                                                             ->searchable(),
 
                                                         Grid::make(4)->schema([
@@ -167,6 +168,7 @@ class PlantillaForm
                                                                 ->label('Servicios asociados')
                                                                 ->relationship('servicios', 'nombre')
                                                                 ->multiple()
+                                                                ->native(false)
                                                                 ->searchable()
                                                                 ->preload(),
                                                             TextInput::make('estilos.seccion_servicios.orden')
@@ -185,6 +187,7 @@ class PlantillaForm
                                                             ->label('Marcas asociadas')
                                                             ->relationship('marcas', 'titulo')
                                                             ->multiple()
+                                                            ->native(false)
                                                             ->searchable()
                                                             ->preload(),
                                                     ])

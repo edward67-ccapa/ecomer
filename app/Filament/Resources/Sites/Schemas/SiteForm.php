@@ -169,6 +169,7 @@ class SiteForm
                                                     ->label('Almacenes asociados')
                                                     ->relationship('tiendas', 'nombre')
                                                     ->multiple()
+                                                    ->native(false)
                                                     ->searchable()
                                                     ->preload(),
 
@@ -198,6 +199,7 @@ class SiteForm
                                                         ->label('Servicios asociados')
                                                         ->relationship('servicios', 'nombre')
                                                         ->multiple()
+                                                        ->native(false)
                                                         ->searchable()
                                                         ->preload(),
                                                     TextInput::make('estilos.seccion_servicios.orden')
@@ -216,6 +218,7 @@ class SiteForm
                                                     ->label('Marcas asociadas')
                                                     ->relationship('marcas', 'titulo')
                                                     ->multiple()
+                                                    ->native(false)
                                                     ->searchable()
                                                     ->preload(),
                                             ])
