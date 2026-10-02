@@ -3,28 +3,33 @@ import { motion } from 'framer-motion';
 export default function HeroSection({ hero }) {
     if (!hero) return null;
 
-    const { imagen, titulo, descripcion } = hero;
+    const { imagen, responsiveImg, titulo, descripcion } = hero;
+    const hasBgImage = Boolean(responsiveImg?.pc || responsiveImg?.tablet || responsiveImg?.cel || imagen);
 
-    if (!imagen && !titulo && !descripcion) return null;
+    if (!hasBgImage && !titulo && !descripcion) return null;
 
     return (
         <section className="relative overflow-hidden bg-black text-white h-[80vh] min-h-[80vh] w-full flex items-center justify-center">
-            {imagen && (
+            {hasBgImage && (
                 <div className="absolute inset-0 z-0 h-full w-full">
-                    <img
-                        src={imagen}
-                        alt={titulo || ''}
-                        fetchPriority="high"
-                        decoding="async"
-                        loading="eager"
-                        className="h-full w-full object-cover brightness-105"
-                        style={{
-                            width: '100%',
-                            height: '100%',
-                            objectFit: 'cover',
-                            objectPosition: 'center bottom', // 👈 clave: ancla abajo
-                        }}
-                    />
+                    <picture className="h-full w-full block">
+                        {responsiveImg?.pc && <source media="(min-width: 1024px)" srcSet={responsiveImg.pc} />}
+                        {responsiveImg?.tablet && <source media="(min-width: 640px)" srcSet={responsiveImg.tablet} />}
+                        <img
+                            src={responsiveImg?.cel || responsiveImg?.tablet || responsiveImg?.pc || imagen}
+                            alt={titulo || ''}
+                            fetchPriority="high"
+                            decoding="async"
+                            loading="eager"
+                            className="h-full w-full object-cover brightness-105"
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'cover',
+                                objectPosition: 'center bottom',
+                            }}
+                        />
+                    </picture>
                 </div>
             )}
 

@@ -120,6 +120,22 @@ class EditPlantilla extends EditRecord
         return $data;
     }
 
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        if (isset($data['estilos']) && is_array($data['estilos'])) {
+            $freshRecord = static::getModel()::find($this->record->id);
+            $freshEstilos = $freshRecord?->estilos ?? [];
+            if (is_string($freshEstilos)) {
+                $freshEstilos = json_decode($freshEstilos, true) ?? [];
+            }
+            if (is_array($freshEstilos)) {
+                $data['estilos'] = array_replace_recursive($freshEstilos, $data['estilos']);
+            }
+        }
+
+        return $data;
+    }
+
     protected function afterSave(): void
     {
         $this->guardarRespuestas();
@@ -150,12 +166,26 @@ class EditPlantilla extends EditRecord
             $enlace = $item['enlace'] ?? null;
 
             if (is_array($valor)) {
-                $valor = json_encode($valor);
+                $valorClean = array_filter($valor);
+                if (empty($valorClean)) {
+                    $valor = null;
+                } else {
+                    $valor = json_encode($valor);
+                }
             }
 
             $existing = $existingRespuestas->get((int) $preguntaId);
 
-            // Si el valor y el enlace no han cambiado, ignorar totalmente
+            // Preservar valor existente en BD si la petición viene vacía pero un compañero ya guardó un valor previamente
+            if (is_null($valor) && $existing && ! is_null($existing->valor) && (string) $existing->valor !== '') {
+                $valor = $existing->valor;
+            }
+
+            if (is_null($enlace) && $existing && ! is_null($existing->enlace) && (string) $existing->enlace !== '') {
+                $enlace = $existing->enlace;
+            }
+
+            // Comprobación PATCH: Si no ha cambiado nada con respecto a la BD, omitir actualización
             if ($existing && (string) $existing->valor === (string) $valor && (string) $existing->enlace === (string) $enlace) {
                 continue;
             }
@@ -166,7 +196,6 @@ class EditPlantilla extends EditRecord
             ];
         }
 
-        // Si no hay cambios en la pestaña actual ni en ninguna otra, salir ALTOQUE (0ms, 0 queries)
         if (empty($dirtyRespuestas)) {
             return;
         }

@@ -50,9 +50,43 @@ export default function PortadaSection({ seccionData, site, estilos, dominio, si
     const whatsappMsg = encodeURIComponent('Hola, quisiera ....');
     const whatsappUrl = finalWaNumber ? `https://wa.me/${finalWaNumber}?text=${whatsappMsg}` : `https://wa.me/?text=${whatsappMsg}`;
 
-    // Normalizar Imagen (string o array)
-    const rawImagen = data?.Imagen;
-    const imagenUrl = Array.isArray(rawImagen) ? rawImagen[0] : rawImagen;
+    // Extract URL helper
+    const extractUrl = (val) => {
+        if (!val) return null;
+        if (typeof val === 'string') return val.trim();
+        if (Array.isArray(val)) {
+            const first = val[0];
+            return typeof first === 'string' ? first.trim() : extractUrl(first);
+        }
+        if (typeof val === 'object' && val !== null) {
+            return extractUrl(Object.values(val)[0]);
+        }
+        return null;
+    };
+
+    // Extraer grupo Imagenes (Imagen_pc, Imagen_tablet, Imagen_cel)
+    const rawImagenes = data?.Imagenes || data?.imagenes;
+    let responsiveImg = null;
+    if (Array.isArray(rawImagenes) && rawImagenes.length > 0) {
+        const firstSlide = rawImagenes[0];
+        if (typeof firstSlide === 'object' && firstSlide !== null) {
+            responsiveImg = {
+                pc: extractUrl(firstSlide.Imagen_pc || firstSlide.imagen_pc),
+                tablet: extractUrl(firstSlide.Imagen_tablet || firstSlide.imagen_tablet),
+                cel: extractUrl(firstSlide.Imagen_cel || firstSlide.imagen_cel),
+            };
+        }
+    } else if (rawImagenes && typeof rawImagenes === 'object') {
+        responsiveImg = {
+            pc: extractUrl(rawImagenes.Imagen_pc || rawImagenes.imagen_pc),
+            tablet: extractUrl(rawImagenes.Imagen_tablet || rawImagenes.imagen_tablet),
+            cel: extractUrl(rawImagenes.Imagen_cel || rawImagenes.imagen_cel),
+        };
+    }
+
+    // Normalizar Imagen individual antigua (fallback)
+    const rawImagen = data?.Imagen || data?.imagen;
+    const fallbackImagenUrl = Array.isArray(rawImagen) ? rawImagen[0] : rawImagen;
 
     // Normalizar Info (Array de métricas/estadísticas)
     const infoStats = Array.isArray(data?.Info) ? data.Info : [];
@@ -95,20 +129,26 @@ export default function PortadaSection({ seccionData, site, estilos, dominio, si
         ));
     };
 
+    const hasBgImage = Boolean(responsiveImg?.pc || responsiveImg?.tablet || responsiveImg?.cel || fallbackImagenUrl);
+
     return (
         <section className="relative min-h-[100vh] pt-40 md:pt-0 w-full overflow-hidden bg-slate-950 pt-28 pb-16 md:pt-36 md:pb-24 lg:pt-40 lg:pb-28 text-white flex flex-col justify-center">
             {/* Imagen de fondo con zoom sutil y capas de degradado */}
-            {imagenUrl && (
+            {hasBgImage && (
                 <div className="absolute inset-0 z-0 overflow-hidden">
-                    <motion.img
-                        initial={{ scale: 1.08 }}
-                        animate={{ scale: 1 }}
-                        transition={{ duration: 1.2, ease: 'easeOut' }}
-                        src={imagenUrl}
-                        alt={titulo ? titulo.replace(/\/\*|\*\//g, '') : 'Fondo Sobre Nosotros'}
-                        className="absolute inset-0 h-full w-full min-h-full min-w-full object-cover object-center"
-                        fetchPriority="high"
-                    />
+                    <picture className="h-full w-full block">
+                        {responsiveImg?.pc && <source media="(min-width: 1024px)" srcSet={responsiveImg.pc} />}
+                        {responsiveImg?.tablet && <source media="(min-width: 640px)" srcSet={responsiveImg.tablet} />}
+                        <motion.img
+                            initial={{ scale: 1.08 }}
+                            animate={{ scale: 1 }}
+                            transition={{ duration: 1.2, ease: 'easeOut' }}
+                            src={responsiveImg?.cel || responsiveImg?.tablet || responsiveImg?.pc || fallbackImagenUrl}
+                            alt={titulo ? titulo.replace(/\/\*|\*\//g, '') : 'Fondo Sobre Nosotros'}
+                            className="absolute inset-0 h-full w-full min-h-full min-w-full object-cover object-center"
+                            fetchPriority="high"
+                        />
+                    </picture>
                     {/* Fondo con degradado y opacidad sobre la imagen para legibilidad óptima en celular y desktop */}
                     <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/70 to-black/80 sm:bg-gradient-to-r sm:from-black/85 sm:via-black/55 sm:to-black/40" />
                 </div>

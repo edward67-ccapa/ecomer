@@ -6,6 +6,7 @@ import FloatingWhatsApp from './shared/FloatingWhatsApp';
 import SectionInicio from './components/Inicio/SectionInicio';
 import SectionProductos from './components/Productos/SectionProductos';
 import SectionServicios from './components/Servicios/SectionServicios';
+import LegalPage from '@/components/LegalPage';
 
 export default function Tortas({
     site,
@@ -120,18 +121,28 @@ export default function Tortas({
                     estilos={estilos}
                 />
 
-                <ActiveComponent
-                    site={site}
-                    dominio={dominio}
-                    siteSlug={siteSlug}
-                    seccion={seccionActiva}
-                    seccionesData={seccionesData}
-                    productos={productos}
-                    productosDestacados={productosDestacados}
-                    serviciosSitio={serviciosSitio}
-                    styles={styles}
-                    estilos={estilos}
-                />
+                {seccionActiva?.is_legal ? (
+                    <LegalPage
+                        site={site}
+                        dominio={dominio}
+                        siteSlug={siteSlug}
+                        legalType={seccionActiva.legal_type || 'terminos'}
+                        estilos={estilos}
+                    />
+                ) : (
+                    <ActiveComponent
+                        site={site}
+                        dominio={dominio}
+                        siteSlug={siteSlug}
+                        seccion={seccionActiva}
+                        seccionesData={seccionesData}
+                        productos={productos}
+                        productosDestacados={productosDestacados}
+                        serviciosSitio={serviciosSitio}
+                        styles={styles}
+                        estilos={estilos}
+                    />
+                )}
 
                 <Footer
                     site={site}

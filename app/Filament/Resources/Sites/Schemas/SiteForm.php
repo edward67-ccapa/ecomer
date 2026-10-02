@@ -188,7 +188,7 @@ class SiteForm
                                                         ->placeholder('Ej: 2'),
                                                 ]),
                                             ])
-                                            ->columnSpanFull(),
+                                             ->columnSpanFull(),
 
                                         Section::make('Servicios')
                                             ->icon('heroicon-o-wrench-screwdriver')
@@ -213,12 +213,18 @@ class SiteForm
                                             ->icon('heroicon-o-tag')
                                             ->collapsible()
                                             ->schema([
-                                                CheckboxList::make('marcas')
-                                                    ->label('Marcas asociadas')
-                                                    ->relationship('marcas', 'titulo')
-                                                    ->columns(3)
-                                                    ->searchable()
-                                                    ->bulkToggleable(),
+                                                Grid::make(2)->schema([
+                                                    CheckboxList::make('marcas')
+                                                        ->label('Marcas asociadas')
+                                                        ->relationship('marcas', 'titulo')
+                                                        ->columns(3)
+                                                        ->searchable()
+                                                        ->bulkToggleable(),
+                                                    TextInput::make('estilos.seccion_marcas.orden')
+                                                        ->label('Orden en el Menú')
+                                                        ->numeric()
+                                                        ->placeholder('Ej: 5'),
+                                                ]),
                                             ])
                                             ->columnSpanFull(),
 
@@ -337,9 +343,109 @@ class SiteForm
                             ->icon('heroicon-o-document-text')
                             ->visible(fn (Get $get) => filled($get('plantilla_id')))
                             ->schema(fn (Get $get): array => self::respuestasFields($get)),
+
+                        Tab::make('Políticas y Términos')
+                            ->icon('heroicon-o-scale')
+                            ->schema(self::politicasFields()),
                     ])
                     ->columnSpanFull(),
             ]);
+    }
+
+    /**
+     * @return array<int, Component>
+     */
+    private static function politicasFields(): array
+    {
+        return [
+            Tabs::make('SubTabsPoliticas')
+                ->persistTabInQueryString(false)
+                ->tabs([
+                    Tab::make('Términos y Condiciones')
+                        ->icon('heroicon-o-document-text')
+                        ->schema([
+                            Textarea::make('estilos.politicas.terminos.intro')
+                                ->label('Tarjeta Introductoria (Destacada)')
+                                ->placeholder('Bienvenido a nuestra plataforma. En el presente documento se establecen las condiciones que regulan el uso de nuestro sitio web y los servicios disponibles.')
+                                ->helperText('Texto inicial que aparece en la tarjeta con borde dorado/destacado.')
+                                ->rows(4),
+                            Section::make('Tarjetas de Contenido (Términos y Condiciones)')
+                                ->description('Edita el contenido de cada tarjeta. Los títulos principales son fijos.')
+                                ->collapsible()
+                                ->schema([
+                                    Textarea::make('estilos.politicas.terminos.sec_1')->label('1. Aceptación de los Términos')->rows(3)->placeholder('Al registrarte como usuario o utilizar la plataforma, aceptas los presentes Términos y Condiciones...'),
+                                    Textarea::make('estilos.politicas.terminos.sec_2')->label('2. Descripción del Servicio')->rows(3)->placeholder('Nuestra plataforma proporciona servicios de comercio electrónico...'),
+                                    Textarea::make('estilos.politicas.terminos.sec_3')->label('3. Registro y Responsabilidad del Usuario')->rows(3)->placeholder('El usuario es responsable de mantener la confidencialidad de sus datos de acceso...'),
+                                    Textarea::make('estilos.politicas.terminos.sec_4')->label('4. Contenido de los Anuncios / Productos')->rows(3)->placeholder('Todo contenido o producto publicado debe cumplir con las leyes vigentes...'),
+                                    Textarea::make('estilos.politicas.terminos.sec_5')->label('5. Planes y Pagos')->rows(3)->placeholder('Los precios, métodos de pago y condiciones de facturación se rigen bajo los acuerdos informados...'),
+                                    Textarea::make('estilos.politicas.terminos.sec_6')->label('6. Propiedad Intelectual')->rows(3)->placeholder('Todos los contenidos, marcas y logotipos de este sitio son propiedad exclusiva...'),
+                                    Textarea::make('estilos.politicas.terminos.sec_7')->label('7. Limitación de Responsabilidad')->rows(3)->placeholder('No nos hacemos responsables por fallas de conexión o uso indebido por parte de terceros...'),
+                                    Textarea::make('estilos.politicas.terminos.sec_8')->label('8. Cancelación y Suspensión')->rows(3)->placeholder('Nos reservamos el derecho de suspender cuentas que infrinjan los términos...'),
+                                    Textarea::make('estilos.politicas.terminos.sec_9')->label('9. Modificaciones de los Términos')->rows(3)->placeholder('Podremos actualizar estos términos periódicamente comunicando los cambios en el sitio...'),
+                                    Textarea::make('estilos.politicas.terminos.sec_10')->label('10. Contacto')->rows(3)->placeholder('Si tienes dudas sobre estos Términos y Condiciones, contáctanos a través de nuestros canales oficiales.'),
+                                ]),
+                        ]),
+
+                    Tab::make('Política de Privacidad')
+                        ->icon('heroicon-o-shield-check')
+                        ->schema([
+                            Textarea::make('estilos.politicas.privacidad.intro')
+                                ->label('Tarjeta Introductoria (Destacada)')
+                                ->placeholder('Valoramos y respetamos la privacidad de nuestros usuarios. Esta política explica cómo recopilamos, utilizamos y protegemos tu información personal.')
+                                ->helperText('Texto inicial que aparece en la tarjeta con borde dorado/destacado.')
+                                ->rows(4),
+                            Section::make('Tarjetas de Contenido (Política de Privacidad)')
+                                ->description('Edita el contenido de cada tarjeta. Los títulos principales son fijos.')
+                                ->collapsible()
+                                ->schema([
+                                    Textarea::make('estilos.politicas.privacidad.sec_1')->label('1. Información que Recopilamos')->rows(3)->placeholder('Recopilamos información proporcionada voluntariamente como nombre, teléfono, dirección y correo...'),
+                                    Textarea::make('estilos.politicas.privacidad.sec_2')->label('2. Uso de la Información')->rows(3)->placeholder('Utilizamos la información para procesar pedidos, brindar atención al cliente y mejorar nuestros servicios...'),
+                                    Textarea::make('estilos.politicas.privacidad.sec_3')->label('3. Protección de Datos')->rows(3)->placeholder('Implementamos medidas de seguridad administrativas y técnicas para salvaguardar tu información...'),
+                                    Textarea::make('estilos.politicas.privacidad.sec_4')->label('4. Compartición de Información')->rows(3)->placeholder('No vendemos ni alquilamos tus datos personales a terceros sin tu previo consentimiento...'),
+                                    Textarea::make('estilos.politicas.privacidad.sec_5')->label('5. Cookies')->rows(3)->placeholder('Utilizamos cookies para optimizar tu experiencia de navegación y recordar tus preferencias...'),
+                                    Textarea::make('estilos.politicas.privacidad.sec_6')->label('6. Derechos del Usuario')->rows(3)->placeholder('Tienes derecho a acceder, corregir, actualizar o solicitar la eliminación de tus datos personales...'),
+                                    Textarea::make('estilos.politicas.privacidad.sec_7')->label('7. Conservación de Datos')->rows(3)->placeholder('Conservamos la información personal durante el tiempo necesario para cumplir las finalidades descritas...'),
+                                    Textarea::make('estilos.politicas.privacidad.sec_8')->label('8. Cambios a esta Política')->rows(3)->placeholder('Nos reservamos el derecho de modificar esta Política de Privacidad en cualquier momento...'),
+                                    Textarea::make('estilos.politicas.privacidad.sec_9')->label('9. Contacto')->rows(3)->placeholder('Para ejercer tus derechos de privacidad o realizar consultas, escríbenos a nuestros canales oficiales.'),
+                                ]),
+                        ]),
+
+                    Tab::make('Política de Envíos')
+                        ->icon('heroicon-o-truck')
+                        ->schema([
+                            Textarea::make('estilos.politicas.envios.intro')
+                                ->label('Tarjeta Introductoria (Destacada)')
+                                ->placeholder('Nos comprometemos a entregar tus productos de manera rápida, segura y oportuna.')
+                                ->rows(3),
+                            Section::make('Tarjetas de Contenido (Política de Envíos)')
+                                ->collapsible()
+                                ->schema([
+                                    Textarea::make('estilos.politicas.envios.sec_1')->label('1. Cobertura y Zonas de Envío')->rows(3)->placeholder('Realizamos envíos a todo el territorio nacional y distritos autorizados...'),
+                                    Textarea::make('estilos.politicas.envios.sec_2')->label('2. Tiempos y Plazos de Entrega')->rows(3)->placeholder('Los plazos estándar oscilan entre 24 a 72 horas hábiles según la ubicación...'),
+                                    Textarea::make('estilos.politicas.envios.sec_3')->label('3. Costos y Métodos de Envío')->rows(3)->placeholder('Los costos de envío se calculan en base al destino y volumen del pedido...'),
+                                    Textarea::make('estilos.politicas.envios.sec_4')->label('4. Recepción de Pedidos')->rows(3)->placeholder('Es necesario presentar identificación o número de orden al recibir el paquete...'),
+                                ]),
+                        ]),
+
+                    Tab::make('Políticas de Devolución')
+                        ->icon('heroicon-o-arrow-path')
+                        ->schema([
+                            Textarea::make('estilos.politicas.devoluciones.intro')
+                                ->label('Tarjeta Introductoria (Destacada)')
+                                ->placeholder('Tu satisfacción es nuestra prioridad. Contamos con políticas claras para cambios y devoluciones.')
+                                ->rows(3),
+                            Section::make('Tarjetas de Contenido (Políticas de Devolución)')
+                                ->collapsible()
+                                ->schema([
+                                    Textarea::make('estilos.politicas.devoluciones.sec_1')->label('1. Condiciones para Cambios y Devoluciones')->rows(3)->placeholder('El producto debe encontrarse sin uso, con empaque original y comprobante de compra...'),
+                                    Textarea::make('estilos.politicas.devoluciones.sec_2')->label('2. Plazos para Devoluciones')->rows(3)->placeholder('Dispones de un plazo de 7 días calendario tras recibir tu pedido para solicitar un cambio...'),
+                                    Textarea::make('estilos.politicas.devoluciones.sec_3')->label('3. Proceso y Reembolsos')->rows(3)->placeholder('Los reembolsos se procesan por el mismo medio de pago utilizado dentro de 5 a 10 días hábiles...'),
+                                    Textarea::make('estilos.politicas.devoluciones.sec_4')->label('4. Excepciones')->rows(3)->placeholder('Productos perecibles, personalizados o en remate final no aplican para devolución...'),
+                                ]),
+                        ]),
+                ])
+                ->columnSpanFull(),
+        ];
     }
 
     /**
@@ -361,3 +467,4 @@ class SiteForm
         return PlantillaForm::respuestasFields($plantilla);
     }
 }
+

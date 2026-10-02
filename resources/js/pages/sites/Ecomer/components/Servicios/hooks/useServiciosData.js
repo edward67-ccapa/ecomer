@@ -32,24 +32,83 @@ export function useServiciosData(seccion, seccionesData, serviciosSitio = []) {
     }, [seccion, seccionesData]);
 
     const getGroupData = (labelName) => {
+        const normalizeStr = (str) =>
+            String(str || '')
+                .toLowerCase()
+                .normalize('NFD')
+                .replace(/[\u0300-\u036f]/g, '')
+                .replace(/[-_ ]/g, '');
+
+        const targetNorm = normalizeStr(labelName);
+
         const item = serviciosData?.contenido?.find(
-            (c) => (c.label || '').toLowerCase() === labelName.toLowerCase()
+            (c) => normalizeStr(c.label) === targetNorm
         );
         const rawValor = item?.valor;
         const data = Array.isArray(rawValor) ? rawValor[0] : (rawValor || {});
         return { data, rawValor, group: item };
     };
 
+    const extractUrl = (val) => {
+        if (!val) return null;
+        if (typeof val === 'string') return val.trim();
+        if (Array.isArray(val)) {
+            if (val.length === 0) return null;
+            const first = val[0];
+            return typeof first === 'string' ? first.trim() : extractUrl(first);
+        }
+        if (typeof val === 'object' && val !== null) {
+            const possibleUrl = val.url || val.src || val.path || val.Imagen || val.imagen || Object.values(val)[0];
+            return extractUrl(possibleUrl);
+        }
+        return null;
+    };
+
     // 1. HERO
-    const heroGroup = getGroupData('hero');
+    const heroGroupData = getGroupData('hero');
+    const heroGroup = heroGroupData.group ? heroGroupData : getGroupData('portada');
     const heroData = heroGroup.data || {};
-    const heroImagenRaw = heroData.Imagen || heroData.imagen || heroData.Img;
-    const heroImagen = Array.isArray(heroImagenRaw) ? heroImagenRaw[0] : heroImagenRaw;
-    const heroTitulo = heroData.Titulo || heroData.titulo || 'Our Service';
-    const heroDescripcion = heroData.Descripcion || heroData.descripcion || '';
+    const rawImagenes = heroData.Imagenes || heroData.imagenes || heroData.images || heroData.Images;
+
+    const getResponsiveFromObj = (obj) => {
+        if (!obj || typeof obj !== 'object') return null;
+        const pc = extractUrl(obj.Imagen_pc || obj.imagen_pc || obj.pc || obj.Imagen_PC || obj.imagen_desktop || obj.desktop);
+        const tablet = extractUrl(obj.Imagen_tablet || obj.imagen_tablet || obj.tablet || obj.Imagen_Tablet);
+        const cel = extractUrl(obj.Imagen_cel || obj.imagen_cel || obj.cel || obj.Imagen_Cel || obj.imagen_mobile || obj.mobile);
+        if (pc || tablet || cel) {
+            return { pc, tablet, cel };
+        }
+        return null;
+    };
+
+    let responsiveImg = null;
+    if (Array.isArray(rawImagenes) && rawImagenes.length > 0) {
+        const firstSlide = rawImagenes[0];
+        if (typeof firstSlide === 'object' && firstSlide !== null) {
+            responsiveImg = getResponsiveFromObj(firstSlide);
+        }
+        if (!responsiveImg) {
+            const singleUrl = extractUrl(rawImagenes);
+            if (singleUrl) {
+                responsiveImg = { pc: singleUrl, tablet: singleUrl, cel: singleUrl };
+            }
+        }
+    } else if (rawImagenes && typeof rawImagenes === 'object') {
+        responsiveImg = getResponsiveFromObj(rawImagenes);
+    }
+
+    if (!responsiveImg) {
+        responsiveImg = getResponsiveFromObj(heroData);
+    }
+
+    const heroImagenRaw = heroData.Imagen || heroData.imagen || heroData.Img || heroData.img;
+    const fallbackImagen = extractUrl(heroImagenRaw);
+    const heroTitulo = heroData.Titulo || heroData.titulo || heroData.title || heroData.Title || '';
+    const heroDescripcion = heroData.Descripcion || heroData.descripcion || heroData.description || heroData.Description || heroData.Parrafo || heroData.parrafo || '';
 
     const hero = {
-        imagen: heroImagen,
+        imagen: responsiveImg?.cel || responsiveImg?.tablet || responsiveImg?.pc || fallbackImagen,
+        responsiveImg,
         titulo: heroTitulo,
         descripcion: heroDescripcion,
         raw: heroData,
@@ -60,11 +119,9 @@ export function useServiciosData(seccion, seccionesData, serviciosSitio = []) {
     const serviciosDataObj = serviciosGroup.data || {};
     const serviciosList = Array.isArray(serviciosDataObj.Servicios) ? serviciosDataObj.Servicios : [];
 
-    const serviciosBlock = {
-        subIcono: serviciosDataObj.SubIcono || serviciosDataObj.subicono || 'MdOutlineCake',
-        sub: serviciosDataObj.sub || serviciosDataObj.Sub || '',
-        titulo: serviciosDataObj.Titulo || serviciosDataObj.titulo || '',
-        items: serviciosList.map((item, idx) => {
+    let itemsFinales = [];
+    if (serviciosList.length > 0) {
+        itemsFinales = serviciosList.map((item, idx) => {
             const rawImg = item.Imagen || item.imagen;
             const img = Array.isArray(rawImg) ? rawImg[0] : rawImg;
             const rawBoton = item.Boton !== undefined ? item.Boton : item.boton;
@@ -79,8 +136,36 @@ export function useServiciosData(seccion, seccionesData, serviciosSitio = []) {
                 descripcion: item.Descripcion || item.descripcion || '',
                 boton: botonTxt || null,
                 botonIcono: iconoTxt || (botonTxt ? 'FaChevronRight' : null),
+                url: item.url || item.enlace || null,
             };
-        }),
+        });
+    } else if (Array.isArray(serviciosSitio) && serviciosSitio.length > 0) {
+        let count = 1;
+        serviciosSitio.forEach((grupo) => {
+            const list = grupo.servicios || [];
+            list.forEach((s) => {
+                itemsFinales.push({
+                    id: s.id,
+                    numero: `No - ${String(count++).padStart(2, '0')}`,
+                    imagen: s.imagen,
+                    icono: s.icono,
+                    titulo: s.titulo || '',
+                    subtitulo: s.subtitulo || '',
+                    descripcion: s.descripcion || s.descripcioncorta || '',
+                    lista: s.lista || [],
+                    boton: s.boton || 'Más información',
+                    botonIcono: 'FaChevronRight',
+                    url: s.url || '#contacto',
+                });
+            });
+        });
+    }
+
+    const serviciosBlock = {
+        subIcono: serviciosDataObj.SubIcono || serviciosDataObj.subicono || 'MdOutlineCake',
+        sub: serviciosDataObj.sub || serviciosDataObj.Sub || '',
+        titulo: serviciosDataObj.Titulo || serviciosDataObj.titulo || '',
+        items: itemsFinales,
         raw: serviciosDataObj,
     };
 
@@ -144,7 +229,7 @@ export function useServiciosData(seccion, seccionesData, serviciosSitio = []) {
         items: Array.isArray(serviciosDetalladosDataObj.Items || serviciosDetalladosDataObj.items) ? (serviciosDetalladosDataObj.Items || serviciosDetalladosDataObj.items) : [],
         raw: serviciosDetalladosDataObj,
     };
-
+    console.log(serviciosDetalladosGroup)
     return {
         serviciosData,
         hero,

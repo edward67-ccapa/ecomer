@@ -1,6 +1,7 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Link } from '@inertiajs/react';
 import DynamicIcon from '@/components/DynamicIcon';
+import LegalModal from '@/components/LegalModal';
 import {
     FaTruckFast,
     FaRotateLeft,
@@ -356,9 +357,53 @@ export default function Footer({
         .map(getActionInfo)
         .filter(Boolean);
 
+    // --- ESTADO Y MANEJO DEL MODAL DE POLÍTICAS Y TÉRMINOS ---
+    const rawPoliticas = estilos?.politicas || site?.estilos?.politicas;
+    let politicasData = {};
+    if (typeof rawPoliticas === 'string') {
+        try {
+            politicasData = JSON.parse(rawPoliticas);
+        } catch {
+            politicasData = {};
+        }
+    } else if (rawPoliticas && typeof rawPoliticas === 'object') {
+        politicasData = rawPoliticas;
+    }
+
+    const checkHasContent = (obj) => {
+        if (!obj || typeof obj !== 'object') return false;
+        return Object.values(obj).some((val) => typeof val === 'string' && val.trim().length > 0);
+    };
+
+    const hasTerminos = checkHasContent(politicasData?.terminos);
+    const hasPrivacidad = checkHasContent(politicasData?.privacidad);
+    const hasEnvios = checkHasContent(politicasData?.envios);
+    const hasDevoluciones = checkHasContent(politicasData?.devoluciones);
+    const hasAnyLegal = hasTerminos || hasPrivacidad || hasEnvios || hasDevoluciones;
+
+    const getPolicyUrl = (type) => {
+        const slugMap = {
+            terminos: 'terminos-y-condiciones',
+            privacidad: 'politica-de-privacidad',
+            envios: 'politica-de-envios',
+            devoluciones: 'politica-de-devolucion',
+        };
+        const pSlug = slugMap[type] || type;
+        return siteSlug ? `/${dominio}/${siteSlug}/${pSlug}` : `/${dominio}/${pSlug}`;
+    };
+
+    const [legalModalOpen, setLegalModalOpen] = useState(false);
+    const [legalModalTab, setLegalModalTab] = useState('terminos');
+
+    const openLegalModal = (tab) => {
+        setLegalModalTab(tab);
+        setLegalModalOpen(true);
+    };
+
     return (
-        <footer className="w-full bg-[#050505] text-[#d4d4d8] font-sans antialiased border-t border-neutral-900 selection:bg-neutral-800 selection:text-white">
-            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
+        <>
+            <footer className="w-full bg-[#050505] text-[#d4d4d8] font-sans antialiased border-t border-neutral-900 selection:bg-neutral-800 selection:text-white">
+                <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12 lg:py-16">
 
                 {/* --- 1. BARRA SUPERIOR: VALOR Y BENEFICIOS BASADOS EN NAV / ACCIONES --- */}
                 <div className="pb-10 border-b border-neutral-800/80">
@@ -621,15 +666,42 @@ export default function Footer({
                         © {currentYear} <span className="text-neutral-400 font-medium">{siteName}</span>. Todos los derechos reservados.
                     </div>
 
-                    <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-neutral-400">
-                        <a href="#contacto" className="hover:text-white transition-colors">Política de Envíos</a>
-                        <a href="#contacto" className="hover:text-white transition-colors">Políticas de Devolución</a>
-                        <a href="#contacto" className="hover:text-white transition-colors">Política de Privacidad</a>
-                        <a href="#contacto" className="hover:text-white transition-colors">Términos del Servicio</a>
-                    </div>
+                    {hasAnyLegal && (
+                        <div className="flex flex-wrap items-center justify-center gap-x-5 gap-y-1.5 text-xs text-neutral-400">
+                            {hasEnvios && (
+                                <a href={getPolicyUrl('envios')} className="hover:text-white transition-colors cursor-pointer focus:outline-none">
+                                    Política de Envíos
+                                </a>
+                            )}
+                            {hasDevoluciones && (
+                                <a href={getPolicyUrl('devoluciones')} className="hover:text-white transition-colors cursor-pointer focus:outline-none">
+                                    Políticas de Devolución
+                                </a>
+                            )}
+                            {hasPrivacidad && (
+                                <a href={getPolicyUrl('privacidad')} className="hover:text-white transition-colors cursor-pointer focus:outline-none">
+                                    Política de Privacidad
+                                </a>
+                            )}
+                            {hasTerminos && (
+                                <a href={getPolicyUrl('terminos')} className="hover:text-white transition-colors cursor-pointer focus:outline-none">
+                                    Términos y Condiciones
+                                </a>
+                            )}
+                        </div>
+                    )}
                 </div>
 
             </div>
         </footer>
-    );
+
+        {/* MODAL DE POLÍTICAS Y TÉRMINOS CON DISEÑO DE CARDS */}
+        <LegalModal
+            isOpen={legalModalOpen}
+            onClose={() => setLegalModalOpen(false)}
+            defaultTab={legalModalTab}
+            site={site}
+        />
+    </>
+);
 }

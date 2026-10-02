@@ -92,7 +92,31 @@ class SitePageController extends Controller
             ];
         }
 
-        if (! $seccion && in_array($targetSlug, ['inicio', 'hero', 'productos', 'tienda', 'tiendas', 'servicios', 'servicio', 'nosotros', 'sobre-nosotros', 'contacto', 'contactos'])) {
+        $legalSlugsMap = [
+            'terminos' => ['type' => 'terminos', 'nombre' => 'Términos y Condiciones', 'slug' => 'terminos-y-condiciones'],
+            'terminos-y-condiciones' => ['type' => 'terminos', 'nombre' => 'Términos y Condiciones', 'slug' => 'terminos-y-condiciones'],
+            'privacidad' => ['type' => 'privacidad', 'nombre' => 'Política de Privacidad', 'slug' => 'politica-de-privacidad'],
+            'politica-privacidad' => ['type' => 'privacidad', 'nombre' => 'Política de Privacidad', 'slug' => 'politica-de-privacidad'],
+            'politica-de-privacidad' => ['type' => 'privacidad', 'nombre' => 'Política de Privacidad', 'slug' => 'politica-de-privacidad'],
+            'envios' => ['type' => 'envios', 'nombre' => 'Política de Envíos', 'slug' => 'politica-de-envios'],
+            'politica-envios' => ['type' => 'envios', 'nombre' => 'Política de Envíos', 'slug' => 'politica-de-envios'],
+            'politica-de-envios' => ['type' => 'envios', 'nombre' => 'Política de Envíos', 'slug' => 'politica-de-envios'],
+            'devoluciones' => ['type' => 'devoluciones', 'nombre' => 'Políticas de Devolución', 'slug' => 'politica-de-devolucion'],
+            'politica-devolucion' => ['type' => 'devoluciones', 'nombre' => 'Políticas de Devolución', 'slug' => 'politica-de-devolucion'],
+            'politica-devoluciones' => ['type' => 'devoluciones', 'nombre' => 'Políticas de Devolución', 'slug' => 'politica-de-devolucion'],
+            'politica-de-devolucion' => ['type' => 'devoluciones', 'nombre' => 'Políticas de Devolución', 'slug' => 'politica-de-devolucion'],
+        ];
+
+        if (array_key_exists($targetSlug, $legalSlugsMap)) {
+            $info = $legalSlugsMap[$targetSlug];
+            $seccionActiva = [
+                'slug' => $info['slug'],
+                'nombre' => $info['nombre'],
+                'contenido' => [],
+                'is_legal' => true,
+                'legal_type' => $info['type'],
+            ];
+        } elseif (! $seccion && in_array($targetSlug, ['inicio', 'hero', 'productos', 'tienda', 'tiendas', 'servicios', 'servicio', 'nosotros', 'sobre-nosotros', 'contacto', 'contactos'])) {
             $canonicalSlug = in_array($targetSlug, ['productos', 'tienda', 'tiendas'])
                 ? 'productos'
                 : (in_array($targetSlug, ['servicios', 'servicio'])
@@ -136,7 +160,7 @@ class SitePageController extends Controller
             $productosDestacados = $productos;
         }
 
-        $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
+        $estilos = array_replace_recursive($site->plantilla->estilos ?? [], $site->estilos ?? []);
 
         // Serializar servicios del sitio para el frontend
         $serviciosSitio = $site->servicios
@@ -272,6 +296,30 @@ class SitePageController extends Controller
             }
         }
 
+        $marcasOrden = isset($estilos['seccion_marcas']['orden']) && $estilos['seccion_marcas']['orden'] !== ''
+            ? (int) $estilos['seccion_marcas']['orden']
+            : 5;
+
+        $hasMarcasInNav = collect($seccionesArray)->contains(
+            fn ($s) => in_array(strtolower($s['slug'] ?? ''), ['marcas', 'marca'])
+        );
+        if (! empty($marcasSitio) && count($marcasSitio) > 0 && ! $hasMarcasInNav) {
+            $seccionesArray[] = [
+                'slug' => 'marcas',
+                'nombre' => 'Marcas',
+                'orden' => $marcasOrden,
+            ];
+        } else {
+            foreach ($seccionesArray as &$sec) {
+                if (in_array(strtolower($sec['slug'] ?? ''), ['marcas', 'marca'])) {
+                    if (isset($estilos['seccion_marcas']['orden']) && $estilos['seccion_marcas']['orden'] !== '') {
+                        $sec['orden'] = (int) $estilos['seccion_marcas']['orden'];
+                    }
+                }
+            }
+            unset($sec);
+        }
+
         usort($seccionesArray, fn ($a, $b) => ($a['orden'] ?? 99) <=> ($b['orden'] ?? 99));
 
         return Inertia::render(self::paginaPlantilla($site->plantilla), [
@@ -370,7 +418,7 @@ class SitePageController extends Controller
                 'tipo' => $pregunta->tipo,
                 'estructura' => $pregunta->estructura ?? 'objeto',
                 'max_items' => $pregunta->max_items,
-                'valor' => self::valorPublico($pregunta->tipo, $respuesta?->valor, $children),
+                'valor' => self::valorPublico($pregunta->tipo, $respuesta?->valor, $children, $preguntas),
                 'enlace' => $respuesta?->enlace,
             ];
 
@@ -388,7 +436,7 @@ class SitePageController extends Controller
         })->values()->toArray();
     }
 
-    public static function valorPublico(string $tipo, mixed $valor, $children = null): mixed
+    public static function valorPublico(string $tipo, mixed $valor, $children = null, $allPreguntas = null): mixed
     {
         if (is_null($valor)) {
             return null;
@@ -406,7 +454,7 @@ class SitePageController extends Controller
                 $valor = array_values($valor);
             }
 
-            return array_values(array_map(function ($item) use ($childrenMap) {
+            return array_values(array_map(function ($item) use ($childrenMap, $allPreguntas) {
                 if (! is_array($item)) {
                     return $item;
                 }
@@ -422,10 +470,14 @@ class SitePageController extends Controller
                     $item = $normalized;
                 }
 
-                // Formatear cada campo del objeto (por ejemplo URLs de imágenes)
+                // Formatear cada campo del objeto descartando sub-campos eliminados de la plantilla
                 $formattedItem = [];
                 foreach ($item as $key => $val) {
                     $childPregunta = $childrenMap[$key] ?? null;
+                    if ($childrenMap->isNotEmpty() && ! $childPregunta) {
+                        continue;
+                    }
+
                     $childTipo = $childPregunta ? $childPregunta->tipo : null;
 
                     if (! $childTipo) {
@@ -437,7 +489,17 @@ class SitePageController extends Controller
                         }
                     }
 
-                    $formattedItem[$key] = self::valorPublico($childTipo, $val);
+                    $subChildren = null;
+                    if ($childPregunta) {
+                        if ($allPreguntas && $allPreguntas->isNotEmpty()) {
+                            $subChildren = $allPreguntas->where('parent_id', $childPregunta->id);
+                        }
+                        if ((! $subChildren || $subChildren->isEmpty()) && $childPregunta->relationLoaded('children') && $childPregunta->children->isNotEmpty()) {
+                            $subChildren = $childPregunta->children;
+                        }
+                    }
+
+                    $formattedItem[$key] = self::valorPublico($childTipo, $val, $subChildren, $allPreguntas);
                 }
 
                 return $formattedItem;
@@ -490,7 +552,7 @@ class SitePageController extends Controller
 
         $site = $this->findSite($dominio, $siteSlug);
 
-        $estilos = array_merge($site->plantilla->estilos ?? [], $site->estilos ?? []);
+        $estilos = array_replace_recursive($site->plantilla->estilos ?? [], $site->estilos ?? []);
         $catalogoConfig = $estilos['catalogo'] ?? [];
 
         if (! empty($catalogoConfig['enlace'])) {

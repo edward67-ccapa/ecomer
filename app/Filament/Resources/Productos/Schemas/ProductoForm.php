@@ -8,6 +8,7 @@ use App\Models\Moneda;
 use App\Models\Producto;
 use App\Models\Subcategoria;
 use App\Models\Talla;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\MultiSelect;
 use Filament\Forms\Components\Repeater;
@@ -72,15 +73,15 @@ class ProductoForm
                                 ->required()
                                 ->unique(ignoreRecord: true)
                                 ->maxLength(255),
-                            Select::make('tiendas')
+                            CheckboxList::make('tiendas')
                                 ->label('Almacenes')
                                 ->relationship('tiendas', 'nombre')
-                                ->multiple()
-                                ->native(false)
-                                ->required()
+                                ->columns(3)
                                 ->searchable()
-                                ->preload()
-                                ->live(),
+                                ->bulkToggleable()
+                                ->required()
+                                ->live()
+                                ->columnSpanFull(),
                             Select::make('marca_id')
                                 ->label('Marca')
                                 ->relationship('marca', 'titulo')

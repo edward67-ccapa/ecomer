@@ -217,6 +217,21 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
             list.push({ slug: 'catalogo', nombre: catalogoTitulo, isCatalogo: true, orden: catOrden });
         }
 
+        const marcasOrden = estilos?.seccion_marcas?.orden !== undefined && estilos?.seccion_marcas?.orden !== ''
+            ? Number(estilos.seccion_marcas.orden)
+            : 5;
+
+        const hasMarcasInList = list.some((s) => {
+            const slug = (s.slug || '').toLowerCase();
+            return slug === 'marcas' || slug === 'marca';
+        });
+
+        const hasMarcasData = Array.isArray(marcasSitio) && marcasSitio.length > 0;
+
+        if (hasMarcasData && !hasMarcasInList) {
+            list.push({ slug: 'marcas', nombre: 'Marcas', orden: marcasOrden });
+        }
+
         list = list.map((s) => {
             const slug = (s.slug || '').toLowerCase();
             if (slug === 'productos' || slug === 'tienda' || slug === 'tiendas') {
@@ -228,13 +243,16 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
             if (slug === 'catalogo') {
                 return { ...s, isCatalogo: true, orden: estilos?.catalogo?.orden !== undefined && estilos?.catalogo?.orden !== '' ? Number(estilos.catalogo.orden) : (s.orden ?? 4) };
             }
+            if (slug === 'marcas' || slug === 'marca') {
+                return { ...s, orden: estilos?.seccion_marcas?.orden !== undefined && estilos?.seccion_marcas?.orden !== '' ? Number(estilos.seccion_marcas.orden) : (s.orden ?? 5) };
+            }
             return { ...s, orden: s.orden ?? 99 };
         });
 
         list.sort((a, b) => Number(a.orden ?? 99) - Number(b.orden ?? 99));
 
         return list;
-    }, [secciones, hasStore, serviciosSitio, estilos, isCatalogoActivo, catalogoTitulo]);
+    }, [secciones, hasStore, serviciosSitio, marcasSitio, estilos, isCatalogoActivo, catalogoTitulo]);
 
     const getDisplayName = (seccion) => {
         const slugLower = (seccion?.slug || '').toLowerCase().trim();
@@ -399,17 +417,16 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
     }, [activeHoverMarca, marcasArbol]);
 
     // --- STYLES BASED ON SCROLL ---
-    const activeSlug = (seccionActiva?.slug || '').toLowerCase();
-    const activeNombre = (seccionActiva?.nombre || '').toLowerCase();
+    const activeSlug = (seccionActiva?.slug || '').toLowerCase().trim();
+    const activeNombre = (seccionActiva?.nombre || '').toLowerCase().trim();
+    const transparentSections = ['inicio', 'hero', 'nav', 'nosotros', 'sobre-nosotros', 'servicios', 'servicio', 'contacto', 'contactos', ''];
+    const transparentNames = ['inicio', 'hero', 'nosotros', 'sobre nosotros', 'servicios', 'servicio', 'contacto', 'contactos'];
+
     const isHeroPage =
         !esDetalleProducto &&
         (!seccionActiva ||
-            activeSlug === 'inicio' ||
-            activeSlug === 'hero' ||
-            activeSlug === 'nav' ||
-            activeNombre === 'inicio' ||
-            activeNombre === 'hero' ||
-            activeSlug === '');
+            transparentSections.includes(activeSlug) ||
+            transparentNames.includes(activeNombre));
     const isTransparentMode = isHeroPage && !isScrolled;
 
     const headerBg = isTransparentMode

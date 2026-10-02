@@ -34,7 +34,7 @@ export function useNosotrosData(seccion, seccionesData) {
             (item) => item.label?.toLowerCase() === label.toLowerCase()
         );
     };
-
+    console.log(nosotros)
     const portada = useMemo(() => getItem('portada'), [nosotros]);
     const historia = useMemo(() => getItem('historia'), [nosotros]);
     const misionVision = useMemo(() => getItem('mision/vision') || getItem('misionvision') || getItem('mision_vision'), [nosotros]);

@@ -173,6 +173,10 @@ export default function SectionProductoDetalle({
     const stockVal = producto.stock !== null && producto.stock !== undefined ? Number(producto.stock) : null;
     const stockTexto = producto.cantidad ? String(producto.cantidad).trim() : null;
 
+    const almacenesTexto = producto.almacen
+        || (Array.isArray(producto.almacenes) && producto.almacenes.length > 0 ? producto.almacenes.map(a => a.nombre).join(', ') : null)
+        || (Array.isArray(producto.tiendas) && producto.tiendas.length > 0 ? producto.tiendas.map(t => t.nombre || t.titulo).join(', ') : null);
+
     // Galería combinada (imagen principal, adicionales y variantes)
     const imagenesGaleria = [
         producto.imagen,
@@ -469,10 +473,16 @@ export default function SectionProductoDetalle({
                         <div>
                             {/* Marca / Tienda, Liquidación y Calificación */}
                             <div className="flex items-center justify-between gap-2 mb-2">
-                                <div className="flex items-center gap-2">
+                                <div className="flex items-center gap-2 flex-wrap">
                                     <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
                                         {site.nombre || 'Tienda Oficial'}
                                     </span>
+                                    {almacenesTexto && (
+                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200 shadow-2xs">
+                                            <DynamicIcon name="FaStore" className="h-3 w-3 text-[var(--color-primario)]" />
+                                            <span>Almacén: {almacenesTexto}</span>
+                                        </span>
+                                    )}
                                     {esLiquidacion && (
                                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500 text-white shadow-2xs">
                                             🏷️ Liquidación
@@ -724,6 +734,18 @@ export default function SectionProductoDetalle({
 
                             {/* Beneficios de Despacho y Entrega */}
                             <div className="border-t border-gray-100 pt-4 space-y-2.5 text-xs text-gray-600">
+                                {almacenesTexto && (
+                                    <div className="flex items-center gap-3">
+                                        <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-sm shrink-0 border border-slate-200">
+                                            🏭
+                                        </span>
+                                        <div>
+                                            <p className="font-semibold text-gray-800">Almacén / Tienda de Origen</p>
+                                            <p className="text-[11px] font-bold text-gray-900">{almacenesTexto}</p>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="flex items-center gap-3">
                                     <span className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm shrink-0">
                                         🚚

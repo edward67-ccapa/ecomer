@@ -66,12 +66,74 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
         const titulo = data?.Titulo || data?.titulo || (typeof directTitulo === 'string' ? directTitulo : null) || 'Contacto';
         const descripcion = data?.Descripcion || data?.descripcion || (typeof directDesc === 'string' ? directDesc : null) || 'Ponte en contacto con nosotros. Envíanos tu mensaje o consulta y te responderemos a la brevedad.';
 
+        const extractUrl = (val) => {
+            if (!val) return null;
+            if (typeof val === 'string') return val.trim();
+            if (Array.isArray(val)) {
+                if (val.length === 0) return null;
+                const first = val[0];
+                return typeof first === 'string' ? first.trim() : extractUrl(first);
+            }
+            if (typeof val === 'object' && val !== null) {
+                const possibleUrl = val.url || val.src || val.path || val.Imagen || val.imagen || Object.values(val)[0];
+                return extractUrl(possibleUrl);
+            }
+            return null;
+        };
+
+        const getResponsiveFromObj = (obj) => {
+            if (!obj || typeof obj !== 'object') return null;
+            const pc = extractUrl(obj.Imagen_pc || obj.imagen_pc || obj.pc || obj.Imagen_PC || obj.imagen_desktop);
+            const tablet = extractUrl(obj.Imagen_tablet || obj.imagen_tablet || obj.tablet || obj.Imagen_Tablet);
+            const cel = extractUrl(obj.Imagen_cel || obj.imagen_cel || obj.cel || obj.Imagen_Cel || obj.imagen_mobile);
+            if (pc || tablet || cel) {
+                return { pc, tablet, cel };
+            }
+            return null;
+        };
+
         const directImgItem = contacto?.contenido?.find((c) => {
             const l = (c.label || '').toLowerCase();
-            return l === 'imagen' || l === 'foto' || l === 'portada' || l === 'banner' || c.tipo === 'imagen';
+            return l === 'imagen' || l === 'imagenes' || l === 'imagens' || l === 'foto' || l === 'portada' || l === 'banner' || c.tipo === 'imagen' || c.tipo === 'grupo';
         });
         const directImgVal = directImgItem?.valor;
-        const imagenDirecta = Array.isArray(directImgVal) ? directImgVal[0] : (typeof directImgVal === 'string' ? directImgVal : null);
+
+        const rawImagenes = data?.Imagenes || data?.imagenes || data?.Imagens || data?.imagens || directImgVal;
+        let responsiveImg = null;
+        if (Array.isArray(rawImagenes) && rawImagenes.length > 0) {
+            const firstSlide = rawImagenes[0];
+            if (typeof firstSlide === 'object' && firstSlide !== null) {
+                responsiveImg = getResponsiveFromObj(firstSlide);
+            }
+            if (!responsiveImg) {
+                const singleUrl = extractUrl(rawImagenes);
+                if (singleUrl) {
+                    responsiveImg = { pc: singleUrl, tablet: singleUrl, cel: singleUrl };
+                }
+            }
+        } else if (rawImagenes && typeof rawImagenes === 'object') {
+            responsiveImg = getResponsiveFromObj(rawImagenes);
+        }
+
+        if (!responsiveImg) {
+            responsiveImg = getResponsiveFromObj(data);
+        }
+
+        const fallbackImg = extractUrl(
+            data?.Imagen ||
+            data?.imagen ||
+            data?.Imagenes ||
+            data?.imagenes ||
+            data?.Imagens ||
+            data?.imagens ||
+            data?.Foto ||
+            data?.foto ||
+            directImgVal ||
+            seccion?.imagen ||
+            site?.imagen
+        );
+
+        const imagenHero = responsiveImg?.cel || responsiveImg?.tablet || responsiveImg?.pc || fallbackImg || 'https://images.unsplash.com/photo-1423666639041-f56000c27a9a?q=80&w=1600&auto=format&fit=crop';
 
         const direccion = estilos?.direccion
             || site?.estilos?.direccion
@@ -105,15 +167,6 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
             url: r.Texto || r.texto || '#'
         }));
 
-        const imagenHero = data?.Imagen
-            || data?.imagen
-            || data?.Foto
-            || data?.foto
-            || imagenDirecta
-            || seccion?.imagen
-            || site?.imagen
-            || 'https://images.unsplash.com/photo-1423666639041-f56000c27a9a?q=80&w=1600&auto=format&fit=crop';
-
         const globalActions = Array.isArray(estilos?.acciones_nav)
             ? estilos.acciones_nav
             : (Array.isArray(site?.estilos?.acciones_nav) ? site.estilos.acciones_nav : []);
@@ -145,6 +198,7 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
             mapaUrlConfig,
             redesFinales,
             imagenHero,
+            responsiveImg,
             globalActions,
             waNum,
             cuentasPago,
@@ -159,6 +213,7 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
         mapaUrlConfig,
         redesFinales,
         imagenHero,
+        responsiveImg,
         globalActions,
         waNum,
     } = memoData;
@@ -229,20 +284,24 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
             <section className="relative h-[80vh] min-h-[500px] w-full overflow-hidden bg-slate-950 flex items-center">
                 {imagenHero && (
                     <div className="absolute inset-0 z-0 h-full w-full">
-                        <img
-                            src={imagenHero}
-                            alt={titulo}
-                            fetchPriority="high"
-                            decoding="async"
-                            loading="eager"
-                            className="h-full w-full object-cover brightness-90"
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'cover',
-                                objectPosition: 'center bottom',
-                            }}
-                        />
+                        <picture className="h-full w-full block">
+                            {responsiveImg?.pc && <source media="(min-width: 1024px)" srcSet={responsiveImg.pc} />}
+                            {responsiveImg?.tablet && <source media="(min-width: 640px)" srcSet={responsiveImg.tablet} />}
+                            <img
+                                src={responsiveImg?.cel || responsiveImg?.tablet || responsiveImg?.pc || imagenHero}
+                                alt={titulo}
+                                fetchPriority="high"
+                                decoding="async"
+                                loading="eager"
+                                className="h-full w-full object-cover brightness-90"
+                                style={{
+                                    width: '100%',
+                                    height: '100%',
+                                    objectFit: 'cover',
+                                    objectPosition: 'center bottom',
+                                }}
+                            />
+                        </picture>
                     </div>
                 )}
 

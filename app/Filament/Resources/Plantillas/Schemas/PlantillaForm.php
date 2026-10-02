@@ -182,12 +182,18 @@ class PlantillaForm
                                                     ->icon('heroicon-o-tag')
                                                     ->collapsible()
                                                     ->schema([
-                                                        CheckboxList::make('marcas')
-                                                            ->label('Marcas asociadas')
-                                                            ->relationship('marcas', 'titulo')
-                                                            ->columns(3)
-                                                            ->searchable()
-                                                            ->bulkToggleable(),
+                                                        Grid::make(2)->schema([
+                                                            CheckboxList::make('marcas')
+                                                                ->label('Marcas asociadas')
+                                                                ->relationship('marcas', 'titulo')
+                                                                ->columns(3)
+                                                                ->searchable()
+                                                                ->bulkToggleable(),
+                                                            TextInput::make('estilos.seccion_marcas.orden')
+                                                                ->label('Orden en el Menú')
+                                                                ->numeric()
+                                                                ->placeholder('Ej: 5'),
+                                                        ]),
                                                     ])
                                                     ->columnSpanFull(),
 
@@ -622,7 +628,12 @@ class PlantillaForm
                                             default => TextInput::make($gcPath),
                                         };
 
-                                        return $gcField->label($grandChild->label);
+                                        $gcField = $gcField->label($grandChild->label);
+                                        if ($grandChild->ayuda) {
+                                            $gcField->helperText($grandChild->ayuda);
+                                        }
+
+                                        return $gcField->required((bool) $grandChild->requerida);
                                     })->all();
                                 })
                                 ->label($child->label)
@@ -630,7 +641,12 @@ class PlantillaForm
                                 ->defaultItems($child->estructura === 'objeto' ? 1 : 0)
                                 ->minItems(($child->estructura === 'objeto' && $child->requerida) ? 1 : 0)
                                 ->maxItems($child->estructura === 'objeto' ? 1 : $child->max_items)
-                                ->deletable($child->estructura === 'array')
+                                ->validationMessages([
+                                    'max_items' => 'El campo :attribute no puede tener más de :max elementos.',
+                                    'min_items' => 'El campo :attribute debe tener al menos :min elementos.',
+                                ])
+                                ->addable(true)
+                                ->deletable(true)
                                 ->reorderable($child->estructura === 'array')
                                 ->addActionLabel('+ Agregar '.$child->label)
                                 ->collapsible(),
@@ -638,22 +654,35 @@ class PlantillaForm
                             default => $child->estructura === 'array' ? TagsInput::make($childPath) : TextInput::make($childPath),
                         };
 
-                        // Los sub-Repeaters (tipo grupo) ya tienen ->label() aplicado arriba
-                        return $child->tipo === 'grupo' ? $subField : $subField->label($child->label);
+                        if ($child->tipo !== 'grupo') {
+                            $subField->label($child->label);
+                        }
+                        if ($child->ayuda) {
+                            $subField->helperText($child->ayuda);
+                        }
+
+                        return $subField->required((bool) $child->requerida);
                     })->all();
                 })
                 ->itemLabel(fn (array $state): ?string => $state['nombre'] ?? $state['titulo'] ?? $state['label'] ?? null)
                 ->defaultItems($pregunta->estructura === 'objeto' ? 1 : 0)
                 ->minItems(($pregunta->estructura === 'objeto' && $pregunta->requerida) ? 1 : 0)
                 ->maxItems($pregunta->estructura === 'objeto' ? 1 : $pregunta->max_items)
-                ->deletable($pregunta->estructura === 'array')
+                ->validationMessages([
+                    'max_items' => 'El campo :attribute no puede tener más de :max elementos.',
+                    'min_items' => 'El campo :attribute debe tener al menos :min elementos.',
+                ])
+                ->addable(true)
+                ->deletable(true)
                 ->reorderable($pregunta->estructura === 'array')
+                ->addActionLabel('+ Agregar '.$pregunta->label)
                 ->collapsible(),
 
             default => $pregunta->estructura === 'array'
                 ? TagsInput::make($statePath)
                     ->placeholder('Escribe y presiona Enter para agregar...')
                     ->helperText('Puedes agregar múltiples elementos de texto.')
+                    ->required((bool) $pregunta->requerida)
                 : TextInput::make($statePath)
                     ->placeholder('Ingresa el valor...'),
         };
@@ -662,7 +691,7 @@ class PlantillaForm
         $field = $field
             ->label($pregunta->label)
             ->helperText($pregunta->ayuda)
-            ->required($pregunta->requerida);
+            ->required((bool) $pregunta->requerida);
 
         if ($pregunta->tipo === 'enlace' || ($pregunta->tipo === 'grupo' && $pregunta->estructura === 'array')) {
             return $field;

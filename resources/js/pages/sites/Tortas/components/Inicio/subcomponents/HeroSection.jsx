@@ -4,14 +4,64 @@ import DynamicIcon from '@/components/DynamicIcon';
 export default function HeroSection({ seccionData }) {
     if (!seccionData) return null;
 
-    const getValor = (label) => seccionData?.contenido?.find((item) => item.label === label)?.valor;
+    const getValor = (label) => seccionData?.contenido?.find((item) => item.label?.toLowerCase() === label.toLowerCase())?.valor;
+
+    const extractUrl = (val) => {
+        if (!val) return null;
+        if (typeof val === 'string') return val.trim();
+        if (Array.isArray(val)) {
+            const first = val[0];
+            return typeof first === 'string' ? first.trim() : extractUrl(first);
+        }
+        if (typeof val === 'object' && val !== null) {
+            return extractUrl(Object.values(val)[0]);
+        }
+        return null;
+    };
+
+    const rawImgGroup = getValor('imagenes') || getValor('img_seccion1') || getValor('imagen') || getValor('Imagen');
+    
+    let slides = [];
+    if (Array.isArray(rawImgGroup)) {
+        slides = rawImgGroup.map((item) => {
+            if (typeof item === 'string' && item.trim()) {
+                const url = item.trim();
+                return { pc: url, tablet: url, cel: url };
+            }
+            if (typeof item === 'object' && item !== null) {
+                const pc = extractUrl(item.Imagen_pc || item.imagen_pc || item.pc || item.imagen);
+                const tablet = extractUrl(item.Imagen_tablet || item.imagen_tablet || item.tablet || pc);
+                const cel = extractUrl(item.Imagen_cel || item.imagen_cel || item.cel || tablet || pc);
+                if (pc || tablet || cel) {
+                    return { pc, tablet, cel };
+                }
+            }
+            return null;
+        }).filter(Boolean);
+    } else if (rawImgGroup && typeof rawImgGroup === 'object') {
+        const pc = extractUrl(rawImgGroup.Imagen_pc || rawImgGroup.imagen_pc || rawImgGroup.pc);
+        const tablet = extractUrl(rawImgGroup.Imagen_tablet || rawImgGroup.imagen_tablet || rawImgGroup.tablet || pc);
+        const cel = extractUrl(rawImgGroup.Imagen_cel || rawImgGroup.imagen_cel || rawImgGroup.cel || tablet || pc);
+        if (pc || tablet || cel) {
+            slides = [{ pc, tablet, cel }];
+        }
+    } else if (typeof rawImgGroup === 'string' && rawImgGroup.trim()) {
+        const url = rawImgGroup.trim();
+        slides = [{ pc: url, tablet: url, cel: url }];
+    }
 
     const tituloHero = getValor('titulo_seccion1') || getValor('titulo');
-    const descripcionHero = getValor('descripcion_seccion1') || getValor('descripción') || getValor('descripcion');
-    const imgHero = getValor('img_seccion1') || getValor('imagen');
-    const botones = getValor('buton') || getValor('boton') || [];
+    const descripcionHero = getValor('descripcion_seccion1') || getValor('descripción') || getValor('descripcion') || getValor('subtitulo');
+    const rawBotones = getValor('buton') || getValor('boton') || getValor('botones') || [];
     const etiquetas = getValor('etiqueta') || [];
     const whatsappUrl = getValor('whatsapp_url') || 'https://wa.me/51999999999';
+
+    let botones = [];
+    if (Array.isArray(rawBotones)) {
+        botones = rawBotones;
+    } else if (typeof rawBotones === 'string' && rawBotones.trim()) {
+        botones = [{ texto: rawBotones.trim(), enlace: whatsappUrl }];
+    }
 
     const renderIcon = (iconName, className = 'h-8 w-8', customStyle = null) => {
         if (!iconName) return null;
@@ -42,22 +92,39 @@ export default function HeroSection({ seccionData }) {
         });
     };
 
+    const renderResponsiveImage = (slide, idx = 0) => {
+        const fallbackUrl = slide.cel || slide.tablet || slide.pc;
+        if (!fallbackUrl) return null;
+
+        return (
+            <picture className="h-full w-full block">
+                {slide.pc && <source media="(min-width: 1024px)" srcSet={slide.pc} />}
+                {slide.tablet && <source media="(min-width: 640px)" srcSet={slide.tablet} />}
+                <img
+                    src={fallbackUrl}
+                    alt={`Hero slide ${idx + 1}`}
+                    fetchPriority={idx === 0 ? "high" : "low"}
+                    decoding="async"
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    className="absolute inset-0 h-full w-full object-cover"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom' }}
+                />
+            </picture>
+        );
+    };
+
     return (
         <section id="inicio" className="scroll-mt-10 relative min-h-[480px] sm:min-h-[580px] lg:min-h-[90vh] overflow-hidden">
-            {imgHero && (
+            {slides.length > 0 && (
                 <>
-                    <motion.img
-                        initial={{ scale: 1.1 }}
+                    <motion.div
+                        initial={{ scale: 1.05 }}
                         animate={{ scale: 1 }}
                         transition={{ duration: 0.8 }}
-                        src={imgHero}
-                        alt="Hero background"
-                        fetchPriority="high"
-                        decoding="async"
-                        loading="eager"
-                        className="absolute inset-0 h-full w-full object-cover"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'bottom' }}
-                    />
+                        className="absolute inset-0 h-full w-full"
+                    >
+                        {renderResponsiveImage(slides[0], 0)}
+                    </motion.div>
                     <div className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/60 to-transparent" />
                 </>
             )}

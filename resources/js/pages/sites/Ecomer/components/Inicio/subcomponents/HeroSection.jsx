@@ -23,11 +23,49 @@ export default function HeroSection({ seccionData }) {
         getValor('descripcion') ||
         getValor('subtitulo') ||
         getValor('sub_titulo');
-    const rawImg = getValor('img_seccion1') || getValor('imagen') || getValor('Imagen');
-    const imagesList = Array.isArray(rawImg)
-        ? rawImg.filter((url) => typeof url === 'string' && url.trim().length > 0)
-        : (typeof rawImg === 'string' && rawImg.trim() ? [rawImg.trim()] : []);
-    const imgHero = imagesList[0] || null;
+    const extractUrl = (val) => {
+        if (!val) return null;
+        if (typeof val === 'string') return val.trim();
+        if (Array.isArray(val)) {
+            const first = val[0];
+            return typeof first === 'string' ? first.trim() : extractUrl(first);
+        }
+        if (typeof val === 'object' && val !== null) {
+            return extractUrl(Object.values(val)[0]);
+        }
+        return null;
+    };
+
+    const rawImgGroup = getValor('imagenes') || getValor('img_seccion1') || getValor('imagen') || getValor('Imagen');
+    
+    let slides = [];
+    if (Array.isArray(rawImgGroup)) {
+        slides = rawImgGroup.map((item) => {
+            if (typeof item === 'string' && item.trim()) {
+                const url = item.trim();
+                return { pc: url, tablet: url, cel: url };
+            }
+            if (typeof item === 'object' && item !== null) {
+                const pc = extractUrl(item.Imagen_pc || item.imagen_pc || item.pc || item.imagen);
+                const tablet = extractUrl(item.Imagen_tablet || item.imagen_tablet || item.tablet || pc);
+                const cel = extractUrl(item.Imagen_cel || item.imagen_cel || item.cel || tablet || pc);
+                if (pc || tablet || cel) {
+                    return { pc, tablet, cel };
+                }
+            }
+            return null;
+        }).filter(Boolean);
+    } else if (rawImgGroup && typeof rawImgGroup === 'object') {
+        const pc = extractUrl(rawImgGroup.Imagen_pc || rawImgGroup.imagen_pc || rawImgGroup.pc);
+        const tablet = extractUrl(rawImgGroup.Imagen_tablet || rawImgGroup.imagen_tablet || rawImgGroup.tablet || pc);
+        const cel = extractUrl(rawImgGroup.Imagen_cel || rawImgGroup.imagen_cel || rawImgGroup.cel || tablet || pc);
+        if (pc || tablet || cel) {
+            slides = [{ pc, tablet, cel }];
+        }
+    } else if (typeof rawImgGroup === 'string' && rawImgGroup.trim()) {
+        const url = rawImgGroup.trim();
+        slides = [{ pc: url, tablet: url, cel: url }];
+    }
 
     const botonItem = getItem('buton') || getItem('boton') || getItem('botones');
     const rawBotones = botonItem?.valor ?? [];
@@ -107,11 +145,32 @@ export default function HeroSection({ seccionData }) {
         });
     };
 
+    const renderResponsiveImage = (slide, idx = 0) => {
+        const fallbackUrl = slide.cel || slide.tablet || slide.pc;
+        if (!fallbackUrl) return null;
+
+        return (
+            <picture className="h-full w-full block">
+                {slide.pc && <source media="(min-width: 1024px)" srcSet={slide.pc} />}
+                {slide.tablet && <source media="(min-width: 640px)" srcSet={slide.tablet} />}
+                <img
+                    src={fallbackUrl}
+                    alt={`Hero slide ${idx + 1}`}
+                    fetchPriority={idx === 0 ? "high" : "low"}
+                    decoding="async"
+                    loading={idx === 0 ? "eager" : "lazy"}
+                    className="h-full w-full object-cover brightness-105"
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom' }}
+                />
+            </picture>
+        );
+    };
+
     return (
         <section id="inicio" className="scroll-mt-10 relative h-[100vh] min-h-[100vh] w-full flex items-center overflow-hidden bg-slate-950">
             {/* Contenedor de fondo para imágenes / carrusel */}
             <div className="absolute inset-0 h-full w-full overflow-hidden z-0">
-                {imagesList.length > 1 ? (
+                {slides.length > 1 ? (
                     <Swiper
                         modules={[Autoplay, Pagination, EffectFade]}
                         effect="fade"
@@ -122,33 +181,21 @@ export default function HeroSection({ seccionData }) {
                         className="hero-swiper h-full w-full"
                         style={{ height: '100%', width: '100%' }}
                     >
-                        {imagesList.map((imgUrl, idx) => (
+                        {slides.map((slide, idx) => (
                             <SwiperSlide key={idx} className="relative h-full w-full overflow-hidden bg-slate-950" style={{ height: '100%', width: '100%' }}>
-                                <img
-                                    src={imgUrl}
-                                    alt={`Hero slide ${idx + 1}`}
-                                    fetchPriority={idx === 0 ? "high" : "low"}
-                                    decoding="async"
-                                    loading={idx === 0 ? "eager" : "lazy"}
-                                    className="h-full w-full object-cover brightness-105"
-                                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom' }}
-                                />
+                                {renderResponsiveImage(slide, idx)}
                             </SwiperSlide>
                         ))}
                     </Swiper>
-                ) : imgHero ? (
-                    <motion.img
+                ) : slides.length === 1 ? (
+                    <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.6, ease: 'easeOut' }}
-                        src={imgHero}
-                        alt="Hero background"
-                        fetchPriority="high"
-                        decoding="async"
-                        loading="eager"
-                        className="h-full w-full object-cover brightness-105"
-                        style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom' }}
-                    />
+                        className="h-full w-full"
+                    >
+                        {renderResponsiveImage(slides[0], 0)}
+                    </motion.div>
                 ) : null}
 
                 <style>{`

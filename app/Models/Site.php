@@ -84,6 +84,23 @@ class Site extends Model
     }
 
     /**
+     * Obtiene los estilos deserializando de forma segura si están en formato string JSON.
+     */
+    public function getEstilosAttribute(mixed $value): array
+    {
+        if (is_string($value)) {
+            $decoded = json_decode($value, true);
+            if (json_last_error() === JSON_ERROR_NONE) {
+                if (is_string($decoded)) {
+                    $decoded = json_decode($decoded, true);
+                }
+                return is_array($decoded) ? $decoded : [];
+            }
+        }
+        return is_array($value) ? $value : [];
+    }
+
+    /**
      * Guarda los estilos descartando claves vacías.
      */
     public function setEstilosAttribute(mixed $value): void
@@ -96,7 +113,6 @@ class Site extends Model
         }
 
         if (is_array($value)) {
-            $value = array_filter($value, static fn (mixed $item): bool => $item !== null);
             $this->attributes['estilos'] = json_encode($value);
         } else {
             $this->attributes['estilos'] = $value;

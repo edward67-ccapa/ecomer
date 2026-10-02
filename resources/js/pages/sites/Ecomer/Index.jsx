@@ -9,6 +9,7 @@ import SectionServicios from './components/Servicios/SectionServicios';
 import SectionNosotros from './components/Nosotros/SectionNosotros';
 import SectionContacto from './components/Contacto/SectionContacto';
 import SectionProductoDetalle from './components/Productos/SectionProductoDetalle';
+import LegalPage from '@/components/LegalPage';
 
 export default function Ecomer({
     site,
@@ -199,7 +200,15 @@ export default function Ecomer({
                     esDetalleProducto={Boolean(productoSeleccionado)}
                 />
 
-                {productoSeleccionado ? (
+                {seccionActiva?.is_legal ? (
+                    <LegalPage
+                        site={site}
+                        dominio={dominio}
+                        siteSlug={siteSlug}
+                        legalType={seccionActiva.legal_type || 'terminos'}
+                        estilos={estilos}
+                    />
+                ) : productoSeleccionado ? (
                     <SectionProductoDetalle
                         producto={productoSeleccionado}
                         onVolver={() => handleSeleccionarProducto(null)}
