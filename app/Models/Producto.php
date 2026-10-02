@@ -48,7 +48,12 @@ class Producto extends Model
 
     public function tiendas(): BelongsToMany
     {
-        return $this->belongsToMany(Tienda::class)->withTimestamps();
+        return $this->belongsToMany(Tienda::class)->withPivot('stock')->withTimestamps();
+    }
+
+    public function productoTiendas(): HasMany
+    {
+        return $this->hasMany(ProductoTienda::class);
     }
 
     /**

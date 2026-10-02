@@ -71,6 +71,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
     const [mobileSubmenuOpen, setMobileSubmenuOpen] = useState(false);
+    const [mobileMarcasSubmenuOpen, setMobileMarcasSubmenuOpen] = useState(false);
 
     // --- CATÁLOGO DE PRODUCTOS CONFIGURATION ---
     const { url: currentUrl } = usePage();
@@ -97,8 +98,13 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
     const [activeHoverMarca, setActiveHoverMarca] = useState(null);
     const hoverTimeoutRef = useRef(null);
 
-    const handleMouseEnterMega = () => {
+    const handleMouseEnterMega = (tab = null) => {
         if (hoverTimeoutRef.current) clearTimeout(hoverTimeoutRef.current);
+        if (tab && typeof tab === 'string') {
+            setMegaMenuTab(tab);
+            setActiveHoverCategory(null);
+            setActiveHoverMarca(null);
+        }
         setIsMegaMenuOpen(true);
     };
 
@@ -692,9 +698,9 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 if (isProductos) {
                                     return (
                                         <div
-                                            key={seccion.slug}
+                                            key={seccion.slug || 'productos'}
                                             className="relative"
-                                            onMouseEnter={handleMouseEnterMega}
+                                            onMouseEnter={() => handleMouseEnterMega('categorias')}
                                             onMouseLeave={handleMouseLeaveMega}
                                         >
                                             <Link
@@ -705,7 +711,32 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                 <span>{displayName}</span>
                                                 <DynamicIcon
                                                     name="FaChevronDown"
-                                                    className={`h-3 w-3 transition-transform duration-300 ${isMegaMenuOpen ? 'rotate-180 text-white' : 'opacity-70'
+                                                    className={`h-3 w-3 transition-transform duration-300 ${isMegaMenuOpen && megaMenuTab === 'categorias' ? 'rotate-180 text-white' : 'opacity-70'
+                                                        }`}
+                                                />
+                                            </Link>
+                                        </div>
+                                    );
+                                }
+
+                                const isMarcas = slugLower === 'marcas' || slugLower === 'marca';
+                                if (isMarcas && marcasArbol.length > 0) {
+                                    return (
+                                        <div
+                                            key={seccion.slug || 'marcas'}
+                                            className="relative"
+                                            onMouseEnter={() => handleMouseEnterMega('marcas')}
+                                            onMouseLeave={handleMouseLeaveMega}
+                                        >
+                                            <Link
+                                                href={getProductosUrl(null, null)}
+                                                className={`inline-flex items-center gap-1.5 ${linkClasses}`}
+                                                style={activeStyle}
+                                            >
+                                                <span>{displayName}</span>
+                                                <DynamicIcon
+                                                    name="FaChevronDown"
+                                                    className={`h-3 w-3 transition-transform duration-300 ${isMegaMenuOpen && megaMenuTab === 'marcas' ? 'rotate-180 text-white' : 'opacity-70'
                                                         }`}
                                                 />
                                             </Link>
@@ -1490,6 +1521,54 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                             </div>
                                                         </div>
                                                     )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                }
+
+                                if (isMarcas && marcasArbol.length > 0) {
+                                    return (
+                                        <div key={seccion.slug || 'marcas'} className="space-y-1">
+                                            <div className="flex items-center justify-between">
+                                                <Link
+                                                    href={getProductosUrl(null, null)}
+                                                    onClick={() => setMobileMenuOpen(false)}
+                                                    className={`${linkClasses} flex-1`}
+                                                    style={activeStyle}
+                                                >
+                                                    {displayName}
+                                                </Link>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setMobileMarcasSubmenuOpen(!mobileMarcasSubmenuOpen)}
+                                                    className="p-2 text-gray-500 hover:text-gray-900 cursor-pointer"
+                                                >
+                                                    <DynamicIcon name="FaChevronDown" className={`h-4 w-4 transition-transform ${mobileMarcasSubmenuOpen ? 'rotate-180' : ''}`} />
+                                                </button>
+                                            </div>
+                                            {mobileMarcasSubmenuOpen && (
+                                                <div className="pl-4 space-y-2 border-l-2 border-[var(--color-primario)]/30 ml-2 my-1.5 pt-1">
+                                                    <div className="grid grid-cols-2 gap-2">
+                                                        {marcasArbol.map((m) => (
+                                                            <Link
+                                                                key={m.nombre}
+                                                                href={getMarcaUrl(m.nombre)}
+                                                                onClick={() => setMobileMenuOpen(false)}
+                                                                className="flex items-center gap-2 text-xs font-semibold text-gray-800 hover:text-[var(--color-primario)] p-2 rounded-xl bg-gray-50 border border-gray-100 hover:bg-white transition shadow-2xs"
+                                                            >
+                                                                {m.imagen ? (
+                                                                    <img src={m.imagen} alt={m.nombre} className="h-6 w-6 object-contain rounded-lg shrink-0 bg-white p-0.5 border border-gray-200" />
+                                                                ) : (
+                                                                    <DynamicIcon name="FaTag" className="h-4 w-4 text-[var(--color-primario)] shrink-0" />
+                                                                )}
+                                                                <div className="min-w-0 flex-1">
+                                                                    <span className="truncate block font-bold text-gray-900">{m.nombre}</span>
+                                                                    {m.count > 0 && <span className="text-[10px] text-gray-400 block">{m.count} productos</span>}
+                                                                </div>
+                                                            </Link>
+                                                        ))}
+                                                    </div>
                                                 </div>
                                             )}
                                         </div>

@@ -174,8 +174,8 @@ export default function SectionProductoDetalle({
     const stockTexto = producto.cantidad ? String(producto.cantidad).trim() : null;
 
     const almacenesTexto = producto.almacen
-        || (Array.isArray(producto.almacenes) && producto.almacenes.length > 0 ? producto.almacenes.map(a => a.nombre).join(', ') : null)
-        || (Array.isArray(producto.tiendas) && producto.tiendas.length > 0 ? producto.tiendas.map(t => t.nombre || t.titulo).join(', ') : null);
+        || (Array.isArray(producto.almacenes) && producto.almacenes.length > 0 ? producto.almacenes.map(a => a.nombre + (a.stock !== null && a.stock !== undefined ? ` (${a.stock} disp.)` : '')).join(', ') : null)
+        || (Array.isArray(producto.tiendas) && producto.tiendas.length > 0 ? producto.tiendas.map(t => (t.nombre || t.titulo) + (t.stock !== null && t.stock !== undefined ? ` (${t.stock} disp.)` : '')).join(', ') : null);
 
     // Galería combinada (imagen principal, adicionales y variantes)
     const imagenesGaleria = [

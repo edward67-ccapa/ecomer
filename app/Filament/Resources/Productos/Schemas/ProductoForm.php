@@ -28,6 +28,14 @@ class ProductoForm
     public static function tieneMoneda(Get $get, ?Producto $record, string $codigoIso): bool
     {
         $tiendaIds = (array) ($get('tiendas') ?? []);
+        if (empty($tiendaIds)) {
+            $pts = (array) ($get('productoTiendas') ?? []);
+            foreach ($pts as $pt) {
+                if (! empty($pt['tienda_id'])) {
+                    $tiendaIds[] = $pt['tienda_id'];
+                }
+            }
+        }
         if (empty($tiendaIds) && $record) {
             $tiendaIds = $record->tiendas->pluck('id')->all();
         }
@@ -73,15 +81,32 @@ class ProductoForm
                                 ->required()
                                 ->unique(ignoreRecord: true)
                                 ->maxLength(255),
-                            CheckboxList::make('tiendas')
-                                ->label('Almacenes')
-                                ->relationship('tiendas', 'nombre')
-                                ->columns(3)
-                                ->searchable()
-                                ->bulkToggleable()
-                                ->required()
-                                ->live()
-                                ->columnSpanFull(),
+                            Repeater::make('productoTiendas')
+                                ->label('Almacenes y Stock por Almacén')
+                                ->relationship('productoTiendas')
+                                ->schema([
+                                    Grid::make(2)->schema([
+                                        Select::make('tienda_id')
+                                            ->label('Almacén')
+                                            ->relationship('tienda', 'nombre')
+                                            ->required()
+                                            ->distinct()
+                                            ->searchable()
+                                            ->preload()
+                                            ->live(),
+                                        TextInput::make('stock')
+                                            ->label('Stock en este almacén')
+                                            ->numeric()
+                                            ->minValue(0)
+                                            ->placeholder('Ej: 50 (Ilimitado si es vacío)')
+                                            ->helperText('Dejar vacío para stock ilimitado.'),
+                                    ]),
+                                ])
+                                ->defaultItems(1)
+                                ->addActionLabel('Asignar a otro Almacén')
+                                ->columns(1)
+                                ->columnSpanFull()
+                                ->live(),
                             Select::make('marca_id')
                                 ->label('Marca')
                                 ->relationship('marca', 'titulo')
@@ -92,6 +117,14 @@ class ProductoForm
                                 ->label('Categoría')
                                 ->options(function (Get $get, ?Producto $record): array {
                                     $tiendaIds = (array) ($get('tiendas') ?? []);
+                                    if (empty($tiendaIds)) {
+                                        $pts = (array) ($get('productoTiendas') ?? []);
+                                        foreach ($pts as $pt) {
+                                            if (! empty($pt['tienda_id'])) {
+                                                $tiendaIds[] = $pt['tienda_id'];
+                                            }
+                                        }
+                                    }
                                     if (empty($tiendaIds) && $record) {
                                         $tiendaIds = $record->tiendas->pluck('id')->all();
                                     }
