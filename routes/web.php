@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\PlantillasController;
 use App\Http\Controllers\SitePageController;
+use App\Http\Controllers\SitemapController;
 use App\Models\Site;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+
+Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
 
 
 
