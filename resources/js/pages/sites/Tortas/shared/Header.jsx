@@ -250,13 +250,16 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 className="relative flex items-center justify-center rounded-xl border border-gray-200 bg-white/80 p-2 text-gray-800 shadow-xs hover:bg-gray-100 hover:text-black transition cursor-pointer"
                                 title="Ver Carrito de Compras"
                             >
-                                <DynamicIcon
-                                    name="FaCartShopping"
-                                    className={`h-5 w-5 ${estilos?.color_primario && estilos.color_primario.toLowerCase() !== '#ffffff' && estilos.color_primario.toLowerCase() !== '#fff'
+                                <svg
+                                    className={`h-5 w-5 fill-current ${estilos?.color_primario && estilos.color_primario.toLowerCase() !== '#ffffff' && estilos.color_primario.toLowerCase() !== '#fff'
                                         ? 'text-[var(--color-primario)]'
                                         : 'text-gray-800'
                                         }`}
-                                />
+                                    viewBox="0 0 576 512"
+                                    aria-hidden="true"
+                                >
+                                    <path d="M0 24C0 10.7 10.7 0 24 0H69.5c22 0 41.5 12.8 50.6 32h411c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3H170.7l5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5H488c13.3 0 24 10.7 24 24s-10.7 24-24 24H199.7c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-3-16-17-27.5-33.2-27.5H24C10.7 27 0 16.3 0 3zm96 384c26.5 0 48 21.5 48 48s-21.5 48-48 48-48-21.5-48-48 21.5-48 48-48zm384 0c26.5 0 48 21.5 48 48s-21.5 48-48 48-48-21.5-48-48 21.5-48 48-48z" />
+                                </svg>
                                 {cartCount > 0 && (
                                     <span
                                         className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-md"
