@@ -826,7 +826,11 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                             >
                                 <DynamicIcon
                                     name="FaCartShopping"
-                                    className={`h-5 w-5 transition-colors ${isTransparentMode ? 'text-white' : 'text-[var(--color-primario)]'
+                                    className={`h-5 w-5 transition-colors ${isTransparentMode
+                                        ? 'text-white'
+                                        : (estilos?.color_primario && estilos.color_primario.toLowerCase() !== '#ffffff' && estilos.color_primario.toLowerCase() !== '#fff'
+                                            ? 'text-[var(--color-primario)]'
+                                            : 'text-gray-800')
                                         }`}
                                 />
                                 {cartCount > 0 && (

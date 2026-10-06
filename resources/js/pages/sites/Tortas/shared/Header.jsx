@@ -250,7 +250,13 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 className="relative flex items-center justify-center rounded-xl border border-gray-200 bg-white/80 p-2 text-gray-800 shadow-xs hover:bg-gray-100 hover:text-black transition cursor-pointer"
                                 title="Ver Carrito de Compras"
                             >
-                                <DynamicIcon name="FaCartShopping" className="h-5 w-5 text-[var(--color-primario)]" />
+                                <DynamicIcon
+                                    name="FaCartShopping"
+                                    className={`h-5 w-5 ${estilos?.color_primario && estilos.color_primario.toLowerCase() !== '#ffffff' && estilos.color_primario.toLowerCase() !== '#fff'
+                                        ? 'text-[var(--color-primario)]'
+                                        : 'text-gray-800'
+                                        }`}
+                                />
                                 {cartCount > 0 && (
                                     <span
                                         className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white shadow-md"

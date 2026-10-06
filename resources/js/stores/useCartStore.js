@@ -28,7 +28,7 @@ export const useCartStore = create((set, get) => ({
             updatedItems = [...currentItems];
             updatedItems[existingIndex] = {
                 ...updatedItems[existingIndex],
-                cantidad: updatedItems[existingIndex].cantidad + cantidadToAdd,
+                cantidad: cantidadToAdd,
             };
         } else {
             const precioNum = product.precio !== undefined && product.precio !== null && product.precio !== ''
