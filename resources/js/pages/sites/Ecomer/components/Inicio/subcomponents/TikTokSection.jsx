@@ -273,7 +273,7 @@ export default function TikTokSection({ seccionData }) {
                                         src={`https://www.tiktok.com/embed/v2/${selectedVideo.idVideo}?lang=es-ES`}
                                         className="w-full h-full rounded-2xl border-0"
                                         allowFullScreen
-                                        allow="accelerated-mobile-page; autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share"
+                                        allow="autoplay; encrypted-media; picture-in-picture"
                                         referrerPolicy="no-referrer-when-downgrade"
                                     />
                                 ) : selectedVideo.imagen ? (
@@ -294,11 +294,11 @@ export default function TikTokSection({ seccionData }) {
                                 )}
 
                                 {(selectedVideo.titulo || selectedVideo.usuario) && (
-                                    <div className="absolute bottom-4 left-4 right-4 bg-black/75 backdrop-blur-md p-3.5 rounded-xl border border-white/10 text-white flex items-center justify-between shadow-lg">
+                                    <div className="absolute bottom-4 left-4 right-4 bg-black/80 backdrop-blur-md p-3.5 rounded-xl border border-white/15 text-white flex items-center justify-between shadow-xl z-20">
                                         <div className="min-w-0 flex-1 pr-2">
                                             <p className="font-semibold text-sm line-clamp-1">{selectedVideo.titulo}</p>
                                             {selectedVideo.usuario && (
-                                                <p className="text-xs text-gray-400 mt-0.5">{selectedVideo.usuario}</p>
+                                                <p className="text-xs text-gray-300 mt-0.5">{selectedVideo.usuario}</p>
                                             )}
                                         </div>
                                         {selectedVideo.url && (
@@ -306,7 +306,7 @@ export default function TikTokSection({ seccionData }) {
                                                 href={selectedVideo.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="shrink-0 px-3 py-1.5 rounded-lg bg-[#ff0050] text-white text-xs font-bold hover:bg-[#e00047] transition flex items-center gap-1 shadow-sm"
+                                                className="shrink-0 px-3.5 py-2 rounded-xl bg-[#ff0050] text-white text-xs font-bold hover:bg-[#e00047] active:scale-95 transition-all flex items-center gap-1.5 shadow-md border border-white/20"
                                             >
                                                 Ver en TikTok ↗
                                             </a>
