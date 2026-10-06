@@ -251,10 +251,7 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 title="Ver Carrito de Compras"
                             >
                                 <svg
-                                    className={`h-5 w-5 fill-current ${estilos?.color_primario && estilos.color_primario.toLowerCase() !== '#ffffff' && estilos.color_primario.toLowerCase() !== '#fff'
-                                        ? 'text-[var(--color-primario)]'
-                                        : 'text-gray-800'
-                                        }`}
+                                    className="h-5 w-5 fill-current text-slate-800"
                                     viewBox="0 0 576 512"
                                     aria-hidden="true"
                                 >
