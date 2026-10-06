@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\v1\PlantillaApiController;
 use App\Http\Controllers\Api\v1\ProductoApiController;
 use App\Http\Controllers\Api\v1\SiteApiController;
+use App\Http\Controllers\Api\v1\TikTokApiController;
 use Illuminate\Support\Facades\Route;
 
 use Illuminate\Http\Request;
@@ -87,6 +88,9 @@ Route::prefix('v1')->group(function () {
     Route::get('/productos', [ProductoApiController::class, 'index']);
     Route::get('/productos/destacados', [ProductoApiController::class, 'destacados']);
     Route::get('/productos/{producto:slug}', [ProductoApiController::class, 'show']);
-    Route::get('/tiendas/{tienda}', [ProductoApiController::class, 'showTienda']);
-    Route::get('/tiendas/{tienda}/productos', [ProductoApiController::class, 'indexByTienda']);
+    // TikTok oEmbed Proxy
+    Route::get('/tiktok-oembed', [TikTokApiController::class, 'oembed']);
 });
+
+Route::get('/tiktok-oembed', [TikTokApiController::class, 'oembed']);
+
