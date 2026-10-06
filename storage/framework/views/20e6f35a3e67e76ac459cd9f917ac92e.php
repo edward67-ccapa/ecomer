@@ -1,4 +1,4 @@
-@php
+<?php
     $primaryColor = $colorPrimario ?? $site->estilos['color_primario'] ?? '#ff8da2';
 
     $getDomPdfImageSrc = function ($prod) {
@@ -159,12 +159,12 @@
 
     $chunks = $productos->chunk(12);
     $totalChunks = $chunks->count();
-@endphp
+?>
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>{{ $titulo }}</title>
+    <title><?php echo e($titulo); ?></title>
     <style>
         @page {
             margin: 12px;
@@ -227,7 +227,7 @@
         .site-name-text {
             font-size: 22px;
             font-weight: 800;
-            color: {{ $primaryColor }};
+            color: <?php echo e($primaryColor); ?>;
             margin: 0;
             text-transform: uppercase;
             letter-spacing: 0.5px;
@@ -283,7 +283,7 @@
             border: 1px solid #fbcfe8;
             line-height: 96px;
             text-align: center;
-            color: {{ $primaryColor }};
+            color: <?php echo e($primaryColor); ?>;
             font-size: 9px;
             font-weight: bold;
         }
@@ -368,36 +368,36 @@
     </style>
 </head>
 <body>
-    @foreach($chunks as $chunkIndex => $pageProducts)
-        <div class="page-frame {{ $chunkIndex < $totalChunks - 1 ? 'page-break' : '' }}">
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $chunks; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $chunkIndex => $pageProducts): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+        <div class="page-frame <?php echo e($chunkIndex < $totalChunks - 1 ? 'page-break' : ''); ?>">
             <!-- Triángulo decorativo en esquina superior derecha con puntos -->
-            <img src="{{ $triangleBase64 }}" class="corner-triangle" alt="" />
+            <img src="<?php echo e($triangleBase64); ?>" class="corner-triangle" alt="" />
 
             <!-- Barra Superior (Logo / Nombre y Línea de Chevrons) -->
             <table class="header-table">
                 <tr>
                     <td class="header-logo-td">
-                        @if($logoSrc)
-                            <img src="{{ $logoSrc }}" class="site-logo" alt="{{ $site->nombre }}">
-                        @else
-                            <h1 class="site-name-text">{{ $site->nombre }}</h1>
-                        @endif
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($logoSrc): ?>
+                            <img src="<?php echo e($logoSrc); ?>" class="site-logo" alt="<?php echo e($site->nombre); ?>">
+                        <?php else: ?>
+                            <h1 class="site-name-text"><?php echo e($site->nombre); ?></h1>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </td>
                     <td class="header-chevrons-td">
-                        <img src="{{ $chevronsBase64 }}" style="height: 12px; vertical-align: middle;" alt="" />
+                        <img src="<?php echo e($chevronsBase64); ?>" style="height: 12px; vertical-align: middle;" alt="" />
                     </td>
                 </tr>
             </table>
 
             <!-- Grilla de Tarjetas (2 columnas, 12 productos por página) -->
             <table class="grid-table">
-                @php
+                <?php
                     $rows = $pageProducts->chunk(2);
-                @endphp
-                @foreach($rows as $row)
+                ?>
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $rows; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $row): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
                     <tr>
-                        @foreach($row as $prod)
-                            @php
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::openLoop(); ?><?php endif; ?><?php $__currentLoopData = $row; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $prod): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::startLoopIteration(); ?><?php endif; ?>
+                            <?php
                                 $imgSrc = $getDomPdfImageSrc($prod);
 
                                 // Soles
@@ -425,95 +425,96 @@
                                     : (($tieneOfertaDolares && $precioDolares > 0)
                                         ? round((($precioDolares - $precioOfertaDolares) / $precioDolares) * 100)
                                         : null);
-                            @endphp
+                            ?>
 
                             <td class="grid-td">
                                 <div class="product-card">
                                     <table class="card-inner-table">
                                         <tr>
                                             <td class="card-img-td">
-                                                @if($imgSrc)
-                                                    <img src="{{ $imgSrc }}" class="prod-img" alt="{{ $prod->nombre }}">
-                                                @else
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($imgSrc): ?>
+                                                    <img src="<?php echo e($imgSrc); ?>" class="prod-img" alt="<?php echo e($prod->nombre); ?>">
+                                                <?php else: ?>
                                                     <div class="card-img-placeholder">
-                                                        {{ strtoupper(substr($prod->nombre, 0, 6)) }}
+                                                        <?php echo e(strtoupper(substr($prod->nombre, 0, 6))); ?>
+
                                                     </div>
-                                                @endif
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                             </td>
                                             <td class="card-info-td">
-                                                @if($descuentoPorcentaje)
-                                                    <span class="badge-discount">-{{ $descuentoPorcentaje }}% DESCUENTO</span>
-                                                @endif
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($descuentoPorcentaje): ?>
+                                                    <span class="badge-discount">-<?php echo e($descuentoPorcentaje); ?>% DESCUENTO</span>
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                                                @if($prod->categoria)
-                                                    <span class="category-tag">{{ $prod->categoria->nombre }}</span>
-                                                @endif
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($prod->categoria): ?>
+                                                    <span class="category-tag"><?php echo e($prod->categoria->nombre); ?></span>
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                                                <div class="prod-name" title="{{ $prod->nombre }}">{{ $prod->nombre }}</div>
+                                                <div class="prod-name" title="<?php echo e($prod->nombre); ?>"><?php echo e($prod->nombre); ?></div>
 
-                                                @if(!empty($prod->descripcion_corta) || !empty($prod->descripcion))
-                                                    <div class="prod-desc">{{ strip_tags($prod->descripcion_corta ?: $prod->descripcion) }}</div>
-                                                @endif
+                                                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!empty($prod->descripcion_corta) || !empty($prod->descripcion)): ?>
+                                                    <div class="prod-desc"><?php echo e(strip_tags($prod->descripcion_corta ?: $prod->descripcion)); ?></div>
+                                                <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
                                                 <div class="price-box">
-                                                    {{-- Soles --}}
-                                                    @if($tieneOfertaSoles)
-                                                        @if($precioSoles && $precioSoles > $precioOfertaSoles)
-                                                            <span class="price-striked">S/ {{ number_format($precioSoles, 2) }}</span>
-                                                        @endif
-                                                        <span class="price-soles-offer">S/ {{ number_format($precioOfertaSoles, 2) }}</span>
-                                                    @elseif($precioSoles)
-                                                        <span class="price-soles">S/ {{ number_format($precioSoles, 2) }}</span>
-                                                    @endif
+                                                    
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($tieneOfertaSoles): ?>
+                                                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($precioSoles && $precioSoles > $precioOfertaSoles): ?>
+                                                            <span class="price-striked">S/ <?php echo e(number_format($precioSoles, 2)); ?></span>
+                                                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                        <span class="price-soles-offer">S/ <?php echo e(number_format($precioOfertaSoles, 2)); ?></span>
+                                                    <?php elseif($precioSoles): ?>
+                                                        <span class="price-soles">S/ <?php echo e(number_format($precioSoles, 2)); ?></span>
+                                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                                                    {{-- Dólares --}}
-                                                    @if($tieneOfertaDolares)
+                                                    
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($tieneOfertaDolares): ?>
                                                         <div class="price-usd">
-                                                            @if($precioDolares && $precioDolares > $precioOfertaDolares)
-                                                                <span class="price-striked">$ {{ number_format($precioDolares, 2) }}</span>
-                                                            @endif
-                                                            <span>$ {{ number_format($precioOfertaDolares, 2) }} USD</span>
+                                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($precioDolares && $precioDolares > $precioOfertaDolares): ?>
+                                                                <span class="price-striked">$ <?php echo e(number_format($precioDolares, 2)); ?></span>
+                                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                            <span>$ <?php echo e(number_format($precioOfertaDolares, 2)); ?> USD</span>
                                                         </div>
-                                                    @elseif($precioDolares)
+                                                    <?php elseif($precioDolares): ?>
                                                         <div class="price-usd">
-                                                            <span>$ {{ number_format($precioDolares, 2) }} USD</span>
+                                                            <span>$ <?php echo e(number_format($precioDolares, 2)); ?> USD</span>
                                                         </div>
-                                                    @endif
+                                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                                                    {{-- Euros --}}
-                                                    @if($tieneOfertaEuros)
+                                                    
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($tieneOfertaEuros): ?>
                                                         <div class="price-euros">
-                                                            @if($precioEuros && $precioEuros > $precioOfertaEuros)
-                                                                <span class="price-striked">€ {{ number_format($precioEuros, 2) }}</span>
-                                                            @endif
-                                                            <span>€ {{ number_format($precioOfertaEuros, 2) }} EUR</span>
+                                                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($precioEuros && $precioEuros > $precioOfertaEuros): ?>
+                                                                <span class="price-striked">€ <?php echo e(number_format($precioEuros, 2)); ?></span>
+                                                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
+                                                            <span>€ <?php echo e(number_format($precioOfertaEuros, 2)); ?> EUR</span>
                                                         </div>
-                                                    @elseif($precioEuros)
+                                                    <?php elseif($precioEuros): ?>
                                                         <div class="price-euros">
-                                                            <span>€ {{ number_format($precioEuros, 2) }} EUR</span>
+                                                            <span>€ <?php echo e(number_format($precioEuros, 2)); ?> EUR</span>
                                                         </div>
-                                                    @endif
+                                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
 
-                                                    {{-- Liquidación / Sin precio --}}
-                                                    @if(!$precioSoles && !$precioOfertaSoles && !$precioDolares && !$precioOfertaDolares && !$precioEuros && !$precioOfertaEuros)
+                                                    
+                                                    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$precioSoles && !$precioOfertaSoles && !$precioDolares && !$precioOfertaDolares && !$precioEuros && !$precioOfertaEuros): ?>
                                                         <span style="font-size: 8px; color: #d97706; font-weight: bold;">Consultar precio / Liquidación</span>
-                                                    @endif
+                                                    <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                                                 </div>
                                             </td>
                                         </tr>
                                     </table>
                                 </div>
                             </td>
-                        @endforeach
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
 
-                        @if($row->count() === 1)
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($row->count() === 1): ?>
                             <td class="grid-td"></td>
-                        @endif
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </tr>
-                @endforeach
+                <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
             </table>
         </div>
-    @endforeach
+    <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::endLoop(); ?><?php endif; ?><?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::closeLoop(); ?><?php endif; ?>
 
     <!-- Script de DomPDF para número de página -->
     <script type="text/php">
@@ -529,3 +530,4 @@
     </script>
 </body>
 </html>
+<?php /**PATH /opt/lampp/htdocs/ecomer/resources/views/pdf/catalogo.blade.php ENDPATH**/ ?>

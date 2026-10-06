@@ -9,6 +9,9 @@ import { defineConfig } from 'vite';
 export default defineConfig({
     server: {
         host: '127.0.0.1',
+        watch: {
+            ignored: ['**/storage/**', '**/bootstrap/cache/**', '**/scratch/**', '**/.git/**'],
+        },
     },
     esbuild: {
         drop: ['console', 'debugger'],
@@ -41,7 +44,11 @@ export default defineConfig({
                 'resources/css/filament/admin/theme.css',
                 'resources/js/app.jsx',
             ],
-            refresh: true,
+            refresh: [
+                'resources/views/**',
+                'resources/js/**',
+                'routes/**',
+            ],
             fonts: [
                 bunny('Instrument Sans', {
                     weights: [400, 500, 600],

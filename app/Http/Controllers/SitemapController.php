@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Plantilla;
 use App\Models\Site;
 use Illuminate\Http\Response;
 
@@ -21,9 +20,9 @@ class SitemapController extends Controller
             'priority' => '1.0',
         ];
 
-        // 2. Sitios publicados y sus secciones
+        // 2. Sitios publicados y sus rutas/secciones reales
         $sites = Site::where('estado', 'publicado')
-            ->with(['dominio', 'plantilla.secciones'])
+            ->with(['dominio', 'plantilla.secciones', 'servicios.servicios', 'marcas', 'tiendas'])
             ->get();
 
         foreach ($sites as $site) {
@@ -31,7 +30,7 @@ class SitemapController extends Controller
             $siteUrl = "{$baseUrl}/{$dominio}";
             $siteLastMod = $site->updated_at ? $site->updated_at->toIso8601String() : now()->toIso8601String();
 
-            // Página principal del sitio
+            // Inicio del sitio
             $urls[] = [
                 'loc' => $siteUrl,
                 'lastmod' => $siteLastMod,
@@ -39,10 +38,10 @@ class SitemapController extends Controller
                 'priority' => '0.9',
             ];
 
-            // Secciones dinámicas de la plantilla del sitio
+            // Secciones dinámicas de la plantilla del sitio (nosotros, contacto, etc.)
             if ($site->plantilla && $site->plantilla->secciones) {
                 foreach ($site->plantilla->secciones as $seccion) {
-                    if (! $seccion->activa || strtolower($seccion->slug) === 'nav') {
+                    if (! $seccion->activa || strtolower($seccion->slug) === 'nav' || strtolower($seccion->slug) === 'inicio') {
                         continue;
                     }
                     $urls[] = [
@@ -54,42 +53,61 @@ class SitemapController extends Controller
                 }
             }
 
-            // Secciones estándar y legales habilitadas
-            $standardSections = [
-                'productos',
-                'servicios',
-                'marcas',
-                'catalogo',
-                'terminos-y-condiciones',
-                'politica-de-privacidad',
-                'politica-de-envios',
-                'politica-de-devolucion',
-            ];
-
-            foreach ($standardSections as $sec) {
+            // Servicios (si el sitio tiene servicios activos)
+            if ($site->servicios && $site->servicios->where('activo', true)->isNotEmpty()) {
                 $urls[] = [
-                    'loc' => "{$siteUrl}/{$sec}",
+                    'loc' => "{$siteUrl}/servicios",
                     'lastmod' => $siteLastMod,
-                    'changefreq' => 'monthly',
-                    'priority' => '0.6',
+                    'changefreq' => 'weekly',
+                    'priority' => '0.8',
                 ];
             }
-        }
 
-        // 3. Catálogo global de Plantillas
-        $plantillas = Plantilla::where('activa', true)->get();
-        if ($plantillas->isNotEmpty()) {
-            $urls[] = [
-                'loc' => "{$baseUrl}/plantillas",
-                'lastmod' => now()->toIso8601String(),
-                'changefreq' => 'weekly',
-                'priority' => '0.7',
-            ];
+            // Productos (si el sitio tiene tienda o productos habilitados)
+            $tiendaIds = $site->tiendas->pluck('id')->all();
+            if (empty($tiendaIds) && $site->tienda_id) {
+                $tiendaIds = [$site->tienda_id];
+            }
+            if (empty($tiendaIds) && $site->plantilla) {
+                $tiendaIds = $site->plantilla->tiendas->pluck('id')->all();
+            }
 
-            foreach ($plantillas as $plantilla) {
+            if (! empty($tiendaIds)) {
                 $urls[] = [
-                    'loc' => "{$baseUrl}/plantillas/{$plantilla->slug}",
-                    'lastmod' => $plantilla->updated_at ? $plantilla->updated_at->toIso8601String() : now()->toIso8601String(),
+                    'loc' => "{$siteUrl}/productos",
+                    'lastmod' => $siteLastMod,
+                    'changefreq' => 'daily',
+                    'priority' => '0.8',
+                ];
+
+                $urls[] = [
+                    'loc' => "{$siteUrl}/productos?liquidaciones=1",
+                    'lastmod' => $siteLastMod,
+                    'changefreq' => 'weekly',
+                    'priority' => '0.7',
+                ];
+            }
+
+            // Marcas (si el sitio tiene marcas registradas)
+            $marcas = $site->marcas->where('activa', true);
+            if ($marcas->isEmpty() && $site->plantilla) {
+                $marcas = $site->plantilla->marcas->where('activa', true);
+            }
+            if ($marcas->isNotEmpty()) {
+                $urls[] = [
+                    'loc' => "{$siteUrl}/marcas",
+                    'lastmod' => $siteLastMod,
+                    'changefreq' => 'monthly',
+                    'priority' => '0.7',
+                ];
+            }
+
+            // Catálogo (si está activo en sus estilos)
+            $estilos = array_replace_recursive($site->plantilla->estilos ?? [], $site->estilos ?? []);
+            if (! empty($estilos['catalogo']['activo'])) {
+                $urls[] = [
+                    'loc' => "{$siteUrl}/catalogo",
+                    'lastmod' => $siteLastMod,
                     'changefreq' => 'weekly',
                     'priority' => '0.7',
                 ];
