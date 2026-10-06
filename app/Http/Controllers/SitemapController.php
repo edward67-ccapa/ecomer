@@ -9,12 +9,17 @@ class SitemapController extends Controller
 {
     public function index(): Response
     {
-        $baseUrl = url('/');
+        $scheme = (request()->secure() || request()->header('X-Forwarded-Proto') === 'https') ? 'https' : 'http';
+        $host = request()->getHost();
+        $port = request()->getPort();
+        $portStr = ($port && ! in_array($port, [80, 443])) ? ":{$port}" : '';
+
+        $baseUrl = "{$scheme}://{$host}{$portStr}";
         $urls = [];
 
         // 1. URL Principal del sistema
         $urls[] = [
-            'loc' => $baseUrl,
+            'loc' => $this->formatUrl($baseUrl),
             'lastmod' => now()->toIso8601String(),
             'changefreq' => 'daily',
             'priority' => '1.0',
@@ -32,7 +37,7 @@ class SitemapController extends Controller
 
             // Inicio del sitio
             $urls[] = [
-                'loc' => $siteUrl,
+                'loc' => $this->formatUrl($siteUrl),
                 'lastmod' => $siteLastMod,
                 'changefreq' => 'daily',
                 'priority' => '0.9',
@@ -45,7 +50,7 @@ class SitemapController extends Controller
                         continue;
                     }
                     $urls[] = [
-                        'loc' => "{$siteUrl}/{$seccion->slug}",
+                        'loc' => $this->formatUrl("{$siteUrl}/{$seccion->slug}"),
                         'lastmod' => $seccion->updated_at ? $seccion->updated_at->toIso8601String() : $siteLastMod,
                         'changefreq' => 'weekly',
                         'priority' => '0.8',
@@ -56,7 +61,7 @@ class SitemapController extends Controller
             // Servicios (si el sitio tiene servicios activos)
             if ($site->servicios && $site->servicios->where('activo', true)->isNotEmpty()) {
                 $urls[] = [
-                    'loc' => "{$siteUrl}/servicios",
+                    'loc' => $this->formatUrl("{$siteUrl}/servicios"),
                     'lastmod' => $siteLastMod,
                     'changefreq' => 'weekly',
                     'priority' => '0.8',
@@ -74,14 +79,14 @@ class SitemapController extends Controller
 
             if (! empty($tiendaIds)) {
                 $urls[] = [
-                    'loc' => "{$siteUrl}/productos",
+                    'loc' => $this->formatUrl("{$siteUrl}/productos"),
                     'lastmod' => $siteLastMod,
                     'changefreq' => 'daily',
                     'priority' => '0.8',
                 ];
 
                 $urls[] = [
-                    'loc' => "{$siteUrl}/productos?liquidaciones=1",
+                    'loc' => $this->formatUrl("{$siteUrl}/productos?liquidaciones=1"),
                     'lastmod' => $siteLastMod,
                     'changefreq' => 'weekly',
                     'priority' => '0.7',
@@ -95,7 +100,7 @@ class SitemapController extends Controller
             }
             if ($marcas->isNotEmpty()) {
                 $urls[] = [
-                    'loc' => "{$siteUrl}/marcas",
+                    'loc' => $this->formatUrl("{$siteUrl}/marcas"),
                     'lastmod' => $siteLastMod,
                     'changefreq' => 'monthly',
                     'priority' => '0.7',
@@ -106,7 +111,7 @@ class SitemapController extends Controller
             $estilos = array_replace_recursive($site->plantilla->estilos ?? [], $site->estilos ?? []);
             if (! empty($estilos['catalogo']['activo'])) {
                 $urls[] = [
-                    'loc' => "{$siteUrl}/catalogo",
+                    'loc' => $this->formatUrl("{$siteUrl}/catalogo"),
                     'lastmod' => $siteLastMod,
                     'changefreq' => 'weekly',
                     'priority' => '0.7',
@@ -122,5 +127,34 @@ class SitemapController extends Controller
         return response($content, 200, [
             'Content-Type' => 'application/xml; charset=utf-8',
         ]);
+    }
+
+    /**
+     * Format and encode URL strictly according to XML Sitemap standard.
+     */
+    private function formatUrl(string $url): string
+    {
+        $parsed = parse_url($url);
+        if (! $parsed) {
+            return htmlspecialchars($url, ENT_QUOTES | ENT_XML1, 'UTF-8');
+        }
+
+        $scheme = $parsed['scheme'] ?? (request()->secure() ? 'https' : 'http');
+        $host = $parsed['host'] ?? request()->getHost();
+        $port = isset($parsed['port']) ? ":{$parsed['port']}" : '';
+
+        $path = $parsed['path'] ?? '';
+        $pathSegments = array_map(fn ($seg) => rawurlencode(rawurldecode($seg)), explode('/', $path));
+        $encodedPath = implode('/', $pathSegments);
+
+        $queryStr = '';
+        if (! empty($parsed['query'])) {
+            parse_str($parsed['query'], $queryParams);
+            $queryStr = '?'.http_build_query($queryParams);
+        }
+
+        $fullUrl = "{$scheme}://{$host}{$port}{$encodedPath}{$queryStr}";
+
+        return htmlspecialchars($fullUrl, ENT_QUOTES | ENT_XML1, 'UTF-8');
     }
 }

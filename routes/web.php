@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
 
 Route::get('/sitemap.xml', [SitemapController::class, 'index'])->name('sitemap');
+Route::get('/sitemap', [SitemapController::class, 'index']);
+Route::get('/sitemap_index.xml', [SitemapController::class, 'index']);
+Route::get('/sitemap.php', [SitemapController::class, 'index']);
 
 
 
