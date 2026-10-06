@@ -1373,6 +1373,11 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 filtroProdLower === 'oferta' ||
                                 nombreLower.includes('oferta');
 
+                            const isMarcas =
+                                slugLower === 'marcas' ||
+                                slugLower === 'marca' ||
+                                nombreLower.includes('marca');
+
                             const hasStandalonePage = isInicio || isProductos || isServicios || isNosotros || isContacto;
 
                             const pageSlugTarget = isInicio ? 'inicio' : (isProductos ? 'productos' : (isServicios ? 'servicios' : (isNosotros ? 'nosotros' : (isContacto ? 'contacto' : seccion.slug))));

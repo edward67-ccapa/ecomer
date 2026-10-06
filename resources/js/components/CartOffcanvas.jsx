@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { usePage } from '@inertiajs/react';
 import { useCartStore } from '@/stores/useCartStore';
 import DynamicIcon from '@/components/DynamicIcon';
-import { fetchSectionData } from '@/pages/sites/Tortas/shared/apiBase';
+import { fetchSectionData } from '@/pages/sites/Ecomer/shared/apiBase';
 
 export default function CartOffcanvas({ site: propSite, estilos: propEstilos, seccionesData: propSeccionesData }) {
     const inertiaPage = usePage();

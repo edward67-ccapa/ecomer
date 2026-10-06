@@ -1402,7 +1402,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                             </div>
                         ) : (
                             <div className="bg-white rounded-2xl p-12 text-center text-gray-400 border border-gray-100 shadow-sm">
-                                <p className="text-base font-medium mb-1">No se encontraron tortas</p>
+                                <p className="text-base font-medium mb-1">No se encontraron productos</p>
                                 <p className="text-xs">Intenta desmarcar algunos filtros del panel izquierdo o cambiar tu búsqueda.</p>
                             </div>
                         )}

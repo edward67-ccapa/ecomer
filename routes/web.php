@@ -28,56 +28,20 @@ Route::get('/plantillas/{plantilla:slug}/{seccion?}', [PlantillasController::cla
 
 Route::get('/storage/{path}', function (string $path) {
     $cleanPath = ltrim($path, '/');
-    $filename = basename($cleanPath);
 
     $candidatePaths = [
         storage_path('app/public/' . $cleanPath),
         public_path('storage/' . $cleanPath),
-        storage_path($cleanPath),
     ];
 
-    $resolvedPath = null;
     foreach ($candidatePaths as $candidate) {
         if (file_exists($candidate) && is_file($candidate)) {
-            $resolvedPath = $candidate;
-            break;
+            $mimeType = @mime_content_type($candidate) ?: 'image/webp';
+            return response()->file($candidate, [
+                'Content-Type' => $mimeType,
+                'Cache-Control' => 'public, max-age=31536000',
+            ]);
         }
-    }
-
-    if (! $resolvedPath) {
-        $searchDirs = [
-            storage_path('app/public'),
-            storage_path('sites'),
-            storage_path('productos'),
-            storage_path(),
-            public_path('storage'),
-        ];
-
-        foreach ($searchDirs as $dir) {
-            if (is_dir($dir)) {
-                try {
-                    $iterator = new RecursiveIteratorIterator(
-                        new RecursiveDirectoryIterator($dir, RecursiveDirectoryIterator::SKIP_DOTS)
-                    );
-                    foreach ($iterator as $file) {
-                        if ($file->isFile() && $file->getFilename() === $filename) {
-                            $resolvedPath = $file->getRealPath();
-                            break 2;
-                        }
-                    }
-                } catch (\Throwable $e) {
-                    // Ignore iterator exceptions
-                }
-            }
-        }
-    }
-
-    if ($resolvedPath && file_exists($resolvedPath) && is_file($resolvedPath)) {
-        $mimeType = @mime_content_type($resolvedPath) ?: 'image/webp';
-        return response()->file($resolvedPath, [
-            'Content-Type' => $mimeType,
-            'Cache-Control' => 'public, max-age=31536000',
-        ]);
     }
 
     $extension = strtolower(pathinfo($cleanPath, PATHINFO_EXTENSION));

@@ -217,13 +217,9 @@ class ProductoForm
                             ->visible(fn (Get $get, ?Producto $record) => self::tieneMoneda($get, $record, 'EUR')),
 
                         TextInput::make('cantidad')
-                            ->helperText('Cantidad por unidad de venta, p. ej. 500 g')
+                            ->label('Presentación / Cantidad')
+                            ->helperText('Ej: 500 g, 1 Litro, Caja x 12 u.')
                             ->maxLength(255),
-                        TextInput::make('stock')
-                            ->numeric()
-                            ->minValue(0)
-                            ->placeholder('Stock ilimitado (dejar vacío)')
-                            ->helperText('Dejar vacío para considerar stock infinito / ilimitado.'),
                     ])
                     ->columnSpanFull(),
                 Section::make('Variantes')

@@ -16,4 +16,16 @@ class EditProducto extends EditRecord
             DeleteAction::make(),
         ];
     }
+
+    protected function afterSave(): void
+    {
+        $producto = $this->getRecord();
+        $producto->load('productoTiendas');
+
+        if ($producto->productoTiendas->isNotEmpty()) {
+            $hasNullStock = $producto->productoTiendas->contains(fn ($pt) => is_null($pt->stock));
+            $totalStock = $hasNullStock ? null : (int) $producto->productoTiendas->sum('stock');
+            $producto->updateQuietly(['stock' => $totalStock]);
+        }
+    }
 }

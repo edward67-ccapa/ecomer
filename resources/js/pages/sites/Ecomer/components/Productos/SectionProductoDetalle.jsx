@@ -477,12 +477,7 @@ export default function SectionProductoDetalle({
                                     <span className="text-xs font-bold uppercase tracking-wider text-gray-500">
                                         {site.nombre || 'Tienda Oficial'}
                                     </span>
-                                    {almacenesTexto && (
-                                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200 shadow-2xs">
-                                            <DynamicIcon name="FaStore" className="h-3 w-3 text-[var(--color-primario)]" />
-                                            <span>Almacén: {almacenesTexto}</span>
-                                        </span>
-                                    )}
+
                                     {esLiquidacion && (
                                         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider bg-amber-500 text-white shadow-2xs">
                                             🏷️ Liquidación

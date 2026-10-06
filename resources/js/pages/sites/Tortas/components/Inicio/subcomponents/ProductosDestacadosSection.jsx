@@ -173,7 +173,7 @@ export default function ProductosDestacadosSection({ seccionData, productos }) {
                         ))}
                     </Swiper>
                 ) : (
-                    <p className="text-center text-gray-400 py-8">No hay tortas destacadas disponibles por el momento.</p>
+                    <p className="text-center text-gray-400 py-8">No hay productos destacados disponibles por el momento.</p>
                 )}
 
                 {/* Botón Ver Más */}

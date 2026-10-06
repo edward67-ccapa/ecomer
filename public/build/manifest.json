@@ -48,8 +48,8 @@
       "_DynamicIcon-DkRmI2JY.js"
     ]
   },
-  "_ContactoSection-BX5BJX0I.js": {
-    "file": "assets/ContactoSection-BX5BJX0I.js",
+  "_ContactoSection-Dk_tBZef.js": {
+    "file": "assets/ContactoSection-Dk_tBZef.js",
     "name": "ContactoSection",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
@@ -210,8 +210,8 @@
       "_vendor-swiper-D5Wh1uOI.js"
     ]
   },
-  "_ProductosDestacadosSection-yjz7whZI.js": {
-    "file": "assets/ProductosDestacadosSection-yjz7whZI.js",
+  "_ProductosDestacadosSection-yamG89RN.js": {
+    "file": "assets/ProductosDestacadosSection-yamG89RN.js",
     "name": "ProductosDestacadosSection",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
@@ -346,7 +346,7 @@
     "src": "_vendor-swiper-DBDkIWrS.css"
   },
   "resources/css/app.css": {
-    "file": "assets/app-J26Sb27E.css",
+    "file": "assets/app-DqcjTTpR.css",
     "name": "app",
     "names": [
       "app.css"
@@ -364,7 +364,7 @@
     "isEntry": true
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-BGzeGPue.js",
+    "file": "assets/app-BrvNpzqj.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -413,10 +413,10 @@
       "resources/js/pages/sites/Tortas/Index.jsx",
       "resources/js/pages/sites/Tortas/components/Inicio/SectionInicio.jsx",
       "_CategoriasSection-CQ1OTVk7.js",
-      "_ContactoSection-BX5BJX0I.js",
+      "_ContactoSection-Dk_tBZef.js",
       "_HeroSection-CX-7wxZT.js",
       "_PorQueElegirnosSection-CsvoBFmF.js",
-      "_ProductosDestacadosSection-yjz7whZI.js",
+      "_ProductosDestacadosSection-yamG89RN.js",
       "_ServiciosSection-BLC56kPb.js",
       "_SomosSection-DlHkqF51.js",
       "resources/js/pages/sites/Tortas/components/Productos/SectionProductos.jsx",
@@ -505,7 +505,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/Index.jsx": {
-    "file": "assets/Index-D-cKyzYH.js",
+    "file": "assets/Index-B0rcBfe6.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Ecomer/Index.jsx",
     "isDynamicEntry": true,
@@ -569,7 +569,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Productos/SectionProductoDetalle.jsx": {
-    "file": "assets/SectionProductoDetalle-C4-j8qK4.js",
+    "file": "assets/SectionProductoDetalle-mmrkUuNq.js",
     "name": "SectionProductoDetalle",
     "src": "resources/js/pages/sites/Ecomer/components/Productos/SectionProductoDetalle.jsx",
     "isDynamicEntry": true,
@@ -582,7 +582,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Productos/SectionProductos.jsx": {
-    "file": "assets/SectionProductos-CqwE-Rdk.js",
+    "file": "assets/SectionProductos-Q2niQSTO.js",
     "name": "SectionProductos",
     "src": "resources/js/pages/sites/Ecomer/components/Productos/SectionProductos.jsx",
     "isDynamicEntry": true,
@@ -634,7 +634,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/shared/Header.jsx": {
-    "file": "assets/Header-jDQiDG9_.js",
+    "file": "assets/Header-kvL_LO-X.js",
     "name": "Header",
     "src": "resources/js/pages/sites/Ecomer/shared/Header.jsx",
     "isDynamicEntry": true,
@@ -668,7 +668,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/Index.jsx": {
-    "file": "assets/Index-CDfbJ6pM.js",
+    "file": "assets/Index-Blt_S7xy.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Tortas/Index.jsx",
     "isDynamicEntry": true,
@@ -686,7 +686,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/components/Inicio/SectionInicio.jsx": {
-    "file": "assets/SectionInicio-BRwD_RCj.js",
+    "file": "assets/SectionInicio-DL6KiA1x.js",
     "name": "SectionInicio",
     "src": "resources/js/pages/sites/Tortas/components/Inicio/SectionInicio.jsx",
     "isDynamicEntry": true,
@@ -696,13 +696,13 @@
       "_CategoriasSection-CQ1OTVk7.js",
       "_ServiciosSection-BLC56kPb.js",
       "_SomosSection-DlHkqF51.js",
-      "_ProductosDestacadosSection-yjz7whZI.js",
+      "_ProductosDestacadosSection-yamG89RN.js",
       "_PorQueElegirnosSection-CsvoBFmF.js",
-      "_ContactoSection-BX5BJX0I.js"
+      "_ContactoSection-Dk_tBZef.js"
     ]
   },
   "resources/js/pages/sites/Tortas/components/Productos/SectionProductos.jsx": {
-    "file": "assets/SectionProductos-ncPo8mpt.js",
+    "file": "assets/SectionProductos-JxCBVzoP.js",
     "name": "SectionProductos",
     "src": "resources/js/pages/sites/Tortas/components/Productos/SectionProductos.jsx",
     "isDynamicEntry": true,
@@ -749,7 +749,7 @@
     ]
   },
   "resources/js/pages/sites/Tortas/shared/Footer.jsx": {
-    "file": "assets/Footer-DwdJBOpW.js",
+    "file": "assets/Footer-3jzrz5YH.js",
     "name": "Footer",
     "src": "resources/js/pages/sites/Tortas/shared/Footer.jsx",
     "isDynamicEntry": true,

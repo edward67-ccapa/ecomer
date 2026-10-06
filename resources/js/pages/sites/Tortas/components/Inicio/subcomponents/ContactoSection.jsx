@@ -20,7 +20,7 @@ export default function ContactoSection({ seccionData, site, estilos }) {
     const titulo = tituloItem ? tituloItem.valor : '¿Tienes una idea en mente?';
     const descripcion = descripcionItem
         ? descripcionItem.valor
-        : 'Cuéntanos y haremos realidad la torta de tus sueños';
+        : 'Cuéntanos y haremos realidad tu pedido o consulta';
     const imagenUrl = imagenItem ? imagenItem.valor : null;
 
     // Redes Sociales y WhatsApp desde General (estilos.redes_sociales)

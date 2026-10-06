@@ -32,7 +32,7 @@ export function useInicioData(
     const categorias = findSeccion('categorias') || null;
     const servicios = findSeccion('servicios') || null;
     const somos = findSeccion('nosotros') || findSeccion('somos') || null;
-    const tortasDestacadas = findSeccion('tortas-destacadas') || findSeccion('tortas_destacadas') || null;
+    const tortasDestacadas = findSeccion('productos-destacados') || findSeccion('productos_destacados') || findSeccion('tortas-destacadas') || findSeccion('tortas_destacadas') || findSeccion('destacados') || null;
     const porQueElegirnos = findSeccion('elegirnos') || findSeccion('por-que-elegirnos') || findSeccion('por_que_elegirnos') || null;
     const contacto = findSeccion('contacto') || null;
 

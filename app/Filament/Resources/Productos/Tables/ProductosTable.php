@@ -20,9 +20,22 @@ class ProductosTable
                 TextColumn::make('nombre')
                     ->searchable()
                     ->sortable(),
-                TextColumn::make('tiendas.nombre')
+                TextColumn::make('almacenes_con_stock')
                     ->label('Almacenes')
-                    ->badge(),
+                    ->state(function (Producto $record): array {
+                        if ($record->productoTiendas->isEmpty()) {
+                            return ['Sin almacén'];
+                        }
+
+                        return $record->productoTiendas->map(function ($pt) {
+                            $nombre = $pt->tienda?->nombre ?? 'Almacén';
+                            $stockStr = $pt->stock !== null ? "{$pt->stock} u." : 'Ilimitado';
+
+                            return "{$nombre} ({$stockStr})";
+                        })->toArray();
+                    })
+                    ->badge()
+                    ->color('info'),
                 TextColumn::make('categoria_id')
                     ->label('Categoría')
                     ->formatStateUsing(fn (Producto $record): ?string => $record->subcategoria?->nombre ?? $record->categoria?->nombre),
@@ -37,7 +50,26 @@ class ProductosTable
                         return $simbolo.' '.number_format((float) $record->precio, 2);
                     }),
                 TextColumn::make('stock')
-                    ->numeric(),
+                    ->label('Stock Total')
+                    ->state(function (Producto $record): string {
+                        if ($record->productoTiendas->isNotEmpty()) {
+                            $tieneIlimitado = $record->productoTiendas->contains(fn ($pt) => is_null($pt->stock));
+                            if ($tieneIlimitado) {
+                                return 'Ilimitado';
+                            }
+
+                            return (string) $record->productoTiendas->sum('stock');
+                        }
+
+                        return $record->stock !== null ? (string) $record->stock : 'Ilimitado';
+                    })
+                    ->badge()
+                    ->color(fn (string $state): string => match ($state) {
+                        '0' => 'danger',
+                        'Ilimitado' => 'success',
+                        default => 'primary',
+                    })
+                    ->sortable(),
                 TextColumn::make('activo')
                     ->formatStateUsing(fn ($state) => $state ? '✓ Activo' : '✗ Inactivo'),
             ])
@@ -45,6 +77,7 @@ class ProductosTable
                 'categoria',
                 'subcategoria',
                 'tiendas.moneda',
+                'productoTiendas.tienda',
             ])->withCount('variantes'))
             ->filters([
                 SelectFilter::make('tiendas')
