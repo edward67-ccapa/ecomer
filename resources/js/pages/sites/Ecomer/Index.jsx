@@ -193,11 +193,18 @@ export default function Ecomer({
                 <meta name="twitter:description" content={metaDescription} />
                 {ogImage && <meta name="twitter:image" content={ogImage} />}
 
-                <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" key="favicon-svg-default" />
-                <link rel="icon" href="/favicon.ico?v=3" type="image/x-icon" key="favicon-ico-default" />
-                {faviconUrl && <link rel="icon" href={faviconUrl} type={faviconType} key="favicon" />}
-                {faviconUrl && <link rel="shortcut icon" href={faviconUrl} type={faviconType} key="shortcut-icon" />}
-                {faviconUrl && <link rel="apple-touch-icon" href={faviconUrl} key="apple-touch-icon" />}
+                {faviconUrl ? (
+                    <>
+                        <link rel="icon" href={faviconUrl} type={faviconType} key="favicon" />
+                        <link rel="shortcut icon" href={faviconUrl} type={faviconType} key="shortcut-icon" />
+                        <link rel="apple-touch-icon" href={faviconUrl} key="apple-touch-icon" />
+                    </>
+                ) : (
+                    <>
+                        <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" key="favicon-svg-default" />
+                        <link rel="icon" href="/favicon.ico?v=3" type="image/x-icon" key="favicon-ico-default" />
+                    </>
+                )}
                 <link rel="preconnect" href="https://fonts.googleapis.com" />
                 <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
                 {fontQuery && (
