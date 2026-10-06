@@ -123,6 +123,32 @@ class SiteForm
                                                 ->columnSpanFull(),
                                         ]),
 
+                                        Section::make('SEO y Posicionamiento en Google')
+                                            ->icon('heroicon-o-magnifying-glass-circle')
+                                            ->description('Personaliza cómo aparece este sitio web en los resultados de búsqueda de Google y al compartir enlaces por WhatsApp.')
+                                            ->collapsible()
+                                            ->schema([
+                                                Grid::make(2)->schema([
+                                                    TextInput::make('estilos.seo.title')
+                                                        ->label('Título SEO (Google)')
+                                                        ->placeholder('Ej: Lismercorp — Equipamiento Eléctrico e Industrial')
+                                                        ->helperText('Título que aparecerá en la pestaña y en los resultados de búsqueda de Google.')
+                                                        ->columnSpan(2),
+                                                    Textarea::make('estilos.seo.description')
+                                                        ->label('Metadescripción (Google)')
+                                                        ->placeholder('Ej: Empresa líder en venta de equipamiento eléctrico, megóhmetros, interruptores y cables industriales con envíos a todo el Perú.')
+                                                        ->rows(3)
+                                                        ->helperText('Resumen de 120–160 caracteres que aparecerá debajo del título en Google.')
+                                                        ->columnSpan(2),
+                                                    TextInput::make('estilos.seo.keywords')
+                                                        ->label('Palabras clave (Keywords)')
+                                                        ->placeholder('Ej: equipamiento electrico, megohmetro, lismercorp, perú')
+                                                        ->helperText('Separadas por comas.')
+                                                        ->columnSpan(2),
+                                                ]),
+                                            ])
+                                            ->columnSpanFull(),
+
                                         Section::make('Datos de Contacto Globales')
                                             ->icon('heroicon-o-phone')
                                             ->description('Define números de WhatsApp, correos electrónicos y horarios globales del sitio.')

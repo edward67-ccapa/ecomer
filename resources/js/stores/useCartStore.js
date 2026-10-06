@@ -8,8 +8,17 @@ export const useCartStore = create((set, get) => ({
     closeCart: () => set({ isOpen: false }),
     toggleCart: () => set((state) => ({ isOpen: !state.isOpen })),
 
-    addItem: (product, cantidad = 1) => {
+    addItem: (product, qty) => {
         if (!product) return;
+
+        // Determinar la cantidad a añadir: prioridad a qty (2do argumento),
+        // luego a product.cantidad (propiedad del objeto), por defecto 1.
+        const cantidadToAdd = (qty !== undefined && qty !== null && !isNaN(Number(qty)) && Number(qty) > 0)
+            ? Number(qty)
+            : (product.cantidad !== undefined && product.cantidad !== null && !isNaN(Number(product.cantidad)) && Number(product.cantidad) > 0
+                ? Number(product.cantidad)
+                : 1);
+
         const currentItems = get().items;
         const productId = product.id || product.nombre;
         const existingIndex = currentItems.findIndex((item) => (item.id || item.nombre) === productId);
@@ -17,18 +26,24 @@ export const useCartStore = create((set, get) => ({
         let updatedItems;
         if (existingIndex > -1) {
             updatedItems = [...currentItems];
-            updatedItems[existingIndex].cantidad += cantidad;
+            updatedItems[existingIndex] = {
+                ...updatedItems[existingIndex],
+                cantidad: updatedItems[existingIndex].cantidad + cantidadToAdd,
+            };
         } else {
-            const precioNum =
-                parseFloat(product.precio_soles || product.precio_dolares || product.precio || 0);
+            const precioNum = product.precio !== undefined && product.precio !== null && product.precio !== ''
+                ? Number(product.precio)
+                : parseFloat(product.precio_soles || product.precio_dolares || 0);
+
             updatedItems = [
                 ...currentItems,
                 {
+                    ...product,
                     id: productId,
                     nombre: product.nombre,
                     precio: precioNum,
                     imagen: product.imagen || null,
-                    cantidad: cantidad,
+                    cantidad: cantidadToAdd,
                 },
             ];
         }

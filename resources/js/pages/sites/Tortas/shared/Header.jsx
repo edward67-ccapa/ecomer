@@ -155,10 +155,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 <img
                                     src={site?.imagen}
                                     alt={site?.nombre || ''}
-                                    width={180}
-                                    height={48}
+                                    width={320}
+                                    height={96}
                                     decoding="async"
-                                    className="h-12 w-auto max-h-12 object-contain transition-all duration-300"
+                                    className="h-16 sm:h-24 md:h-28 lg:h-32 w-auto max-h-36 object-contain transition-all duration-300"
                                 />
                             ) : (
                                 <span className="text-lg font-bold tracking-tight text-gray-900">

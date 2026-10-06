@@ -208,7 +208,7 @@ export default function SectionProductoDetalle({
             precio_oferta: precioBaseOferta,
             imagen: varianteSeleccionada?.imagen ? resolveImage(varianteSeleccionada.imagen) : producto.imagen,
             cantidad,
-        });
+        }, cantidad);
         setAgregadoAnim(true);
         setTimeout(() => setAgregadoAnim(false), 2000);
     };

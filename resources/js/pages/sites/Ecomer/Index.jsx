@@ -126,9 +126,13 @@ export default function Ecomer({
     const ActiveComponent = sectionMap[slugLower]
         || (slugLower.includes('producto') ? SectionProductos : SectionInicio);
 
+    const seoCustomTitle = estilos?.seo?.title || site?.estilos?.seo?.title;
+    const seoCustomDescription = estilos?.seo?.description || site?.estilos?.seo?.description;
+    const seoCustomKeywords = estilos?.seo?.keywords || site?.estilos?.seo?.keywords;
+
     const pageTitle = productoSeleccionado
-        ? `${productoSeleccionado.nombre} — ${site.nombre}`
-        : `${site.nombre} — ${seccionActiva?.nombre || 'Inicio'}`;
+        ? `${productoSeleccionado.nombre} — ${site?.nombre}`
+        : (seoCustomTitle || `${site?.nombre} — ${seccionActiva?.nombre || 'Inicio'}`);
 
     const getFaviconUrl = (val) => {
         if (!val) return null;
@@ -157,12 +161,38 @@ export default function Ecomer({
         return undefined;
     };
 
-    const faviconUrl = getFaviconUrl(estilos?.favicon) || getFaviconUrl(site?.imagen) || '/favicon.svg?v=3';
-    const faviconType = getFaviconType(faviconUrl) || 'image/svg+xml';
+    const faviconUrl = getFaviconUrl(estilos?.favicon) || getFaviconUrl(site?.imagen);
+    const faviconType = getFaviconType(faviconUrl);
+
+    const rawDescription = productoSeleccionado?.descripcion_corta ||
+        productoSeleccionado?.descripcion ||
+        (seccionActiva?.slug?.toLowerCase() === 'inicio' && seoCustomDescription ? seoCustomDescription : null) ||
+        seccionActiva?.descripcion ||
+        seoCustomDescription ||
+        site?.descripcion ||
+        `Bienvenido a ${site?.nombre || 'Nuestra Tienda'}. Descubre nuestros productos, ofertas y servicios con la mejor calidad y garantía.`;
+
+    const metaDescription = String(rawDescription)
+        .replace(/<[^>]*>?/gm, '')
+        .trim()
+        .substring(0, 160);
+
+    const ogImage = productoSeleccionado?.imagen || faviconUrl || null;
 
     return (
         <>
             <Head title={pageTitle}>
+                <meta name="description" content={metaDescription} />
+                {seoCustomKeywords && <meta name="keywords" content={seoCustomKeywords} />}
+                <meta property="og:title" content={pageTitle} />
+                <meta property="og:description" content={metaDescription} />
+                <meta property="og:type" content={productoSeleccionado ? 'product' : 'website'} />
+                {ogImage && <meta property="og:image" content={ogImage} />}
+                <meta name="twitter:card" content="summary_large_image" />
+                <meta name="twitter:title" content={pageTitle} />
+                <meta name="twitter:description" content={metaDescription} />
+                {ogImage && <meta name="twitter:image" content={ogImage} />}
+
                 <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml" key="favicon-svg-default" />
                 <link rel="icon" href="/favicon.ico?v=3" type="image/x-icon" key="favicon-ico-default" />
                 {faviconUrl && <link rel="icon" href={faviconUrl} type={faviconType} key="favicon" />}

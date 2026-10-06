@@ -557,16 +557,16 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                         {/* Logo del Sitio */}
                         <Link
                             href={dominio === 'plantillas' ? `/plantillas/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}` : (siteSlug ? `/${dominio}/${siteSlug}/${secciones?.[0]?.slug || 'inicio'}` : `/${dominio}/${secciones?.[0]?.slug || 'inicio'}`)}
-                            className="flex items-center justify-center transition-transform hover:scale-102"
+                            className="flex items-center justify-center"
                         >
                             {logoNav || site?.imagen ? (
                                 <img
                                     src={logoNav || site?.imagen}
                                     alt={site?.nombre || ''}
-                                    width={180}
-                                    height={48}
+                                    width={320}
+                                    height={96}
                                     decoding="async"
-                                    className="h-10 sm:h-12 w-auto max-h-18 object-contain transition-all duration-300"
+                                    className="h-16 sm:h-24 md:h-28 lg:h-32 w-auto max-h-36 object-contain transition-all duration-300"
                                 />
                             ) : (
                                 <span className={`text-xl font-extrabold tracking-tight transition-colors duration-300 ${isTransparentMode ? 'text-white drop-shadow-sm' : 'text-gray-900'
@@ -631,13 +631,12 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                             key="catalogo"
                                             href={downloadUrl}
                                             onClick={handleDescargarCatalogo}
-                                            className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 cursor-pointer ${
-                                                isCatalogoUrlActive
-                                                    ? 'text-white shadow-xs'
-                                                    : isTransparentMode
-                                                        ? 'text-white/90 hover:text-white hover:bg-white/20'
-                                                        : 'text-gray-800 hover:text-white hover:bg-[var(--color-primario)]/60'
-                                            }`}
+                                            className={`rounded-lg px-3 py-1.5 text-sm font-semibold transition-all duration-300 cursor-pointer ${isCatalogoUrlActive
+                                                ? 'text-white shadow-xs'
+                                                : isTransparentMode
+                                                    ? 'text-white/90 hover:text-white hover:bg-white/20'
+                                                    : 'text-gray-800 hover:text-white hover:bg-[var(--color-primario)]/60'
+                                                }`}
                                             style={isCatalogoUrlActive ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
                                         >
                                             {catalogoTitulo}
@@ -868,11 +867,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                     setActiveHoverCategory(null);
                                                     setActiveHoverMarca(null);
                                                 }}
-                                                className={`flex-1 py-1.5 text-xs font-extrabold rounded-lg transition-all duration-200 cursor-pointer ${
-                                                    megaMenuTab === 'categorias'
-                                                        ? 'bg-white text-[var(--color-primario)] shadow-xs'
-                                                        : 'text-gray-600 hover:text-gray-900'
-                                                }`}
+                                                className={`flex-1 py-1.5 text-xs font-extrabold rounded-lg transition-all duration-200 cursor-pointer ${megaMenuTab === 'categorias'
+                                                    ? 'bg-white text-[var(--color-primario)] shadow-xs'
+                                                    : 'text-gray-600 hover:text-gray-900'
+                                                    }`}
                                             >
                                                 Categorías ({categoriasArbol.length})
                                             </button>
@@ -883,11 +881,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                     setActiveHoverCategory(null);
                                                     setActiveHoverMarca(null);
                                                 }}
-                                                className={`flex-1 py-1.5 text-xs font-extrabold rounded-lg transition-all duration-200 cursor-pointer ${
-                                                    megaMenuTab === 'marcas'
-                                                        ? 'bg-white text-[var(--color-primario)] shadow-xs'
-                                                        : 'text-gray-600 hover:text-gray-900'
-                                                }`}
+                                                className={`flex-1 py-1.5 text-xs font-extrabold rounded-lg transition-all duration-200 cursor-pointer ${megaMenuTab === 'marcas'
+                                                    ? 'bg-white text-[var(--color-primario)] shadow-xs'
+                                                    : 'text-gray-600 hover:text-gray-900'
+                                                    }`}
                                             >
                                                 Marcas ({marcasArbol.length})
                                             </button>
@@ -907,11 +904,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                 href={getProductosUrl(null, null)}
                                                 onClick={handleMegaMenuClick}
                                                 onMouseEnter={() => setActiveHoverCategory(null)}
-                                                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                                                    activeHoverCategory === null
-                                                        ? 'bg-[var(--color-primario)] text-white shadow-md'
-                                                        : 'text-gray-700 hover:bg-gray-200/60 hover:text-gray-900'
-                                                }`}
+                                                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${activeHoverCategory === null
+                                                    ? 'bg-[var(--color-primario)] text-white shadow-md'
+                                                    : 'text-gray-700 hover:bg-gray-200/60 hover:text-gray-900'
+                                                    }`}
                                             >
                                                 <div className="flex items-center gap-2.5">
                                                     <DynamicIcon name="FaGrip" className="h-4 w-4" />
@@ -931,17 +927,15 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                             handleMegaMenuClick();
                                                             router.visit(getProductosUrl(cat.nombre, null));
                                                         }}
-                                                        className={`group/cat w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 ${
-                                                            isSelected
-                                                                ? 'bg-white text-[var(--color-primario)] shadow-sm font-bold border border-gray-200/80 translate-x-1'
-                                                                : 'text-gray-700 hover:bg-gray-200/50 hover:text-gray-900'
-                                                        }`}
+                                                        className={`group/cat w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 ${isSelected
+                                                            ? 'bg-white text-[var(--color-primario)] shadow-sm font-bold border border-gray-200/80 translate-x-1'
+                                                            : 'text-gray-700 hover:bg-gray-200/50 hover:text-gray-900'
+                                                            }`}
                                                     >
                                                         <div className="flex items-center gap-2.5 min-w-0 pr-2">
                                                             {cat.icono && (
-                                                                <span className={`p-1.5 rounded-lg transition-colors ${
-                                                                    isSelected ? 'bg-[var(--color-primario)]/10 text-[var(--color-primario)]' : 'bg-gray-200/60 text-gray-500 group-hover/cat:text-gray-800'
-                                                                }`}>
+                                                                <span className={`p-1.5 rounded-lg transition-colors ${isSelected ? 'bg-[var(--color-primario)]/10 text-[var(--color-primario)]' : 'bg-gray-200/60 text-gray-500 group-hover/cat:text-gray-800'
+                                                                    }`}>
                                                                     <DynamicIcon name={cat.icono} className="h-3.5 w-3.5 shrink-0" />
                                                                 </span>
                                                             )}
@@ -966,11 +960,10 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                 href={getProductosUrl(null, null)}
                                                 onClick={handleMegaMenuClick}
                                                 onMouseEnter={() => setActiveHoverMarca(null)}
-                                                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${
-                                                    activeHoverMarca === null
-                                                        ? 'bg-[var(--color-primario)] text-white shadow-md'
-                                                        : 'text-gray-700 hover:bg-gray-200/60 hover:text-gray-900'
-                                                }`}
+                                                className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all duration-200 ${activeHoverMarca === null
+                                                    ? 'bg-[var(--color-primario)] text-white shadow-md'
+                                                    : 'text-gray-700 hover:bg-gray-200/60 hover:text-gray-900'
+                                                    }`}
                                             >
                                                 <div className="flex items-center gap-2.5">
                                                     <DynamicIcon name="FaAward" className="h-4 w-4" />
@@ -990,19 +983,17 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                                             handleMegaMenuClick();
                                                             router.visit(getMarcaUrl(m.nombre));
                                                         }}
-                                                        className={`group/marca w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 ${
-                                                            isSelected
-                                                                ? 'bg-white text-[var(--color-primario)] shadow-sm font-bold border border-gray-200/80 translate-x-1'
-                                                                : 'text-gray-700 hover:bg-gray-200/50 hover:text-gray-900'
-                                                        }`}
+                                                        className={`group/marca w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold cursor-pointer transition-all duration-200 ${isSelected
+                                                            ? 'bg-white text-[var(--color-primario)] shadow-sm font-bold border border-gray-200/80 translate-x-1'
+                                                            : 'text-gray-700 hover:bg-gray-200/50 hover:text-gray-900'
+                                                            }`}
                                                     >
                                                         <div className="flex items-center gap-2.5 min-w-0 pr-2">
                                                             {m.imagen ? (
                                                                 <img src={m.imagen} alt={m.nombre} className="h-4 w-4 object-contain rounded shrink-0 bg-white" />
                                                             ) : (
-                                                                <span className={`p-1.5 rounded-lg transition-colors ${
-                                                                    isSelected ? 'bg-[var(--color-primario)]/10 text-[var(--color-primario)]' : 'bg-gray-200/60 text-gray-500'
-                                                                }`}>
+                                                                <span className={`p-1.5 rounded-lg transition-colors ${isSelected ? 'bg-[var(--color-primario)]/10 text-[var(--color-primario)]' : 'bg-gray-200/60 text-gray-500'
+                                                                    }`}>
                                                                     <DynamicIcon name="FaTag" className="h-3 w-3 shrink-0" />
                                                                 </span>
                                                             )}
@@ -1391,194 +1382,194 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                                 }`;
                             const activeStyle = activa ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {};
 
-                                if (slugLower === 'catalogo' || seccion.isCatalogo) {
-                                    if (!isCatalogoActivo) return null;
-                                    return (
-                                        <a
-                                            key="catalogo"
-                                            href={downloadUrl}
-                                            onClick={(e) => {
-                                                setMobileMenuOpen(false);
-                                                handleDescargarCatalogo(e);
-                                            }}
-                                            className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
-                                        >
-                                            {catalogoTitulo}
-                                        </a>
-                                    );
-                                }
+                            if (slugLower === 'catalogo' || seccion.isCatalogo) {
+                                if (!isCatalogoActivo) return null;
+                                return (
+                                    <a
+                                        key="catalogo"
+                                        href={downloadUrl}
+                                        onClick={(e) => {
+                                            setMobileMenuOpen(false);
+                                            handleDescargarCatalogo(e);
+                                        }}
+                                        className="block rounded-lg px-3 py-2.5 text-sm font-semibold text-gray-800 hover:bg-gray-100 hover:text-gray-900 cursor-pointer"
+                                    >
+                                        {catalogoTitulo}
+                                    </a>
+                                );
+                            }
 
-                                if (isLiquidaciones) {
-                                    const targetUrl = dominio === 'plantillas'
-                                        ? `/plantillas/${siteSlug}/productos?liquidaciones=1`
-                                        : (siteSlug ? `/${dominio}/${siteSlug}/productos?liquidaciones=1` : `/${dominio}/productos?liquidaciones=1`);
-                                    const isLiquidacionesActiva = Boolean(currentUrl && (currentUrl.includes('liquidaciones=1') || currentUrl.includes('liquidacion=1') || currentUrl.includes('filtro_producto=liquidaciones') || currentUrl.includes('filtro_producto=liquidacion')));
+                            if (isLiquidaciones) {
+                                const targetUrl = dominio === 'plantillas'
+                                    ? `/plantillas/${siteSlug}/productos?liquidaciones=1`
+                                    : (siteSlug ? `/${dominio}/${siteSlug}/productos?liquidaciones=1` : `/${dominio}/productos?liquidaciones=1`);
+                                const isLiquidacionesActiva = Boolean(currentUrl && (currentUrl.includes('liquidaciones=1') || currentUrl.includes('liquidacion=1') || currentUrl.includes('filtro_producto=liquidaciones') || currentUrl.includes('filtro_producto=liquidacion')));
 
-                                    return (
-                                        <Link
-                                            key={seccion.slug || 'liquidaciones'}
-                                            href={targetUrl}
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className={`block rounded-lg px-3 py-2.5 text-sm font-semibold transition ${isLiquidacionesActiva
-                                                ? 'text-white shadow-xs'
-                                                : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
-                                                }`}
-                                            style={isLiquidacionesActiva ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
-                                        >
-                                            {displayName}
-                                        </Link>
-                                    );
-                                }
+                                return (
+                                    <Link
+                                        key={seccion.slug || 'liquidaciones'}
+                                        href={targetUrl}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className={`block rounded-lg px-3 py-2.5 text-sm font-semibold transition ${isLiquidacionesActiva
+                                            ? 'text-white shadow-xs'
+                                            : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
+                                            }`}
+                                        style={isLiquidacionesActiva ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
+                                    >
+                                        {displayName}
+                                    </Link>
+                                );
+                            }
 
-                                if (isOfertas) {
-                                    const targetUrl = dominio === 'plantillas'
-                                        ? `/plantillas/${siteSlug}/productos?ofertas=1`
-                                        : (siteSlug ? `/${dominio}/${siteSlug}/productos?ofertas=1` : `/${dominio}/productos?ofertas=1`);
-                                    const isOfertasActiva = Boolean(currentUrl && (currentUrl.includes('ofertas=1') || currentUrl.includes('oferta=1') || currentUrl.includes('solo_ofertas=1') || currentUrl.includes('filtro_producto=ofertas') || currentUrl.includes('filtro_producto=oferta')));
+                            if (isOfertas) {
+                                const targetUrl = dominio === 'plantillas'
+                                    ? `/plantillas/${siteSlug}/productos?ofertas=1`
+                                    : (siteSlug ? `/${dominio}/${siteSlug}/productos?ofertas=1` : `/${dominio}/productos?ofertas=1`);
+                                const isOfertasActiva = Boolean(currentUrl && (currentUrl.includes('ofertas=1') || currentUrl.includes('oferta=1') || currentUrl.includes('solo_ofertas=1') || currentUrl.includes('filtro_producto=ofertas') || currentUrl.includes('filtro_producto=oferta')));
 
-                                    return (
-                                        <Link
-                                            key={seccion.slug || 'ofertas'}
-                                            href={targetUrl}
-                                            onClick={() => setMobileMenuOpen(false)}
-                                            className={`block rounded-lg px-3 py-2.5 text-sm font-semibold transition ${isOfertasActiva
-                                                ? 'text-white shadow-xs'
-                                                : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
-                                                }`}
-                                            style={isOfertasActiva ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
-                                        >
-                                            {displayName}
-                                        </Link>
-                                    );
-                                }
+                                return (
+                                    <Link
+                                        key={seccion.slug || 'ofertas'}
+                                        href={targetUrl}
+                                        onClick={() => setMobileMenuOpen(false)}
+                                        className={`block rounded-lg px-3 py-2.5 text-sm font-semibold transition ${isOfertasActiva
+                                            ? 'text-white shadow-xs'
+                                            : 'text-gray-800 hover:bg-gray-100 hover:text-gray-900'
+                                            }`}
+                                        style={isOfertasActiva ? { backgroundColor: 'var(--color-primario)', color: '#fff' } : {}}
+                                    >
+                                        {displayName}
+                                    </Link>
+                                );
+                            }
 
-                                if (isProductos && (categoriasArbol.length > 0 || marcasArbol.length > 0)) {
-                                    return (
-                                        <div key={seccion.slug} className="space-y-1">
-                                            <div className="flex items-center justify-between">
-                                                <Link
-                                                    href={getProductosUrl(null, null)}
-                                                    onClick={() => setMobileMenuOpen(false)}
-                                                    className={`${linkClasses} flex-1`}
-                                                    style={activeStyle}
-                                                >
-                                                    {displayName}
-                                                </Link>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setMobileSubmenuOpen(!mobileSubmenuOpen)}
-                                                    className="p-2 text-gray-500 hover:text-gray-900 cursor-pointer"
-                                                >
-                                                    <DynamicIcon name="FaChevronDown" className={`h-4 w-4 transition-transform ${mobileSubmenuOpen ? 'rotate-180' : ''}`} />
-                                                </button>
-                                            </div>
-                                            {mobileSubmenuOpen && (
-                                                <div className="pl-4 space-y-3 border-l-2 border-[var(--color-primario)]/30 ml-2 my-1.5 pt-1">
-                                                    {/* Sub-sección Categorías */}
-                                                    {categoriasArbol.length > 0 && (
-                                                        <div className="space-y-1.5">
-                                                            <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider block">Categorías</span>
-                                                            {categoriasArbol.map((cat) => (
-                                                                <div key={cat.nombre} className="space-y-1">
+                            if (isProductos && (categoriasArbol.length > 0 || marcasArbol.length > 0)) {
+                                return (
+                                    <div key={seccion.slug} className="space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <Link
+                                                href={getProductosUrl(null, null)}
+                                                onClick={() => setMobileMenuOpen(false)}
+                                                className={`${linkClasses} flex-1`}
+                                                style={activeStyle}
+                                            >
+                                                {displayName}
+                                            </Link>
+                                            <button
+                                                type="button"
+                                                onClick={() => setMobileSubmenuOpen(!mobileSubmenuOpen)}
+                                                className="p-2 text-gray-500 hover:text-gray-900 cursor-pointer"
+                                            >
+                                                <DynamicIcon name="FaChevronDown" className={`h-4 w-4 transition-transform ${mobileSubmenuOpen ? 'rotate-180' : ''}`} />
+                                            </button>
+                                        </div>
+                                        {mobileSubmenuOpen && (
+                                            <div className="pl-4 space-y-3 border-l-2 border-[var(--color-primario)]/30 ml-2 my-1.5 pt-1">
+                                                {/* Sub-sección Categorías */}
+                                                {categoriasArbol.length > 0 && (
+                                                    <div className="space-y-1.5">
+                                                        <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider block">Categorías</span>
+                                                        {categoriasArbol.map((cat) => (
+                                                            <div key={cat.nombre} className="space-y-1">
+                                                                <Link
+                                                                    href={getProductosUrl(cat.nombre, null)}
+                                                                    onClick={() => setMobileMenuOpen(false)}
+                                                                    className="flex items-center gap-2 text-xs font-bold text-gray-800 hover:text-[var(--color-primario)] py-0.5"
+                                                                >
+                                                                    {cat.icono && <DynamicIcon name={cat.icono} className="h-3.5 w-3.5 text-[var(--color-primario)] shrink-0" />}
+                                                                    <span>{cat.nombre}</span>
+                                                                </Link>
+                                                                {cat.subcategorias?.map((sub) => (
                                                                     <Link
-                                                                        href={getProductosUrl(cat.nombre, null)}
+                                                                        key={sub.nombre}
+                                                                        href={getProductosUrl(cat.nombre, sub.nombre)}
                                                                         onClick={() => setMobileMenuOpen(false)}
-                                                                        className="flex items-center gap-2 text-xs font-bold text-gray-800 hover:text-[var(--color-primario)] py-0.5"
+                                                                        className="block text-[11px] text-gray-600 hover:text-gray-900 pl-2 py-0.5"
                                                                     >
-                                                                        {cat.icono && <DynamicIcon name={cat.icono} className="h-3.5 w-3.5 text-[var(--color-primario)] shrink-0" />}
-                                                                        <span>{cat.nombre}</span>
-                                                                    </Link>
-                                                                    {cat.subcategorias?.map((sub) => (
-                                                                        <Link
-                                                                            key={sub.nombre}
-                                                                            href={getProductosUrl(cat.nombre, sub.nombre)}
-                                                                            onClick={() => setMobileMenuOpen(false)}
-                                                                            className="block text-[11px] text-gray-600 hover:text-gray-900 pl-2 py-0.5"
-                                                                        >
-                                                                            • {sub.nombre}
-                                                                        </Link>
-                                                                    ))}
-                                                                </div>
-                                                            ))}
-                                                        </div>
-                                                    )}
-
-                                                    {/* Sub-sección Marcas */}
-                                                    {marcasArbol.length > 0 && (
-                                                        <div className="space-y-1.5 pt-2 border-t border-gray-100">
-                                                            <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider block">Marcas</span>
-                                                            <div className="grid grid-cols-2 gap-1.5">
-                                                                {marcasArbol.map((m) => (
-                                                                    <Link
-                                                                        key={m.nombre}
-                                                                        href={getMarcaUrl(m.nombre)}
-                                                                        onClick={() => setMobileMenuOpen(false)}
-                                                                        className="flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-[var(--color-primario)] p-1 rounded-md hover:bg-gray-100"
-                                                                    >
-                                                                        {m.imagen ? (
-                                                                            <img src={m.imagen} alt={m.nombre} className="h-3.5 w-3.5 object-contain rounded shrink-0" />
-                                                                        ) : (
-                                                                            <DynamicIcon name="FaTag" className="h-3 w-3 text-[var(--color-primario)] shrink-0" />
-                                                                        )}
-                                                                        <span className="truncate">{m.nombre}</span>
+                                                                        • {sub.nombre}
                                                                     </Link>
                                                                 ))}
                                                             </div>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            )}
-                                        </div>
-                                    );
-                                }
-
-                                if (isMarcas && marcasArbol.length > 0) {
-                                    return (
-                                        <div key={seccion.slug || 'marcas'} className="space-y-1">
-                                            <div className="flex items-center justify-between">
-                                                <Link
-                                                    href={getProductosUrl(null, null)}
-                                                    onClick={() => setMobileMenuOpen(false)}
-                                                    className={`${linkClasses} flex-1`}
-                                                    style={activeStyle}
-                                                >
-                                                    {displayName}
-                                                </Link>
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setMobileMarcasSubmenuOpen(!mobileMarcasSubmenuOpen)}
-                                                    className="p-2 text-gray-500 hover:text-gray-900 cursor-pointer"
-                                                >
-                                                    <DynamicIcon name="FaChevronDown" className={`h-4 w-4 transition-transform ${mobileMarcasSubmenuOpen ? 'rotate-180' : ''}`} />
-                                                </button>
-                                            </div>
-                                            {mobileMarcasSubmenuOpen && (
-                                                <div className="pl-4 space-y-2 border-l-2 border-[var(--color-primario)]/30 ml-2 my-1.5 pt-1">
-                                                    <div className="grid grid-cols-2 gap-2">
-                                                        {marcasArbol.map((m) => (
-                                                            <Link
-                                                                key={m.nombre}
-                                                                href={getMarcaUrl(m.nombre)}
-                                                                onClick={() => setMobileMenuOpen(false)}
-                                                                className="flex items-center gap-2 text-xs font-semibold text-gray-800 hover:text-[var(--color-primario)] p-2 rounded-xl bg-gray-50 border border-gray-100 hover:bg-white transition shadow-2xs"
-                                                            >
-                                                                {m.imagen ? (
-                                                                    <img src={m.imagen} alt={m.nombre} className="h-6 w-6 object-contain rounded-lg shrink-0 bg-white p-0.5 border border-gray-200" />
-                                                                ) : (
-                                                                    <DynamicIcon name="FaTag" className="h-4 w-4 text-[var(--color-primario)] shrink-0" />
-                                                                )}
-                                                                <div className="min-w-0 flex-1">
-                                                                    <span className="truncate block font-bold text-gray-900">{m.nombre}</span>
-                                                                    {m.count > 0 && <span className="text-[10px] text-gray-400 block">{m.count} productos</span>}
-                                                                </div>
-                                                            </Link>
                                                         ))}
                                                     </div>
-                                                </div>
-                                            )}
+                                                )}
+
+                                                {/* Sub-sección Marcas */}
+                                                {marcasArbol.length > 0 && (
+                                                    <div className="space-y-1.5 pt-2 border-t border-gray-100">
+                                                        <span className="text-[10px] font-black uppercase text-gray-400 tracking-wider block">Marcas</span>
+                                                        <div className="grid grid-cols-2 gap-1.5">
+                                                            {marcasArbol.map((m) => (
+                                                                <Link
+                                                                    key={m.nombre}
+                                                                    href={getMarcaUrl(m.nombre)}
+                                                                    onClick={() => setMobileMenuOpen(false)}
+                                                                    className="flex items-center gap-1.5 text-xs font-medium text-gray-700 hover:text-[var(--color-primario)] p-1 rounded-md hover:bg-gray-100"
+                                                                >
+                                                                    {m.imagen ? (
+                                                                        <img src={m.imagen} alt={m.nombre} className="h-3.5 w-3.5 object-contain rounded shrink-0" />
+                                                                    ) : (
+                                                                        <DynamicIcon name="FaTag" className="h-3 w-3 text-[var(--color-primario)] shrink-0" />
+                                                                    )}
+                                                                    <span className="truncate">{m.nombre}</span>
+                                                                </Link>
+                                                            ))}
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
+
+                            if (isMarcas && marcasArbol.length > 0) {
+                                return (
+                                    <div key={seccion.slug || 'marcas'} className="space-y-1">
+                                        <div className="flex items-center justify-between">
+                                            <Link
+                                                href={getProductosUrl(null, null)}
+                                                onClick={() => setMobileMenuOpen(false)}
+                                                className={`${linkClasses} flex-1`}
+                                                style={activeStyle}
+                                            >
+                                                {displayName}
+                                            </Link>
+                                            <button
+                                                type="button"
+                                                onClick={() => setMobileMarcasSubmenuOpen(!mobileMarcasSubmenuOpen)}
+                                                className="p-2 text-gray-500 hover:text-gray-900 cursor-pointer"
+                                            >
+                                                <DynamicIcon name="FaChevronDown" className={`h-4 w-4 transition-transform ${mobileMarcasSubmenuOpen ? 'rotate-180' : ''}`} />
+                                            </button>
                                         </div>
-                                    );
-                                }
+                                        {mobileMarcasSubmenuOpen && (
+                                            <div className="pl-4 space-y-2 border-l-2 border-[var(--color-primario)]/30 ml-2 my-1.5 pt-1">
+                                                <div className="grid grid-cols-2 gap-2">
+                                                    {marcasArbol.map((m) => (
+                                                        <Link
+                                                            key={m.nombre}
+                                                            href={getMarcaUrl(m.nombre)}
+                                                            onClick={() => setMobileMenuOpen(false)}
+                                                            className="flex items-center gap-2 text-xs font-semibold text-gray-800 hover:text-[var(--color-primario)] p-2 rounded-xl bg-gray-50 border border-gray-100 hover:bg-white transition shadow-2xs"
+                                                        >
+                                                            {m.imagen ? (
+                                                                <img src={m.imagen} alt={m.nombre} className="h-6 w-6 object-contain rounded-lg shrink-0 bg-white p-0.5 border border-gray-200" />
+                                                            ) : (
+                                                                <DynamicIcon name="FaTag" className="h-4 w-4 text-[var(--color-primario)] shrink-0" />
+                                                            )}
+                                                            <div className="min-w-0 flex-1">
+                                                                <span className="truncate block font-bold text-gray-900">{m.nombre}</span>
+                                                                {m.count > 0 && <span className="text-[10px] text-gray-400 block">{m.count} productos</span>}
+                                                            </div>
+                                                        </Link>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                );
+                            }
 
                             if (hasStandalonePage) {
                                 return (
