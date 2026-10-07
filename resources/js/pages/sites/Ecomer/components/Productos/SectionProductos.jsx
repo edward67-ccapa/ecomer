@@ -481,7 +481,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
     }
 
     return (
-        <main className="flex-1 pb-16 pt-40 px-4 sm:px-6 bg-white">
+        <main className="flex-1 py-6 px-4 sm:px-6 bg-white">
             <div className="max-w-7xl mx-auto">
                 {/* Cabecera */}
                 {(subTitulo || titulo || icono || isCatalogoMode) && (
@@ -690,8 +690,8 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                         type="button"
                                         onClick={() => toggleFiltro('marca', m.nombre)}
                                         className={`group relative p-3 rounded-2xl border transition-all duration-300 text-left cursor-pointer flex items-center gap-3 ${isSelected
-                                                ? 'border-[var(--color-primario)] bg-[var(--color-primario)]/5 ring-2 ring-[var(--color-primario)]/30 shadow-md scale-[1.02]'
-                                                : 'border-gray-200/80 bg-gray-50/70 hover:bg-white hover:border-gray-300 hover:shadow-sm'
+                                            ? 'border-[var(--color-primario)] bg-[var(--color-primario)]/5 ring-2 ring-[var(--color-primario)]/30 shadow-md scale-[1.02]'
+                                            : 'border-gray-200/80 bg-gray-50/70 hover:bg-white hover:border-gray-300 hover:shadow-sm'
                                             }`}
                                     >
                                         {m.imagen ? (
@@ -773,8 +773,8 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                     type="button"
                                     onClick={() => setSoloOfertas((prev) => !prev)}
                                     className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all duration-300 cursor-pointer ${soloOfertas
-                                            ? 'bg-[var(--color-primario)]/10 border-[var(--color-primario)] ring-2 ring-[var(--color-primario)]/30 shadow-md'
-                                            : 'bg-gray-50/70 border-gray-200/80 hover:bg-white hover:border-gray-300'
+                                        ? 'bg-[var(--color-primario)]/10 border-[var(--color-primario)] ring-2 ring-[var(--color-primario)]/30 shadow-md'
+                                        : 'bg-gray-50/70 border-gray-200/80 hover:bg-white hover:border-gray-300'
                                         }`}
                                 >
                                     <div className="flex items-center gap-2.5">
@@ -808,8 +808,8 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                     type="button"
                                     onClick={() => setSoloLiquidacion((prev) => !prev)}
                                     className={`w-full flex items-center justify-between p-3 rounded-2xl border transition-all duration-300 cursor-pointer ${soloLiquidacion
-                                            ? 'bg-amber-500/10 border-amber-500 ring-2 ring-amber-500/30 shadow-md'
-                                            : 'bg-gray-50/70 border-gray-200/80 hover:bg-white hover:border-gray-300'
+                                        ? 'bg-amber-500/10 border-amber-500 ring-2 ring-amber-500/30 shadow-md'
+                                        : 'bg-gray-50/70 border-gray-200/80 hover:bg-white hover:border-gray-300'
                                         }`}
                                 >
                                     <div className="flex items-center gap-2.5">
@@ -1204,7 +1204,7 @@ export default function SectionProductos({ dominio, siteSlug, seccion, secciones
                                         ? Math.round(((pDolReg - pDolOfe) / pDolReg) * 100)
                                         : null;
 
-                                     const tieneOferta = tieneOfertaSoles || tieneOfertaDolares || Boolean(prod.en_oferta || prod.es_oferta);
+                                    const tieneOferta = tieneOfertaSoles || tieneOfertaDolares || Boolean(prod.en_oferta || prod.es_oferta);
                                     const descOferta = descSolesPercent || descDolaresPercent;
 
                                     const esProdLiquidacion = Boolean(

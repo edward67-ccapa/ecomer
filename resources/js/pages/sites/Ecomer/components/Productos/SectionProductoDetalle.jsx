@@ -269,7 +269,7 @@ export default function SectionProductoDetalle({
         .slice(0, 8);
 
     return (
-        <main className="min-h-screen bg-[#F8F9FA] pt-40 pb-16">
+        <main className="min-h-screen bg-[#F8F9FA] py-6">
             <div className="mx-auto w-full max-w-[1440px] px-4 sm:px-6 lg:px-8">
                 {/* 1. Breadcrumbs y Botón Volver */}
                 <div className="flex flex-wrap items-center justify-between gap-3 mb-6 pb-3 border-b border-gray-200 text-xs sm:text-sm">
