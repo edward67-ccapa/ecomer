@@ -37,7 +37,7 @@ export default function HeroSection({ seccionData }) {
     };
 
     const rawImgGroup = getValor('imagenes') || getValor('img_seccion1') || getValor('imagen') || getValor('Imagen');
-    
+
     let slides = [];
     if (Array.isArray(rawImgGroup)) {
         slides = rawImgGroup.map((item) => {
@@ -150,7 +150,7 @@ export default function HeroSection({ seccionData }) {
         if (!fallbackUrl) return null;
 
         return (
-            <picture className="h-full w-full block">
+            <picture className="w-full h-auto block">
                 {slide.pc && <source media="(min-width: 1024px)" srcSet={slide.pc} />}
                 {slide.tablet && <source media="(min-width: 640px)" srcSet={slide.tablet} />}
                 <img
@@ -159,17 +159,19 @@ export default function HeroSection({ seccionData }) {
                     fetchPriority={idx === 0 ? "high" : "low"}
                     decoding="async"
                     loading={idx === 0 ? "eager" : "lazy"}
-                    className="h-full w-full object-cover brightness-105"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center bottom' }}
+                    className="w-full h-auto block object-cover brightness-105"
+                    style={{ width: '100%', height: 'auto' }}
                 />
             </picture>
         );
     };
 
+    const hasTextContent = Boolean(tituloHero || descripcionHero || (botones && botones.length > 0) || (etiquetas && etiquetas.length > 0));
+
     return (
-        <section id="inicio" className="scroll-mt-10 relative h-[100vh] min-h-[100vh] w-full flex items-center overflow-hidden bg-slate-950">
-            {/* Contenedor de fondo para imágenes / carrusel */}
-            <div className="absolute inset-0 h-full w-full overflow-hidden z-0">
+        <section id="inicio" className="scroll-mt-10 relative w-full overflow-hidden bg-slate-950">
+            {/* Contenedor de imágenes / carrusel */}
+            <div className={`w-full ${hasTextContent ? 'relative' : 'relative h-auto'}`}>
                 {slides.length > 1 ? (
                     <Swiper
                         modules={[Autoplay, Pagination, EffectFade]}
@@ -178,11 +180,10 @@ export default function HeroSection({ seccionData }) {
                         loop={true}
                         autoplay={{ delay: 4500, disableOnInteraction: false }}
                         pagination={{ clickable: true }}
-                        className="hero-swiper h-full w-full"
-                        style={{ height: '100%', width: '100%' }}
+                        className="hero-swiper w-full h-auto"
                     >
                         {slides.map((slide, idx) => (
-                            <SwiperSlide key={idx} className="relative h-full w-full overflow-hidden bg-slate-950" style={{ height: '100%', width: '100%' }}>
+                            <SwiperSlide key={idx} className="relative w-full h-auto overflow-hidden bg-slate-950">
                                 {renderResponsiveImage(slide, idx)}
                             </SwiperSlide>
                         ))}
@@ -192,7 +193,7 @@ export default function HeroSection({ seccionData }) {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         transition={{ duration: 0.6, ease: 'easeOut' }}
-                        className="h-full w-full"
+                        className="w-full h-auto"
                     >
                         {renderResponsiveImage(slides[0], 0)}
                     </motion.div>
@@ -200,17 +201,16 @@ export default function HeroSection({ seccionData }) {
 
                 <style>{`
                     .hero-swiper, .hero-swiper .swiper-wrapper, .hero-swiper .swiper-slide {
-                        height: 100% !important;
                         width: 100% !important;
+                        height: auto !important;
                     }
                     .hero-swiper img {
-                        height: 100% !important;
                         width: 100% !important;
-                        object-fit: cover !important;
-                        object-position: center bottom !important;
+                        height: auto !important;
+                        display: block !important;
                     }
                     .hero-swiper .swiper-pagination {
-                        bottom: 2rem !important;
+                        bottom: 1rem !important;
                         z-index: 20;
                     }
                     .hero-swiper .swiper-pagination-bullet {
@@ -230,9 +230,10 @@ export default function HeroSection({ seccionData }) {
                 `}</style>
             </div>
 
-            {/* Contenedor centrado verticalmente en el medio a la izquierda */}
-            <div className="relative z-20 mx-auto flex h-[100vh] min-h-[100vh] w-full max-w-7xl items-center justify-start px-5 sm:px-8 lg:px-12 pt-28 pb-12 sm:pt-32 sm:pb-16">
-                <div className="max-w-xl lg:max-w-2xl text-left">
+            {/* Contenedor de texto si existen datos */}
+            {hasTextContent && (
+                <div className="absolute inset-0 z-20 mx-auto flex w-full max-w-7xl items-center justify-start px-5 sm:px-8 lg:px-12 py-6 sm:py-12 pointer-events-none">
+                    <div className="max-w-xl lg:max-w-2xl text-left pointer-events-auto">
                     {tituloHero && (
                         <h1
                             className="text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl md:text-5xl lg:text-6xl text-white drop-shadow-sm"
@@ -316,6 +317,7 @@ export default function HeroSection({ seccionData }) {
                     )}
                 </div>
             </div>
+            )}
         </section>
     );
 }

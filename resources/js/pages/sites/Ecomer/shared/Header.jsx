@@ -433,17 +433,15 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
         (!seccionActiva ||
             transparentSections.includes(activeSlug) ||
             transparentNames.includes(activeNombre));
-    const isTransparentMode = isHeroPage && !isScrolled;
+    const isTransparentMode = false;
 
-    const headerBg = isTransparentMode
-        ? 'bg-transparent border-transparent shadow-none'
-        : 'bg-white/95 backdrop-blur-md shadow-md border-b border-gray-200/60';
+    const headerBg = 'bg-white shadow-md border-b border-gray-200/60';
 
     return (
         <>
             <header
                 suppressHydrationWarning
-                className={`fixed top-0 z-50 w-full max-w-full transition-all duration-300 ${headerBg}`}
+                className={`relative z-50 w-full max-w-full transition-all duration-300 ${headerBg}`}
             >
                 {/* 1. ARRIBA: EL AVISO CON EL FONDO GLOBAL */}
                 {mensajeNav && (

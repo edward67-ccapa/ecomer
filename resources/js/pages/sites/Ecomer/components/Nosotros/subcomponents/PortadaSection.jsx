@@ -132,7 +132,7 @@ export default function PortadaSection({ seccionData, site, estilos, dominio, si
     const hasBgImage = Boolean(responsiveImg?.pc || responsiveImg?.tablet || responsiveImg?.cel || fallbackImagenUrl);
 
     return (
-        <section className="relative min-h-[100vh] pt-40 md:pt-0 w-full overflow-hidden bg-slate-950 pt-28 pb-16 md:pt-36 md:pb-24 lg:pt-40 lg:pb-28 text-white flex flex-col justify-center">
+        <section className="relative min-h-[100vh] md:pt-0 w-full overflow-hidden bg-slate-950 py-16 md:py-36 md:py-24 lg:py-28 text-white flex flex-col justify-center">
             {/* Imagen de fondo con zoom sutil y capas de degradado */}
             {hasBgImage && (
                 <div className="absolute inset-0 z-0 overflow-hidden">

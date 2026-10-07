@@ -9,7 +9,7 @@ export default function HeroSection({ hero }) {
     if (!hasBgImage && !titulo && !descripcion) return null;
 
     return (
-        <section className="relative overflow-hidden bg-black text-white h-[80vh] min-h-[80vh] w-full flex items-center justify-center">
+        <section className="relative overflow-hidden bg-black text-white h-[60vh] min-h-[60vh] w-full flex items-center justify-center">
             {hasBgImage && (
                 <div className="absolute inset-0 z-0 h-full w-full">
                     <picture className="h-full w-full block">

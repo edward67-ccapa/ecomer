@@ -35,11 +35,10 @@ function CuentaPagoCard({ item }) {
                     <button
                         type="button"
                         onClick={handleCopy}
-                        className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-md border transition cursor-pointer shrink-0 ${
-                            copiado
-                                ? 'bg-emerald-600 text-white border-emerald-600'
-                                : 'bg-white text-gray-600 hover:text-gray-900 border-gray-200 hover:bg-gray-100 shadow-2xs'
-                        }`}
+                        className={`text-[10px] font-semibold px-2.5 py-0.5 rounded-md border transition cursor-pointer shrink-0 ${copiado
+                            ? 'bg-emerald-600 text-white border-emerald-600'
+                            : 'bg-white text-gray-600 hover:text-gray-900 border-gray-200 hover:bg-gray-100 shadow-2xs'
+                            }`}
                         title="Copiar número de cuenta"
                     >
                         {copiado ? '¡Copiado!' : 'Copiar'}
@@ -281,7 +280,7 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
     return (
         <main className="flex-1 bg-white">
             {/* 1. SECCIÓN SUPERIOR: HERO CON IMAGEN DE FONDO */}
-            <section className="relative h-[80vh] min-h-[500px] w-full overflow-hidden bg-slate-950 flex items-center">
+            <section className="relative h-[50vh] min-h-[500px] w-full overflow-hidden bg-slate-950 flex items-center">
                 {imagenHero && (
                     <div className="absolute inset-0 z-0 h-full w-full">
                         <picture className="h-full w-full block">
@@ -505,89 +504,88 @@ export default function SectionContacto({ site, seccion, seccionesData, estilos 
                                     Envíanos un mensaje
                                 </h2>
 
-                                    <form onSubmit={handleSubmit} className="space-y-4">
-                                        {/* Name */}
-                                        <div>
-                                            <input
-                                                type="text"
-                                                name="nombre"
-                                                required
-                                                placeholder="Nombre completo"
-                                                className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20"
-                                            />
-                                        </div>
+                                <form onSubmit={handleSubmit} className="space-y-4">
+                                    {/* Name */}
+                                    <div>
+                                        <input
+                                            type="text"
+                                            name="nombre"
+                                            required
+                                            placeholder="Nombre completo"
+                                            className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20"
+                                        />
+                                    </div>
 
-                                        {/* Email */}
-                                        <div>
-                                            <input
-                                                type="email"
-                                                name="email"
-                                                required
-                                                placeholder="Correo electrónico"
-                                                className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20"
-                                            />
-                                        </div>
+                                    {/* Email */}
+                                    <div>
+                                        <input
+                                            type="email"
+                                            name="email"
+                                            required
+                                            placeholder="Correo electrónico"
+                                            className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20"
+                                        />
+                                    </div>
 
-                                        {/* Fecha del evento / entrega */}
-                                        <div>
-                                            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
-                                                Fecha del evento / entrega
-                                            </label>
-                                            <input
-                                                type="date"
-                                                name="fecha"
-                                                required
-                                                className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3 text-sm text-gray-900 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20"
-                                            />
-                                        </div>
+                                    {/* Fecha del evento / entrega */}
+                                    <div>
+                                        <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1 px-1">
+                                            Fecha del evento / entrega
+                                        </label>
+                                        <input
+                                            type="date"
+                                            name="fecha"
+                                            required
+                                            className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3 text-sm text-gray-900 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20"
+                                        />
+                                    </div>
 
-                                        {/* Phone / Text */}
-                                        <div>
-                                            <input
-                                                type="tel"
-                                                name="telefono"
-                                                placeholder="Teléfono / Celular"
-                                                className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20"
-                                            />
-                                        </div>
+                                    {/* Phone / Text */}
+                                    <div>
+                                        <input
+                                            type="tel"
+                                            name="telefono"
+                                            placeholder="Teléfono / Celular"
+                                            className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20"
+                                        />
+                                    </div>
 
-                                        {/* Message */}
-                                        <div>
-                                            <textarea
-                                                name="mensaje"
-                                                required
-                                                rows={4}
-                                                placeholder="Escribe tu mensaje..."
-                                                className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20 resize-none"
-                                            />
-                                        </div>
+                                    {/* Message */}
+                                    <div>
+                                        <textarea
+                                            name="mensaje"
+                                            required
+                                            rows={4}
+                                            placeholder="Escribe tu mensaje..."
+                                            className="w-full rounded-2xl border border-gray-200/80 bg-gray-50/50 px-5 py-3.5 text-sm text-gray-900 placeholder-gray-400 outline-none transition-all duration-200 focus:border-[var(--color-primario)] focus:bg-white focus:ring-2 focus:ring-[var(--color-primario)]/20 resize-none"
+                                        />
+                                    </div>
 
-                                        {/* Submit Button */}
-                                        <button
-                                            type="submit"
-                                            disabled={enviando || enviado}
-                                            className={`w-full rounded-2xl py-4 px-6 text-sm font-bold text-white shadow-xl transition-all duration-300 cursor-pointer mt-2 flex items-center justify-center gap-2 ${
-                                                enviado
-                                                    ? 'bg-emerald-600 border border-emerald-500'
-                                                    : 'hover:scale-[1.01] active:scale-[0.98] hover:brightness-110'
+                                    {/* Submit Button */}
+                                    <button
+                                        type="submit"
+                                        disabled={enviando || enviado}
+                                        className={`w-full rounded-2xl py-4 px-6 text-sm font-bold text-white shadow-xl transition-all duration-300 cursor-pointer mt-2 flex items-center justify-center gap-2 ${enviado
+                                            ? 'bg-emerald-600 border border-emerald-500'
+                                            : 'hover:scale-[1.01] active:scale-[0.98] hover:brightness-110'
                                             }`}
-                                            style={{ backgroundColor: enviado ? '#059669' : 'var(--color-primario)' }}
-                                        >
-                                            {enviando ? (
-                                                <>
-                                                    <DynamicIcon name="FaSpinner" className="h-4 w-4 animate-spin text-white" />
-                                                    <span>Enviando mensaje...</span>
-                                                </>
-                                            ) : enviado ? (
-                                                <>
-                                                    <DynamicIcon name="FaCheck" className="h-4 w-4 text-white" />
-                                                    <span>¡Mensaje Enviado con Éxito!</span>
-                                                </>
-                                            ) : (
-                                                <span>Enviar mensaje</span>
-                                            )}
-                                        </button>
-                                    </form>
+                                        style={{ backgroundColor: enviado ? '#059669' : 'var(--color-primario)' }}
+                                    >
+                                        {enviando ? (
+                                            <>
+                                                <DynamicIcon name="FaSpinner" className="h-4 w-4 animate-spin text-white" />
+                                                <span>Enviando mensaje...</span>
+                                            </>
+                                        ) : enviado ? (
+                                            <>
+                                                <DynamicIcon name="FaCheck" className="h-4 w-4 text-white" />
+                                                <span>¡Mensaje Enviado con Éxito!</span>
+                                            </>
+                                        ) : (
+                                            <span>Enviar mensaje</span>
+                                        )}
+                                    </button>
+                                </form>
                             </motion.div>
                         </div>
 

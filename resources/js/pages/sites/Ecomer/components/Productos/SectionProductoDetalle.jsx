@@ -576,12 +576,12 @@ export default function SectionProductoDetalle({
                                         stockVal > 5 ? (
                                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 font-extrabold">
                                                 <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-                                                Stock disponible ({stockVal} unids.)
+                                                Stock disponible
                                             </span>
                                         ) : stockVal > 0 ? (
                                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-50 text-amber-800 border border-amber-300 font-extrabold animate-pulse">
                                                 <span className="h-2 w-2 rounded-full bg-amber-500" />
-                                                ¡Últimas {stockVal} unidades en stock!
+                                                ¡Últimas unidades en stock!
                                             </span>
                                         ) : (
                                             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-50 text-red-700 border border-red-200 font-extrabold">
@@ -729,17 +729,6 @@ export default function SectionProductoDetalle({
 
                             {/* Beneficios de Despacho y Entrega */}
                             <div className="border-t border-gray-100 pt-4 space-y-2.5 text-xs text-gray-600">
-                                {almacenesTexto && (
-                                    <div className="flex items-center gap-3">
-                                        <span className="w-7 h-7 rounded-full bg-slate-100 text-slate-700 flex items-center justify-center text-sm shrink-0 border border-slate-200">
-                                            🏭
-                                        </span>
-                                        <div>
-                                            <p className="font-semibold text-gray-800">Almacén / Tienda de Origen</p>
-                                            <p className="text-[11px] font-bold text-gray-900">{almacenesTexto}</p>
-                                        </div>
-                                    </div>
-                                )}
 
                                 <div className="flex items-center gap-3">
                                     <span className="w-7 h-7 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm shrink-0">
