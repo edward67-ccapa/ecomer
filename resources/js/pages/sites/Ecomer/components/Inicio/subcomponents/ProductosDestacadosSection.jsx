@@ -122,10 +122,10 @@ export default function ProductosDestacadosSection({
                                     stockTexto = 'Agotado';
                                     stockColor = 'text-rose-700 bg-rose-50 border-rose-200';
                                 } else if (stockVal <= 5) {
-                                    stockTexto = `¡Últimas ${stockVal} unids!`;
+                                    stockTexto = '¡Últimas unidades en stock!';
                                     stockColor = 'text-amber-700 bg-amber-50 border-amber-200';
                                 } else {
-                                    stockTexto = `Stock: ${stockVal} unids.`;
+                                    stockTexto = 'Stock disponible';
                                     stockColor = 'text-emerald-700 bg-emerald-50 border-emerald-200';
                                 }
                             }

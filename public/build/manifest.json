@@ -210,8 +210,8 @@
       "_vendor-swiper-D5Wh1uOI.js"
     ]
   },
-  "_ProductosDestacadosSection-DEWH5VMA.js": {
-    "file": "assets/ProductosDestacadosSection-DEWH5VMA.js",
+  "_ProductosDestacadosSection-FKW9HQiJ.js": {
+    "file": "assets/ProductosDestacadosSection-FKW9HQiJ.js",
     "name": "ProductosDestacadosSection",
     "imports": [
       "_rolldown-runtime-hePW80VL.js",
@@ -346,7 +346,7 @@
     "src": "_vendor-swiper-DBDkIWrS.css"
   },
   "resources/css/app.css": {
-    "file": "assets/app-9fUFa1qB.css",
+    "file": "assets/app-CyYMf4Kw.css",
     "name": "app",
     "names": [
       "app.css"
@@ -364,7 +364,7 @@
     "isEntry": true
   },
   "resources/js/app.jsx": {
-    "file": "assets/app-D6xO97Ox.js",
+    "file": "assets/app-VXd-YZ-6.js",
     "name": "app",
     "src": "resources/js/app.jsx",
     "isEntry": true,
@@ -390,7 +390,7 @@
       "_HeroSection-CFWUJdfH.js",
       "_MarcasSection-BkyW4RP3.js",
       "_OfertasSection-VHewsYZ1.js",
-      "_ProductosDestacadosSection-DEWH5VMA.js",
+      "_ProductosDestacadosSection-FKW9HQiJ.js",
       "_TikTokSection-CQZLj36I.js",
       "resources/js/pages/sites/Ecomer/components/Nosotros/SectionNosotros.jsx",
       "_AccionSection-CG3Vxvf9.js",
@@ -505,7 +505,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/Index.jsx": {
-    "file": "assets/Index-laa9rL-e.js",
+    "file": "assets/Index-DM2LJ905.js",
     "name": "Index",
     "src": "resources/js/pages/sites/Ecomer/Index.jsx",
     "isDynamicEntry": true,
@@ -537,7 +537,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/components/Inicio/SectionInicio.jsx": {
-    "file": "assets/SectionInicio-DrCcfA68.js",
+    "file": "assets/SectionInicio-B5XMPQjd.js",
     "name": "SectionInicio",
     "src": "resources/js/pages/sites/Ecomer/components/Inicio/SectionInicio.jsx",
     "isDynamicEntry": true,
@@ -549,7 +549,7 @@
       "_MarcasSection-BkyW4RP3.js",
       "_CategoriaSection-BQglV9mO.js",
       "_TikTokSection-CQZLj36I.js",
-      "_ProductosDestacadosSection-DEWH5VMA.js",
+      "_ProductosDestacadosSection-FKW9HQiJ.js",
       "_BanerPieSection-D5bCNXax.js"
     ]
   },
@@ -634,7 +634,7 @@
     ]
   },
   "resources/js/pages/sites/Ecomer/shared/Header.jsx": {
-    "file": "assets/Header-gPZTvNSS.js",
+    "file": "assets/Header-D8RabrUV.js",
     "name": "Header",
     "src": "resources/js/pages/sites/Ecomer/shared/Header.jsx",
     "isDynamicEntry": true,

@@ -24,6 +24,27 @@ const getCategoryIcon = (nombre = '') => {
 
 export default function Header({ site, dominio, siteSlug, secciones, seccionActiva, tieneTienda, productos, seccionesData, serviciosSitio, marcasSitio = [], estilos, esDetalleProducto = false }) {
     const [isScrolled, setIsScrolled] = useState(false);
+    const headerRef = useRef(null);
+    const [headerHeight, setHeaderHeight] = useState(0);
+
+    useEffect(() => {
+        if (!headerRef.current) return;
+        const updateHeight = () => {
+            if (headerRef.current) {
+                setHeaderHeight(headerRef.current.offsetHeight);
+            }
+        };
+        updateHeight();
+        const observer = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(updateHeight) : null;
+        if (observer && headerRef.current) {
+            observer.observe(headerRef.current);
+        }
+        window.addEventListener('resize', updateHeight);
+        return () => {
+            if (observer) observer.disconnect();
+            window.removeEventListener('resize', updateHeight);
+        };
+    }, []);
 
     // --- SCROLL DETECTION ---
     useEffect(() => {
@@ -440,8 +461,9 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
     return (
         <>
             <header
+                ref={headerRef}
                 suppressHydrationWarning
-                className={`relative z-50 w-full max-w-full transition-all duration-300 ${headerBg}`}
+                className={`fixed top-0 left-0 right-0 z-50 w-full max-w-full transition-all duration-300 ${headerBg}`}
             >
                 {/* 1. ARRIBA: EL AVISO CON EL FONDO GLOBAL */}
                 {mensajeNav && (
@@ -1608,6 +1630,12 @@ export default function Header({ site, dominio, siteSlug, secciones, seccionActi
                     </nav>
                 )}
             </header>
+
+            {/* Spacer para evitar que el contenido de la página quede cubierto bajo el header fixed */}
+            <div
+                style={{ height: headerHeight ? `${headerHeight}px` : '120px' }}
+                className="w-full shrink-0 transition-all duration-200"
+            />
 
             {/* OFFCANVAS DRAWER DEL CARRITO */}
             <CartOffcanvas site={site} estilos={estilos} seccionesData={seccionesData} />
